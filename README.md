@@ -1,6 +1,6 @@
 # NEXA Music
 
-**Status:** planning and repository preparation. No playable Windows build exists yet.
+**Status:** Phase 0 (environment + audio-engine proof) submitted for owner review. The repository contains a minimal Flutter Windows project with a **technical audio prototype only**. There is no NEXA user interface and no music library yet.
 
 NEXA Music is a **private, Windows-first music player** designed around:
 - a personal, offline-capable library;
@@ -15,10 +15,41 @@ The primary code implementer is Claude Agent on the owner's Windows PC. KondexOf
 1. Read [the authoritative development plan](NEXA_Music_Master_Plan_Claude.md) **in full**.
 2. Claude must read [CLAUDE.md](CLAUDE.md) and respect phase gates.
 3. Use [architecture](docs/ARCHITECTURE.md), [design](docs/DESIGN.md), [decision log](docs/DECISIONS.md) and [change requests](docs/CHANGE_REQUESTS.md) as supporting guidance.
-4. The **first stage is Phase 0**. The owner must explicitly authorize its execution. Do **not** start later phases automatically.
-5. Deliver reports according to [reporting instructions](reports/README.md).
+4. Phases run one at a time. Each phase needs explicit owner authorization. Do **not** start later phases automatically.
+5. Deliver reports according to [reporting instructions](reports/README.md). Latest: [Phase 0 report](reports/PHASE_00_REPORT.md).
 
-This repository currently contains planning documents **only**; the Flutter project and its dependencies must be created/verified in Phase 0, not pretended to exist now.
+## Development environment (verified in Phase 0)
+
+| Component | Version |
+|---|---|
+| OS | Windows 11 x64 (build 26200) |
+| Flutter | 3.47.7, channel stable (framework `abaf9c5237`) |
+| Dart | 3.13.5 |
+| Visual Studio | Community 2022 17.14, workload "Desktop development with C++", Windows 10 SDK 10.0.26100.0 |
+| Git | 2.56.0 |
+| Windows Developer Mode | On (needed for plugin symlinks) |
+
+Exact package versions are locked in `pubspec.lock` (media_kit 1.2.6, media_kit_libs_audio 1.0.7, media_kit_libs_windows_audio 1.0.9).
+
+## Running the Phase 0 audio prototype
+
+The prototype is a temporary technical screen (`lib/audio_probe/`) used to prove that the Windows audio engine works. It will be replaced by the real PlaybackEngine in Phase 3.
+
+```powershell
+flutter pub get
+flutter analyze
+flutter test
+
+# Interactive: paste a path to a local MP3/FLAC/WAV you own, then Open / Play / Pause / seek / volume
+flutter run -d windows
+
+# Automated self-test: plays ~15 s, checks open/play/pause/seek/volume, writes a log + PNG, then exits
+flutter run -d windows --dart-define=NEXA_SELFTEST=true `
+  "--dart-define=NEXA_TEST_AUDIO=<path to your own audio file>" `
+  "--dart-define=NEXA_PROBE_LOG_DIR=<folder outside the repo>"
+```
+
+Test audio files and logs must stay **outside** the repository.
 
 ## External services
 
