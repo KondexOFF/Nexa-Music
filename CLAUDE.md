@@ -41,3 +41,10 @@ Run and record, when applicable: `flutter analyze`, `flutter test`, `flutter run
 Create `reports/PHASE_XX_REPORT.md` using the exact report sections in the Master Plan, including changed files, manual tests, limitations, git status and whether any approved change request applied. Show the complete report to the owner. Then **STOP**.
 
 The owner forwards the report to ChatGPT for review and separately authorizes the next phase.
+
+## GitHub / automated review handoff (CR-002)
+
+- After the owner authorizes a specific phase, you may create/update **that phase's draft PR** and push to its scoped `phase/NN-review` branch **only if the owner has also authorized push access for that phase**. No push to `main`, no unrelated branch changes, no self-merge. This is a scoped exception, not blanket permission for future phases.
+- Keep the phase report in the PR branch. A green GitHub Actions result or a Codex Code Review comment never substitutes for real Windows/manual listening checks or KondexOff's explicit phase acceptance.
+- Address code review findings only within the current phase, update evidence, and stop again. **Do not proceed to the next phase** until the owner separately authorizes it.
+- See `docs/AUTOMATION.md`. If its process guidance conflicts with the Master Plan, **the Master Plan wins**.

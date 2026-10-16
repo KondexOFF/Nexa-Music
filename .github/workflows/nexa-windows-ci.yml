@@ -1,0 +1,76 @@
+name: NEXA Windows Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'phase/**'
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexa-validation-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-safety:
+    name: Repository safety and plan lock
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout the proposed change
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject tracked private data and protected plan edits
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          forbidden="$(git ls-files | grep -Ei '(^|/)(\.env($|\.)|id_rsa($|\.)|id_ed25519($|\.)|credentials\.json$|service-account\.json$)|\.(mp3|flac|wav|m4a|aac|ogg|opus|wma|mp4|mkv|sqlite|sqlite3|db|p12|pfx|pem|key)$' || true)"
+          if [[ -n "$forbidden" ]]; then
+            echo "::error::Potential private or licensed media/credentials are tracked:"
+            echo "$forbidden"
+            exit 1
+          fi
+          if [[ -n "$PR_BASE_SHA" ]] && ! git diff --quiet "$PR_BASE_SHA" HEAD -- NEXA_Music_Master_Plan_Claude.md; then
+            echo "::error::Master Plan differs from the PR base. Stop and request a separately approved change."
+            exit 1
+          fi
+
+  windows-flutter:
+    name: Windows Flutter analyze, test and build
+    needs: repository-safety
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.7'
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Automated tests
+        run: flutter test --reporter expanded
+
+      - name: Windows release build
+        run: flutter build windows --release
