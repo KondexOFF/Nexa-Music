@@ -75,3 +75,11 @@ listening_history/
 *.msi
 *.exe
 *.pdb
+
+# Flutter template extras (added in Phase 0)
+migrate_working_dir/
+**/doc/api/
+app.*.symbols
+app.*.map.json
+.history
+.svn/
