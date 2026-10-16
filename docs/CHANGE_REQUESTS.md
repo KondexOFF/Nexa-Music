@@ -50,3 +50,12 @@ Until explicitly selected, Claude **must not implement CR-001**.
 - https://developers.google.com/youtube/terms/developer-policies
 - https://developers.google.com/youtube/terms/developer-policies-guide
 - https://developers.google.com/youtube/v3/docs/search/list
+
+## CR-002 — GitHub CI and Codex Code Review automation (process only)
+
+- **Requested by owner:** 2026-10-16.
+- **Status:** **APPROVED FOR CONFIGURATION ONLY** by explicit owner request to prepare automatic Claude + GitHub + Codex Code Review with manual phase acceptance.
+- **Scope:** add `.github/workflows/nexa-windows-ci.yml`, root `AGENTS.md`, pull request template, `docs/AUTOMATION.md`, and a narrowly scoped clarification in `CLAUDE.md`.
+- **Unchanged:** Master Plan v1.0, phases 0–7, existing Phase 0 code, draft CR-001 and all music-source restrictions.
+- **Gate:** Codex GitHub review activation and GitHub branch/ruleset protection are manual account settings, not automatically configured by this change. Every phase still requires real test evidence, a report, explicit owner acceptance, owner merge and separately authorized next phase.
+- **No new permissions:** no bot credentials or automated merges. Claude may push only within a phase-specific scope explicitly authorized by the owner.
