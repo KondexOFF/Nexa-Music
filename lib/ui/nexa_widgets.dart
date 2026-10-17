@@ -1,0 +1,347 @@
+import 'package:flutter/material.dart';
+
+import '../app/strings.dart';
+import '../app/theme/nexa_theme.dart';
+import '../app/theme/tokens.dart';
+
+/// Hover / focus / click surface that paints its highlight above the parent
+/// decoration. A null [onTap] means the surface is inert (no hover, no focus).
+class NexaTappable extends StatelessWidget {
+  const NexaTappable({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.borderRadius = const BorderRadius.all(Radius.circular(NexaRadius.md)),
+    this.hoverColor = NexaColors.accentFaint,
+    this.tooltip,
+    this.semanticLabel,
+  });
+
+  final Widget child;
+  final VoidCallback? onTap;
+  final BorderRadius borderRadius;
+  final Color hoverColor;
+  final String? tooltip;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget result = Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: borderRadius,
+        hoverColor: hoverColor,
+        focusColor: NexaColors.accentSoft,
+        child: child,
+      ),
+    );
+    if (semanticLabel != null) {
+      result = Semantics(
+        button: true,
+        enabled: onTap != null,
+        label: semanticLabel,
+        child: result,
+      );
+    }
+    if (tooltip != null) {
+      result = Tooltip(message: tooltip, child: result);
+    }
+    return result;
+  }
+}
+
+/// Icon button. When [onPressed] is null the button is visibly disabled and
+/// its tooltip explains why ([disabledReason]).
+class NexaIconButton extends StatelessWidget {
+  const NexaIconButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.onPressed,
+    this.disabledReason,
+    this.iconSize = 20,
+    this.boxSize = 36,
+    this.color = NexaColors.textPrimary,
+    this.selected = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final String? disabledReason;
+  final double iconSize;
+  final double boxSize;
+  final Color color;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    final message = enabled || disabledReason == null
+        ? label
+        : '$label - $disabledReason';
+    return Tooltip(
+      message: message,
+      child: SizedBox.square(
+        dimension: boxSize,
+        child: IconButton(
+          onPressed: onPressed,
+          icon: Icon(icon),
+          iconSize: iconSize,
+          padding: EdgeInsets.zero,
+          color: selected ? NexaColors.accent : color,
+          disabledColor: NexaColors.textDisabled,
+          style: IconButton.styleFrom(
+            hoverColor: NexaColors.accentFaint,
+            shape: const CircleBorder(),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum PillVariant { primary, secondary }
+
+/// Rounded pill button (Play Wave, Shuffle, chips).
+class NexaPillButton extends StatelessWidget {
+  const NexaPillButton({
+    super.key,
+    required this.label,
+    this.icon,
+    this.onPressed,
+    this.disabledReason,
+    this.variant = PillVariant.primary,
+    this.height = 48,
+  });
+
+  final String label;
+  final IconData? icon;
+  final VoidCallback? onPressed;
+  final String? disabledReason;
+  final PillVariant variant;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = variant == PillVariant.primary;
+    final style = ButtonStyle(
+      minimumSize: WidgetStatePropertyAll(Size(0, height)),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(horizontal: 26),
+      ),
+      shape: const WidgetStatePropertyAll(StadiumBorder()),
+      textStyle: const WidgetStatePropertyAll(NexaText.button),
+      side: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return const BorderSide(color: Color(0x1FFFFFFF));
+        }
+        return primary
+            ? BorderSide.none
+            : const BorderSide(color: Color(0x33FFFFFF));
+      }),
+      backgroundColor: WidgetStateProperty.resolveWith((states) {
+        // Disabled buttons are clearly muted (no accent fill), so they never
+        // look like working ones.
+        if (states.contains(WidgetState.disabled)) {
+          return primary ? const Color(0x14AD9AFF) : const Color(0x05FFFFFF);
+        }
+        if (!primary) {
+          return states.contains(WidgetState.hovered)
+              ? const Color(0x14FFFFFF)
+              : const Color(0x0AFFFFFF);
+        }
+        return states.contains(WidgetState.hovered)
+            ? NexaColors.accentStrong
+            : NexaColors.accent;
+      }),
+      foregroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled)
+            ? NexaColors.textDisabled
+            : Colors.white,
+      ),
+      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+    );
+    final child = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[Icon(icon, size: 22), const SizedBox(width: 10)],
+        Text(label),
+      ],
+    );
+    final button = TextButton(onPressed: onPressed, style: style, child: child);
+    if (onPressed == null && disabledReason != null) {
+      return Tooltip(message: disabledReason, child: button);
+    }
+    return button;
+  }
+}
+
+/// Small uppercase status label, e.g. DEMO or "Phase 4".
+class StatusBadge extends StatelessWidget {
+  const StatusBadge({
+    super.key,
+    required this.label,
+    required this.color,
+    this.tooltip,
+  });
+
+  /// Marks placeholder (demo) content.
+  const StatusBadge.demo({super.key})
+    : label = S.demo,
+      color = NexaColors.demo,
+      tooltip = S.demoTooltip;
+
+  /// Marks a feature that belongs to a later phase.
+  const StatusBadge.phase(this.label, {super.key, this.tooltip})
+    : color = NexaColors.accent;
+
+  final String label;
+  final Color color;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+      ),
+      child: Text(label.toUpperCase(), style: NexaText.badge.copyWith(color: color)),
+    );
+    if (tooltip == null) {
+      return badge;
+    }
+    return Tooltip(message: tooltip, child: badge);
+  }
+}
+
+/// Rounded panel used for right-side cards and Mix Engine.
+class NexaPanel extends StatelessWidget {
+  const NexaPanel({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(NexaSpace.md),
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: NexaColors.panel,
+        borderRadius: BorderRadius.circular(NexaRadius.lg),
+        border: Border.all(color: NexaColors.border),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Text link such as "See all". Disabled links show [disabledReason].
+class NexaTextLink extends StatelessWidget {
+  const NexaTextLink({
+    super.key,
+    required this.label,
+    this.onTap,
+    this.disabledReason,
+    this.showArrow = true,
+  });
+
+  final String label;
+  final VoidCallback? onTap;
+  final String? disabledReason;
+  final bool showArrow;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = onTap == null ? NexaColors.textTertiary : NexaColors.textSecondary;
+    return NexaTappable(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(NexaRadius.sm),
+      tooltip: onTap == null ? disabledReason : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: NexaText.caption.copyWith(color: color)),
+            if (showArrow) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.arrow_forward_rounded, size: 14, color: color),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Section title with optional subtitle, badges and trailing action.
+class SectionHeader extends StatelessWidget {
+  const SectionHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.badges = const [],
+    this.trailing,
+    this.style = NexaText.h2,
+  });
+
+  final String title;
+  final String? subtitle;
+  final List<Widget> badges;
+  final Widget? trailing;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleText = Text(
+      title,
+      style: style,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              // With a subtitle the subtitle shrinks first; otherwise the
+              // title itself may ellipsize in narrow panels.
+              if (subtitle == null) Flexible(child: titleText) else titleText,
+              if (subtitle != null) ...[
+                const SizedBox(width: NexaSpace.md),
+                Flexible(
+                  child: Text(
+                    subtitle!,
+                    style: NexaText.caption,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+              for (final badge in badges) ...[
+                const SizedBox(width: NexaSpace.sm),
+                badge,
+              ],
+            ],
+          ),
+        ),
+        if (trailing != null) ...[
+          const SizedBox(width: NexaSpace.xs),
+          trailing!,
+        ],
+      ],
+    );
+  }
+}

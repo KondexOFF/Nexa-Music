@@ -1,0 +1,15 @@
+NEXA Music - Phase 0 - media_kit audio self-test
+Started: 2026-10-16T22:37:40.167123
+OS: "Windows 10 Pro" 10.0 (Build 26200)
+Dart: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on "windows_x64"
+File name: <redacted: owner's local test file, not in the repository>
+PASS  open: duration 2:30.465
+PASS  play: playing=true, position advanced 0:02.960 in 3 s
+PASS  pause: playing=false, drift 0:00.000 over 1.5 s
+PASS  seek: target 1:00.000, position 0:59.999
+PASS  resume after seek: playing=true, position 1:01.980
+PASS  set volume: set 30 -> reported 30.0; set 100 -> reported 100.0
+Last engine error: none
+RESULT: PASS (exit code 0)
+Note: player-state checks only; audible output must be confirmed by a person.
+Finished: 2026-10-16T22:37:49.599798

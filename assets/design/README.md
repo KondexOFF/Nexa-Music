@@ -5,6 +5,6 @@ The owner has approved two original UI concept screenshots:
 - `NEXA_Design_04_Home.png`
 - `NEXA_Design_04_Player.png`
 
-They are **not yet committed** to this repository. Claude must request the original PNG files before Phase 1. When owner supplies them, store them in this folder, verify they contain no private information, and use them as design references — not as application backgrounds.
+The owner supplied both originals on 2026-10-16 (Phase 1); they are stored in this folder (1672 x 941 px). They contain only fictional demo content (no private information). They are design references only: not bundled into the app and not used as backgrounds; the app reproduces composition, palette and hierarchy with real Flutter widgets.
 
 Earlier exploratory design variants are not the active reference.

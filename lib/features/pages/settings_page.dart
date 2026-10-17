@@ -1,0 +1,126 @@
+import 'package:flutter/material.dart';
+
+import '../../app/config.dart';
+import '../../app/strings.dart';
+import '../../app/theme/nexa_theme.dart';
+import '../../app/theme/tokens.dart';
+import '../../audio_probe/probe_screen.dart';
+import '../../ui/nexa_widgets.dart';
+
+/// Settings page for Phase 1: what exists now, what comes later, and the
+/// Phase 0 audio engine test (kept working as a developer tool).
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  void _openAudioTest(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProbeScreen(
+          initialPath: kTestAudioPath,
+          selfTest: false,
+          logDir: '',
+          captureKey: GlobalKey(),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      key: const PageStorageKey('page-settings'),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(S.settingsHeading, style: NexaText.display),
+          const SizedBox(height: 24),
+          const _SettingsCard(
+            icon: Icons.info_outline_rounded,
+            title: S.settingsAbout,
+            body: S.settingsAboutBody,
+          ),
+          const _SettingsCard(
+            icon: Icons.privacy_tip_outlined,
+            title: S.settingsPrivacy,
+            body: S.settingsPrivacyBody,
+            badge: S.phase5,
+          ),
+          const _SettingsCard(
+            icon: Icons.graphic_eq_rounded,
+            title: S.settingsMix,
+            body: S.settingsMixBody,
+            badge: S.phase4,
+          ),
+          _SettingsCard(
+            icon: Icons.build_outlined,
+            title: S.settingsDev,
+            body: S.settingsDevBody,
+            action: NexaPillButton(
+              label: S.openAudioTest,
+              icon: Icons.play_circle_outline_rounded,
+              variant: PillVariant.secondary,
+              height: 42,
+              onPressed: () => _openAudioTest(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsCard extends StatelessWidget {
+  const _SettingsCard({
+    required this.icon,
+    required this.title,
+    required this.body,
+    this.badge,
+    this.action,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final String? badge;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NexaSpace.sm),
+      child: NexaPanel(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: NexaColors.accent, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(child: Text(title, style: NexaText.h3)),
+                      if (badge != null) ...[
+                        const SizedBox(width: 10),
+                        StatusBadge.phase(badge!),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(body, style: NexaText.bodySecondary),
+                  if (action != null) ...[
+                    const SizedBox(height: 14),
+                    action!,
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

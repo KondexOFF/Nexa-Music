@@ -1,0 +1,54 @@
+Action: check  Started: 2026-10-17T01:36:26
+
+===== flutter pub get =====
+Resolving dependencies...
+Downloading packages...
+  cupertino_icons 1.0.9 (2.0.0 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.3 available)
+Got dependencies!
+5 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+EXIT_CODE=0
+
+===== flutter analyze =====
+Analyzing Nexa-Music...                                         
+No issues found! (ran in 6.8s)
+EXIT_CODE=0
+
+===== flutter test =====
+00:00 +0: loading test/app_shell_test.dart
+00:00 +0: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +1: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +2: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +3: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +4: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +5: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +6: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +7: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +8: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +9: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +10: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:00 +11: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:01 +12: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:01 +13: test/app_shell_test.dart: Home renders without layout errors at 1280x720
+00:01 +14: test/mix_preview_test.dart: choosing Gapless in the panel updates the player chip
+00:02 +15: test/mix_preview_test.dart: choosing Gapless in the panel updates the player chip
+00:02 +16: test/navigation_test.dart: sidebar and top bar arrows navigate between pages
+00:02 +17: test/scroll_and_disabled_test.dart: 1280x720: end of Now Playing (queue) and of the Mix Engine / Up Next panel is reachable and not covered by the bottom player
+00:02 +18: test/scroll_and_disabled_test.dart: 1280x720: end of Now Playing (queue) and of the Mix Engine / Up Next panel is reachable and not covered by the bottom player
+00:02 +19: test/navigation_test.dart: disabled playback controls do nothing and explain why
+00:03 +20: test/app_shell_test.dart: Now Playing renders without layout errors at 1920x1080
+00:03 +21: test/app_shell_test.dart: Now Playing renders without layout errors at 1920x1080
+00:03 +22: test/navigation_test.dart: Recently Played tabs switch the table
+00:03 +23: test/navigation_test.dart: Recently Played tabs switch the table
+00:03 +24: test/scroll_and_disabled_test.dart: 1280x720: every disabled control explains itself in a tooltip
+00:03 +25: test/scroll_and_disabled_test.dart: 1280x720: every disabled control explains itself in a tooltip
+00:03 +26: test/app_shell_test.dart: right panel collapses below 1180 px and shows at 1280 px
+00:03 +27: test/app_shell_test.dart: right panel collapses below 1180 px and shows at 1280 px
+00:03 +28: test/app_shell_test.dart: shrinking the window while leaving Now Playing causes no overflow
+00:04 +29: All tests passed!
+EXIT_CODE=0
+Finished: 2026-10-17T01:36:46

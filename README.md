@@ -1,6 +1,6 @@
 # NEXA Music
 
-**Status:** Phase 0 (environment + audio-engine proof) submitted for owner review. The repository contains a minimal Flutter Windows project with a **technical audio prototype only**. There is no NEXA user interface and no music library yet.
+**Status:** Phase 0 accepted. Phase 1 (design system and the Home / Now Playing layout) submitted for owner review. The UI shows clearly labelled **DEMO** content; there is no music library and no playback in the NEXA screens yet (Phase 2 and 3).
 
 NEXA Music is a **private, Windows-first music player** designed around:
 - a personal, offline-capable library;
@@ -29,20 +29,30 @@ The primary code implementer is Claude Agent on the owner's Windows PC. KondexOf
 | Git | 2.56.0 |
 | Windows Developer Mode | On (needed for plugin symlinks) |
 
-Exact package versions are locked in `pubspec.lock` (media_kit 1.2.6, media_kit_libs_audio 1.0.7, media_kit_libs_windows_audio 1.0.9).
+Exact package versions are locked in `pubspec.lock` (media_kit 1.2.6, media_kit_libs_audio 1.0.7, media_kit_libs_windows_audio 1.0.9, flutter_riverpod 3.4.3).
 
-## Running the Phase 0 audio prototype
-
-The prototype is a temporary technical screen (`lib/audio_probe/`) used to prove that the Windows audio engine works. It will be replaced by the real PlaybackEngine in Phase 3.
+## Running the app
 
 ```powershell
 flutter pub get
 flutter analyze
 flutter test
-
-# Interactive: paste a path to a local MP3/FLAC/WAV you own, then Open / Play / Pause / seek / volume
 flutter run -d windows
+```
 
+Phase 1 screens: Home (NEXA Wave hero, For Your Moment, Recently Played, Up Next / My Taste / Discover More) and Now Playing with the NEXA Mix Engine panel. Disabled controls explain in a tooltip which phase brings them.
+
+Screenshot evidence (renders 1280x720, 1920x1080 and 1024x640 to PNG and exits):
+
+```powershell
+flutter run -d windows "--dart-define=NEXA_CAPTURE_DIR=<folder outside the repo>"
+```
+
+## Phase 0 audio prototype
+
+Kept as a developer tool: **Settings -> Open audio engine test**, or the automated self-test below. It will be replaced by the real PlaybackEngine in Phase 3.
+
+```powershell
 # Automated self-test: plays ~15 s, checks open/play/pause/seek/volume, writes a log + PNG, then exits
 flutter run -d windows --dart-define=NEXA_SELFTEST=true `
   "--dart-define=NEXA_TEST_AUDIO=<path to your own audio file>" `
@@ -62,4 +72,4 @@ This private repository must **never contain copyrighted music files, secrets, p
 
 ## Design references
 
-The approved visual concept is NEXA Design 04: Home and Player. The two PNG mockups are not yet committed; ask the owner for the originals before Phase 1.
+The approved visual concept is NEXA Design 04: Home and Player. The original PNGs are in `assets/design/` as references (not used as app backgrounds).
