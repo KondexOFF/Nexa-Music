@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/navigation.dart';
 import 'package:nexa_music/app/strings.dart';
+import 'package:nexa_music/features/library/library_page.dart';
 
 import 'helpers/test_app.dart';
 
@@ -55,7 +56,7 @@ void main() {
 
     await tester.tap(find.text(S.navLibrary));
     await settle(tester);
-    expect(find.text(S.libraryHeading), findsOneWidget);
+    expect(find.byType(LibraryPage), findsOneWidget);
 
     await tester.tap(find.text(S.navSettings));
     await settle(tester);
@@ -63,7 +64,7 @@ void main() {
 
     await tester.tap(find.byTooltip(S.navBack));
     await settle(tester);
-    expect(find.text(S.libraryHeading), findsOneWidget);
+    expect(find.byType(LibraryPage), findsOneWidget);
 
     await tester.tap(find.byTooltip(S.navBack));
     await settle(tester);
@@ -71,7 +72,7 @@ void main() {
 
     await tester.tap(find.byTooltip(S.navForward));
     await settle(tester);
-    expect(find.text(S.libraryHeading), findsOneWidget);
+    expect(find.byType(LibraryPage), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

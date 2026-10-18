@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/database/app_database.dart';
+import '../../features/library/library_providers.dart';
 import '../app.dart';
 import '../navigation.dart';
 import '../theme/tokens.dart';
@@ -38,7 +41,18 @@ class CaptureHarness extends StatefulWidget {
 }
 
 class _CaptureHarnessState extends State<CaptureHarness> {
-  final ProviderContainer _container = ProviderContainer();
+  // Screenshots never read or change the user's library: empty in-memory
+  // database.
+  final ProviderContainer _container = ProviderContainer(
+    overrides: [
+      appDatabaseProvider.overrideWith((ref) {
+        final db = AppDatabase(NativeDatabase.memory());
+        ref.onDispose(db.close);
+        return db;
+      }),
+      artworkDirProvider.overrideWith((ref) async => ''),
+    ],
+  );
   final GlobalKey _boundaryKey = GlobalKey();
   final List<String> _errors = [];
 

@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/home/home_page.dart';
 import '../../features/home/home_side_panel.dart';
+import '../../features/library/library_page.dart';
+import '../../features/library/library_providers.dart';
+import '../../features/library/playlist_page.dart';
 import '../../features/mix_engine/mix_engine_panel.dart';
 import '../../features/pages/planned_page.dart';
 import '../../features/pages/settings_page.dart';
@@ -29,6 +32,17 @@ class AppShell extends ConsumerStatefulWidget {
 
 class _AppShellState extends ConsumerState<AppShell> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Pick up new, changed and missing files from the library folders.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(libraryScanProvider.notifier).rescanIfLibraryExists();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +104,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                               children: [
                                 Expanded(
                                   child: _PageArea(
-                                    destination: nav.current,
+                                    location: nav.location,
                                     inlineMixEngine: !showPanel,
                                     ambientMotion: widget.ambientMotion,
                                   ),
@@ -128,16 +142,16 @@ class _AppShellState extends ConsumerState<AppShell> {
 
 class _PageArea extends StatelessWidget {
   const _PageArea({
-    required this.destination,
+    required this.location,
     required this.inlineMixEngine,
     required this.ambientMotion,
   });
 
-  final NexaDestination destination;
+  final NexaLocation location;
   final bool inlineMixEngine;
   final bool ambientMotion;
 
-  Widget _page() => switch (destination) {
+  Widget _page() => switch (location.destination) {
     NexaDestination.home => HomePage(ambientMotion: ambientMotion),
     NexaDestination.nowPlaying => NowPlayingPage(
       inlineMixEngine: inlineMixEngine,
@@ -156,12 +170,9 @@ class _PageArea extends StatelessWidget {
       body: S.discoverBody,
       phase: S.phase6,
     ),
-    NexaDestination.library => const PlannedPage(
-      overline: S.navLibrary,
-      icon: Icons.library_music_outlined,
-      heading: S.libraryHeading,
-      body: S.libraryBody,
-      phase: S.phase2,
+    NexaDestination.library => const LibraryPage(),
+    NexaDestination.playlist => PlaylistPage(
+      playlistId: location.playlistId ?? -1,
     ),
     NexaDestination.settings => const SettingsPage(),
   };
@@ -186,7 +197,7 @@ class _PageArea extends StatelessWidget {
           child: child,
         ),
       ),
-      child: KeyedSubtree(key: ValueKey(destination), child: _page()),
+      child: KeyedSubtree(key: ValueKey(location), child: _page()),
     );
   }
 }

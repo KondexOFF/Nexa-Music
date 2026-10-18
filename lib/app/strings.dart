@@ -26,20 +26,23 @@ abstract final class S {
   static const String soonPlayback = 'Playback controls arrive in Phase 3';
   static const String soonSeek = 'Seeking arrives in Phase 3';
   static const String soonVolume = 'Volume control arrives in Phase 3';
-  static const String soonLibrary = 'Library actions arrive in Phase 2';
-  static const String soonPlaylists = 'Playlists arrive in Phase 2';
-  static const String soonFavorites = 'Favorites arrive in Phase 2';
-  static const String soonSearch = 'Search arrives in Phase 2 with the local library';
+  static const String soonLibrary =
+      'Demo content - your own songs are on the Library page';
+  static const String soonPlaylists =
+      'Adding the playing song to a playlist arrives with playback (Phase 3)';
+  static const String soonFavorites =
+      'Demo song - favorites work for songs in your Library';
   static const String soonWave = 'NEXA Wave arrives in Phase 5';
   static const String soonQueue = 'Queue editing arrives in Phase 3';
-  static const String soonBrowse = 'Browsing collections arrives in Phase 2';
+  static const String soonBrowse =
+      'Demo collection - NEXA collections arrive with NEXA Wave (Phase 5)';
   static const String lyricsNotInV1 = 'Lyrics are not part of NEXA Music v1.0';
 
   // Demo labelling
   static const String demo = 'DEMO';
   static const String demoTooltip =
-      'Placeholder content for the Phase 1 layout. Real music arrives with the '
-      'local library in Phase 2.';
+      'Placeholder content. Your own music is on the Library page; playback '
+      'arrives in Phase 3.';
   static const String preview = 'PREVIEW';
 
   // Top bar
@@ -149,11 +152,6 @@ abstract final class S {
   static const String discoverBody =
       'Audius and Jamendo will be searchable through their official APIs, '
       "respecting each provider's rules. Planned for Phase 6.";
-  static const String libraryHeading = 'Your local library';
-  static const String libraryBody =
-      'Import folders, read metadata and covers, search, favorites and '
-      'playlists arrive in Phase 2. Your files are never copied or deleted '
-      'silently.';
   static const String settingsHeading = 'Settings';
   static const String settingsAbout = 'About';
   static const String settingsAboutBody =
@@ -172,4 +170,54 @@ abstract final class S {
       'play, pause, seek and volume.';
   static const String openAudioTest = 'Open audio engine test';
   static const String plannedFor = 'Planned for';
+  // Library (Phase 2)
+  static const String libraryTitle = 'Library';
+  static const String addFolder = 'Add folder';
+  static const String addFiles = 'Add files';
+  static const String rescan = 'Rescan';
+  static const String rescanTooltip =
+      'Look for new, changed and missing files in your library folders';
+  static const String tabSongs = 'Songs';
+  static const String tabFavorites = 'Favorites';
+  static const String tabFolders = 'Folders';
+  static const String likedSongs = 'Liked Songs';
+  static const String libraryEmptyTitle = 'Your library is empty';
+  static const String libraryEmptyBody =
+      'Add a folder with MP3, FLAC or WAV files. NEXA reads the files where '
+      'they are - nothing is copied, moved or deleted.';
+  static const String noResults = 'Nothing in your library matches';
+  static const String favoritesEmpty =
+      'No favorites yet. Click the heart next to a song.';
+  static const String foldersEmpty = 'No folders added yet.';
+  static const String removeFolder = 'Remove from library';
+  static const String removeFolderBody =
+      'The folder and its songs are removed from NEXA (also from playlists). '
+      'The files on your disk are not touched.';
+  static const String unlike = 'Remove from favorites';
+  static const String removeFromPlaylist = 'Remove from playlist';
+  static const String moveUp = 'Move up';
+  static const String moveDown = 'Move down';
+  static const String renamePlaylist = 'Rename';
+  static const String deletePlaylist = 'Delete playlist';
+  static const String deletePlaylistBody =
+      'Only the playlist is deleted. The songs stay in your library.';
+  static const String playlistEmpty =
+      'This playlist is empty. Add songs from the library with the ... menu.';
+  static const String playlistName = 'Playlist name';
+  static const String create = 'Create';
+  static const String save = 'Save';
+  static const String cancel = 'Cancel';
+  static const String delete = 'Delete';
+  static const String remove = 'Remove';
+  static const String songActions = 'Song actions';
+  static const String playlistActions = 'Playlist actions';
+  static const String colDuration = 'Time';
+  static const String unavailable = 'Unavailable';
+  static const String showAll = 'Show all songs';
+  static const String scanning = 'Scanning';
+  static const String noPlaylists = 'No playlists yet';
+  static const String playOnlyPhase3 = 'Playing songs arrives in Phase 3';
+  static const String searchLibraryHint = 'Search your library...';
+  static const String clearSearch = 'Clear search';
 }
+

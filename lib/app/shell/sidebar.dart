@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../demo/demo_data.dart';
-import '../../ui/cover_art.dart';
+import '../../features/library/library_dialogs.dart';
+import '../../features/library/library_providers.dart';
+import '../../features/library/track_art.dart';
 import '../../ui/nexa_widgets.dart';
 import '../navigation.dart';
 import '../strings.dart';
@@ -246,11 +247,26 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-class _PlaylistsSection extends StatelessWidget {
+class _PlaylistsSection extends ConsumerWidget {
   const _PlaylistsSection();
 
+  Future<void> _create(BuildContext context, WidgetRef ref) async {
+    final name = await askPlaylistName(context);
+    if (name == null) {
+      return;
+    }
+    final id = await ref.read(libraryRepositoryProvider).createPlaylist(name);
+    ref
+        .read(navigationProvider.notifier)
+        .go(NexaDestination.playlist, playlistId: id);
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playlists = ref.watch(playlistsProvider).value ?? const [];
+    final favorites = ref.watch(favoriteCountProvider).value ?? 0;
+    final nav = ref.watch(navigationProvider);
+    final libraryTab = ref.watch(libraryTabProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -258,30 +274,53 @@ class _PlaylistsSection extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 30),
           child: Divider(height: 24, color: NexaColors.divider),
         ),
-        const Padding(
-          padding: EdgeInsets.fromLTRB(30, 0, 18, 6),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(30, 0, 18, 6),
           child: Row(
             children: [
-              Text(S.navPlaylists, style: NexaText.bodySecondary),
-              SizedBox(width: 10),
-              StatusBadge.demo(),
-              Spacer(),
+              const Text(S.navPlaylists, style: NexaText.bodySecondary),
+              const Spacer(),
               NexaIconButton(
                 icon: Icons.add_rounded,
                 label: S.newPlaylist,
-                disabledReason: S.soonPlaylists,
                 boxSize: 30,
+                onPressed: () => _create(context, ref),
               ),
             ],
           ),
         ),
         Expanded(
-          child: ListView.builder(
+          child: ListView(
             key: const PageStorageKey('sidebar-playlists'),
-            padding: const EdgeInsets.fromLTRB(24, 4, 16, 8),
-            itemCount: DemoData.playlists.length,
-            itemBuilder: (context, i) =>
-                _PlaylistRow(playlist: DemoData.playlists[i]),
+            padding: const EdgeInsets.fromLTRB(16, 4, 12, 8),
+            children: [
+              _PlaylistRow(
+                name: S.likedSongs,
+                count: favorites,
+                liked: true,
+                selected:
+                    nav.current == NexaDestination.library &&
+                    libraryTab == LibraryTab.favorites,
+                onTap: () {
+                  ref.read(libraryTabProvider.notifier).set(LibraryTab.favorites);
+                  ref
+                      .read(navigationProvider.notifier)
+                      .go(NexaDestination.library);
+                },
+              ),
+              for (final pl in playlists)
+                _PlaylistRow(
+                  name: pl.name,
+                  count: pl.trackCount,
+                  seed: pl.id * 7919,
+                  selected:
+                      nav.current == NexaDestination.playlist &&
+                      nav.playlistId == pl.id,
+                  onTap: () => ref
+                      .read(navigationProvider.notifier)
+                      .go(NexaDestination.playlist, playlistId: pl.id),
+                ),
+            ],
           ),
         ),
       ],
@@ -290,57 +329,83 @@ class _PlaylistsSection extends StatelessWidget {
 }
 
 class _PlaylistRow extends StatelessWidget {
-  const _PlaylistRow({required this.playlist});
+  const _PlaylistRow({
+    required this.name,
+    required this.count,
+    required this.onTap,
+    this.selected = false,
+    this.liked = false,
+    this.seed = 0,
+  });
 
-  final DemoPlaylist playlist;
+  final String name;
+  final int count;
+  final VoidCallback onTap;
+  final bool selected;
+  final bool liked;
+  final int seed;
 
   @override
   Widget build(BuildContext context) {
-    final art = playlist.art;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          if (art == null)
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(NexaRadius.sm),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFC4B4FF), Color(0xFF7D5CFF)],
-                ),
-              ),
-              child: const Icon(
-                Icons.favorite_rounded,
-                color: Colors.white,
-                size: 22,
-              ),
-            )
-          else
-            CoverArt(spec: art, size: 46, radius: NexaRadius.sm),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Material(
+        color: selected ? NexaColors.navSelected : Colors.transparent,
+        borderRadius: BorderRadius.circular(NexaRadius.md),
+        child: NexaTappable(
+          onTap: onTap,
+          semanticLabel: name,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
               children: [
-                Text(
-                  playlist.name,
-                  style: NexaText.body.copyWith(fontWeight: FontWeight.w600),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${playlist.trackCount} ${S.tracksSuffix}',
-                  style: NexaText.caption,
+                if (liked)
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(NexaRadius.sm),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFFC4B4FF), Color(0xFF7D5CFF)],
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.favorite_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  )
+                else
+                  TrackArt(
+                    artworkPath: null,
+                    seed: seed,
+                    size: 42,
+                    radius: NexaRadius.sm,
+                  ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: NexaText.body.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text('$count ${S.tracksSuffix}', style: NexaText.caption),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

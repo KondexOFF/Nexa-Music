@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/library/library_providers.dart';
 import '../../ui/nexa_widgets.dart';
 import '../navigation.dart';
 import '../strings.dart';
@@ -76,43 +77,91 @@ class TopBar extends ConsumerWidget {
   }
 }
 
-/// Search field placeholder. It is not an input: search needs the library
-/// (Phase 2), so it is shown as clearly unavailable.
-class _SearchPlaceholder extends StatelessWidget {
+/// Library search (Phase 2). Typing shows matching songs on the Library
+/// page; the query is shared with the Library page's own filter.
+class _SearchPlaceholder extends ConsumerStatefulWidget {
   const _SearchPlaceholder();
 
   @override
+  ConsumerState<_SearchPlaceholder> createState() => _SearchFieldState();
+}
+
+class _SearchFieldState extends ConsumerState<_SearchPlaceholder> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onChanged(String value) {
+    ref.read(libraryQueryProvider.notifier).set(value);
+    final nav = ref.read(navigationProvider);
+    if (value.trim().isNotEmpty && nav.current != NexaDestination.library) {
+      final tab = ref.read(libraryTabProvider);
+      if (tab != LibraryTab.songs && tab != LibraryTab.favorites) {
+        ref.read(libraryTabProvider.notifier).set(LibraryTab.songs);
+      }
+      ref.read(navigationProvider.notifier).go(NexaDestination.library);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return NexaTooltip(
-      message: S.soonSearch,
-      child: Container(
-        height: 42,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: NexaColors.panel,
-          borderRadius: BorderRadius.circular(NexaRadius.md),
-          border: Border.all(color: NexaColors.border),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.search_rounded,
-              size: 20,
-              color: NexaColors.textTertiary,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                S.searchHint,
-                style: NexaText.body.copyWith(color: NexaColors.textTertiary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+    final query = ref.watch(libraryQueryProvider);
+    ref.listen(libraryQueryProvider, (previous, next) {
+      if (next != _controller.text) {
+        _controller.value = TextEditingValue(
+          text: next,
+          selection: TextSelection.collapsed(offset: next.length),
+        );
+      }
+    });
+    return Container(
+      height: 42,
+      padding: const EdgeInsets.only(left: 14, right: 4),
+      decoration: BoxDecoration(
+        color: NexaColors.panel,
+        borderRadius: BorderRadius.circular(NexaRadius.md),
+        border: Border.all(color: NexaColors.border),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: NexaColors.textTertiary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              onChanged: _onChanged,
+              style: NexaText.body,
+              cursorColor: NexaColors.accent,
+              decoration: InputDecoration(
+                isDense: true,
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                hintText: S.searchLibraryHint,
+                hintStyle: NexaText.body.copyWith(
+                  color: NexaColors.textTertiary,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            const StatusBadge.phase(S.phase2),
-          ],
-        ),
+          ),
+          if (query.isNotEmpty)
+            NexaIconButton(
+              icon: Icons.close_rounded,
+              label: S.clearSearch,
+              iconSize: 18,
+              boxSize: 32,
+              onPressed: () => _onChanged(''),
+            ),
+        ],
       ),
     );
   }

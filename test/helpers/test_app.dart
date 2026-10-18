@@ -1,7 +1,33 @@
+import 'package:drift/drift.dart' show DatabaseConnection, driftRuntimeOptions;
+import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/app.dart';
+import 'package:nexa_music/core/database/app_database.dart';
+import 'package:nexa_music/features/library/library_providers.dart';
+
+/// In-memory database for widget tests. Streams close synchronously, so no
+/// drift timer is left pending when a test ends.
+AppDatabase memoryDatabase() => AppDatabase(
+  DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
+);
+
+/// Provider overrides for widget tests: an empty in-memory database instead
+/// of the user's library file, and no real app-data folder.
+List<Override> testOverrides({AppDatabase? database}) {
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  return [
+    appDatabaseProvider.overrideWith((ref) {
+      final db = database ?? memoryDatabase();
+      ref.onDispose(db.close);
+      return db;
+    }),
+    artworkDirProvider.overrideWith((ref) async => ''),
+    autoRescanProvider.overrideWithValue(false),
+  ];
+}
 
 bool _fontsLoaded = false;
 
@@ -33,7 +59,10 @@ Future<void> pumpNexaApp(WidgetTester tester, Size size) async {
   tester.view.physicalSize = size;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
-    const ProviderScope(child: NexaApp(ambientMotion: false)),
+    ProviderScope(
+      overrides: testOverrides(),
+      child: const NexaApp(ambientMotion: false),
+    ),
   );
   await settle(tester);
 }
