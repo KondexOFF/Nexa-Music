@@ -115,7 +115,7 @@ class _CardPlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NexaTooltip(
-      message: '${S.play} - ${S.soonPlayback}',
+      message: '${S.play} - ${S.soonLibrary}',
       child: Container(
         width: 36,
         height: 36,

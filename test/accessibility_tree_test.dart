@@ -118,7 +118,7 @@ void main() {
         'sequence)', (tester) async {
       await start(tester, size, a11yLater: a11yLater);
       await hover(tester, find.byType(PlayRingButton));
-      expect(find.text('${S.playPause} - ${S.soonPlayback}'), findsOneWidget);
+      expect(find.text('${S.playPause} - ${S.nothingToPlay}'), findsOneWidget);
       await click(tester, find.byTooltip(S.mixChipTooltip));
       expect(find.text(S.waveTitle), findsNothing, reason: 'on Now Playing');
       await finish(tester);
@@ -174,6 +174,8 @@ void main() {
         addTearDown(() => debugProbePlayerFactory = null);
         await start(tester, size1280, a11yLater: a11yLater);
         await click(tester, find.text(S.navSettings));
+        await tester.ensureVisible(find.text(S.openAudioTest));
+        await settle(tester);
         await click(tester, find.text(S.openAudioTest));
         expect(find.byType(ProbeScreen), findsOneWidget);
 

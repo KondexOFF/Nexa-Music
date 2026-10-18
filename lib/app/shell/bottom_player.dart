@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../demo/demo_data.dart';
 import '../../features/mix_engine/mix_preview.dart';
-import '../../ui/cover_art.dart';
-import '../../ui/isolated_slider.dart';
+import '../../features/library/track_art.dart';
+import '../../features/player/player_controller.dart';
+import '../../features/player/player_controls.dart';
 import '../../ui/nexa_widgets.dart';
-import '../../ui/play_ring_button.dart';
 import '../navigation.dart';
 import '../strings.dart';
 import '../theme/nexa_theme.dart';
 import '../theme/tokens.dart';
 
-/// Persistent bottom player. Shows DEMO track data; transport, seek and
-/// volume are visibly disabled until the Playback Engine (Phase 3).
-/// Navigation actions (Now Playing, Mix Engine, Up Next) work.
+/// Persistent bottom player: current song, transport, seek, Mix chip,
+/// volume, queue and Now Playing toggles.
 class BottomPlayer extends ConsumerWidget {
   const BottomPlayer({super.key, required this.onToggleQueue});
 
@@ -58,31 +56,17 @@ class BottomPlayer extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const _Transport(),
-              const SizedBox(width: 24),
-              const Expanded(child: _ProgressDemo()),
+              const TransportControls(ringSize: 54),
               const SizedBox(width: 20),
+              const Expanded(child: SeekBar()),
+              const SizedBox(width: 16),
               _MixChip(
                 label: mix.chipLabel,
                 compact: compact,
                 onTap: () => controller.go(NexaDestination.nowPlaying),
               ),
               const _VerticalRule(),
-              const NexaIconButton(
-                icon: Icons.volume_up_rounded,
-                label: S.volume,
-                disabledReason: S.soonVolume,
-              ),
-              if (!compact)
-                const SizedBox(
-                  width: 120,
-                  child: NexaTooltip(
-                    message: S.soonVolume,
-                    child: IsolatedSlider(
-                      child: Slider(value: 0.65, onChanged: null),
-                    ),
-                  ),
-                ),
+              VolumeControl(showSlider: !compact),
               const _VerticalRule(),
               NexaIconButton(
                 icon: Icons.queue_music_rounded,
@@ -106,14 +90,14 @@ class BottomPlayer extends ConsumerWidget {
   }
 }
 
-class _TrackInfo extends StatelessWidget {
+class _TrackInfo extends ConsumerWidget {
   const _TrackInfo({required this.onOpen});
 
   final VoidCallback onOpen;
 
   @override
-  Widget build(BuildContext context) {
-    const track = DemoData.nowPlaying;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final track = ref.watch(playerProvider.select((p) => p.current));
     return Row(
       children: [
         Expanded(
@@ -125,7 +109,12 @@ class _TrackInfo extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               child: Row(
                 children: [
-                  CoverArt(spec: track.art, size: 56),
+                  TrackArt(
+                    artworkPath: track?.artworkPath,
+                    seed: track?.id ?? 0,
+                    size: 56,
+                    radius: 8,
+                  ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -133,25 +122,17 @@ class _TrackInfo extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          track.title,
+                          track?.title ?? S.nothingPlaying,
                           style: NexaText.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 3),
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                track.artist,
-                                style: NexaText.caption,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const StatusBadge.demo(),
-                          ],
+                        Text(
+                          track?.artist ?? S.pickASong,
+                          style: NexaText.caption,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -161,116 +142,8 @@ class _TrackInfo extends StatelessWidget {
             ),
           ),
         ),
-        const NexaIconButton(
-          icon: Icons.favorite_border_rounded,
-          label: S.like,
-          disabledReason: S.soonFavorites,
-        ),
+        FavoriteButton(track: track),
       ],
-    );
-  }
-}
-
-class _Transport extends StatelessWidget {
-  const _Transport();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        NexaIconButton(
-          icon: Icons.shuffle_rounded,
-          label: S.shuffleLabel,
-          disabledReason: S.soonPlayback,
-        ),
-        SizedBox(width: 6),
-        NexaIconButton(
-          icon: Icons.skip_previous_rounded,
-          label: S.previous,
-          disabledReason: S.soonPlayback,
-          iconSize: 28,
-          boxSize: 40,
-        ),
-        SizedBox(width: 8),
-        PlayRingButton(size: 54),
-        SizedBox(width: 8),
-        NexaIconButton(
-          icon: Icons.skip_next_rounded,
-          label: S.next,
-          disabledReason: S.soonPlayback,
-          iconSize: 28,
-          boxSize: 40,
-        ),
-        SizedBox(width: 6),
-        NexaIconButton(
-          icon: Icons.repeat_rounded,
-          label: S.repeat,
-          disabledReason: S.soonPlayback,
-        ),
-      ],
-    );
-  }
-}
-
-class _ProgressDemo extends StatelessWidget {
-  const _ProgressDemo();
-
-  @override
-  Widget build(BuildContext context) {
-    const position = DemoData.nowPlayingPosition;
-    final duration = DemoData.nowPlaying.duration;
-    final fraction = position.inMilliseconds / duration.inMilliseconds;
-    return NexaTooltip(
-      message: S.soonSeek,
-      child: Row(
-        children: [
-          Text(formatClock(position), style: NexaText.caption),
-          const SizedBox(width: 12),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, c) => SizedBox(
-                height: 14,
-                child: Stack(
-                  alignment: Alignment.centerLeft,
-                  children: [
-                    Container(
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0x1FFFFFFF),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    Container(
-                      width: c.maxWidth * fraction,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: NexaColors.accent.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    Positioned(
-                      left: (c.maxWidth * fraction - 6)
-                          .clamp(0.0, c.maxWidth)
-                          .toDouble(),
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0x80BDB6D6),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(formatClock(duration), style: NexaText.caption),
-        ],
-      ),
     );
   }
 }

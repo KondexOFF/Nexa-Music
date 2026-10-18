@@ -121,6 +121,10 @@ final libraryTracksProvider = StreamProvider<List<Track>>((ref) {
   );
 });
 
+final trackProvider = StreamProvider.family<Track?, int>(
+  (ref, id) => ref.watch(libraryRepositoryProvider).watchTrack(id),
+);
+
 final trackCountProvider = StreamProvider<int>(
   (ref) => ref.watch(libraryRepositoryProvider).watchTrackCount(),
 );

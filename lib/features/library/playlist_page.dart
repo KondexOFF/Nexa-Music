@@ -7,6 +7,7 @@ import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../demo/demo_data.dart' show formatClock;
 import '../../ui/nexa_widgets.dart';
+import '../player/player_controller.dart';
 import 'library_dialogs.dart';
 import 'library_providers.dart';
 import 'track_art.dart';
@@ -91,6 +92,29 @@ class PlaylistPage extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    NexaPillButton(
+                      label: S.playAll,
+                      icon: Icons.play_arrow_rounded,
+                      height: 42,
+                      onPressed: items.isEmpty
+                          ? null
+                          : () => ref
+                                .read(playerProvider.notifier)
+                                .playTracks([for (final i in items) i.track]),
+                      disabledReason: S.playlistEmpty,
+                    ),
+                    const SizedBox(width: 8),
+                    NexaIconButton(
+                      icon: Icons.shuffle_rounded,
+                      label: S.shuffle,
+                      onPressed: items.isEmpty
+                          ? null
+                          : () => ref
+                                .read(playerProvider.notifier)
+                                .shuffleTracks([for (final i in items) i.track]),
+                      disabledReason: S.playlistEmpty,
+                    ),
+                    const SizedBox(width: 6),
                     NexaIconButton(
                       icon: Icons.edit_outlined,
                       label: S.renamePlaylist,

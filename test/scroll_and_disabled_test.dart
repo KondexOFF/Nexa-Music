@@ -44,13 +44,12 @@ void main() {
       await openNowPlaying(tester);
 
       await scrollToEnd(tester, pageKey);
-      // Last queue row inside the page (3 rows: Aurora, Falling Light,
-      // Glass Rivers).
+      // End of the queue section inside the page (empty queue).
       expectFullyVisible(
         tester,
         find.descendant(
           of: find.byKey(pageKey),
-          matching: find.text('Glass Rivers'),
+          matching: find.text(S.queueEmpty),
         ),
         size1280,
       );
@@ -60,7 +59,7 @@ void main() {
         tester,
         find.descendant(
           of: find.byKey(mixPanelKey),
-          matching: find.text('Contours'),
+          matching: find.text(S.queueEmpty),
         ),
         size1280,
       );
@@ -84,9 +83,12 @@ void main() {
         ),
         size1024,
       );
-      // Queue rows are above the Mix Engine and also reachable.
+      // The queue section is above the Mix Engine and also reachable.
       expect(
-        find.descendant(of: find.byKey(pageKey), matching: find.text('Aurora')),
+        find.descendant(
+          of: find.byKey(pageKey),
+          matching: find.text(S.queueEmpty),
+        ),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);
@@ -121,12 +123,16 @@ void main() {
             expect(p.disabledReason, isNotNull, reason: p.label);
           }
         }
-        // Non-functional favourite on Now Playing: muted, with a reason.
-        // (The bottom player heart carries the same tooltip.)
+        // Without a song the favourite (bottom player) is muted, with a
+        // reason; Now Playing offers "Go to library" instead.
+        expect(
+          find.byTooltip('${S.like} - ${S.nothingToPlay}'),
+          findsOneWidget,
+        );
         expect(
           find.descendant(
             of: find.byKey(pageKey),
-            matching: find.byTooltip('${S.like} - ${S.soonFavorites}'),
+            matching: find.text(S.goToLibrary),
           ),
           findsOneWidget,
         );

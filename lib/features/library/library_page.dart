@@ -6,6 +6,7 @@ import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/database/app_database.dart';
 import '../../ui/nexa_widgets.dart';
+import '../player/player_controller.dart';
 import 'library_dialogs.dart';
 import 'library_providers.dart';
 import 'library_repository.dart';
@@ -66,6 +67,7 @@ class _LibraryHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final count = ref.watch(trackCountProvider).value ?? 0;
+    final visible = ref.watch(libraryTracksProvider).value ?? const [];
     final scan = ref.watch(libraryScanProvider);
     final scanner = ref.read(libraryScanProvider.notifier);
     return Wrap(
@@ -87,6 +89,26 @@ class _LibraryHeader extends ConsumerWidget {
           spacing: 10,
           runSpacing: 10,
           children: [
+            NexaPillButton(
+              label: S.playAll,
+              icon: Icons.play_arrow_rounded,
+              height: 42,
+              onPressed: visible.isEmpty
+                  ? null
+                  : () => ref.read(playerProvider.notifier).playTracks(visible),
+              disabledReason: S.libraryEmptyTitle,
+            ),
+            NexaPillButton(
+              label: S.shuffle,
+              icon: Icons.shuffle_rounded,
+              variant: PillVariant.secondary,
+              height: 42,
+              onPressed: visible.isEmpty
+                  ? null
+                  : () =>
+                        ref.read(playerProvider.notifier).shuffleTracks(visible),
+              disabledReason: S.libraryEmptyTitle,
+            ),
             NexaPillButton(
               label: S.addFolder,
               icon: Icons.create_new_folder_outlined,

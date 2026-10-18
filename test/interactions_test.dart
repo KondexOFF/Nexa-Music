@@ -75,7 +75,7 @@ void main() {
     await pumpNexaApp(tester, size1280);
     final ring = find.byType(PlayRingButton);
     expect(ring, findsOneWidget);
-    const message = '${S.playPause} - ${S.soonPlayback}';
+    const message = '${S.playPause} - ${S.nothingToPlay}';
     expect(find.text(message), findsNothing);
 
     final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);

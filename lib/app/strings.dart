@@ -23,9 +23,8 @@ abstract final class S {
   static const String phase5 = 'Phase 5';
   static const String phase6 = 'Phase 6';
   static const String notInV1 = 'Not in v1.0';
-  static const String soonPlayback = 'Playback controls arrive in Phase 3';
-  static const String soonSeek = 'Seeking arrives in Phase 3';
-  static const String soonVolume = 'Volume control arrives in Phase 3';
+  static const String nothingToPlay =
+      'Choose a song in your Library to start playback';
   static const String soonLibrary =
       'Demo content - your own songs are on the Library page';
   static const String soonPlaylists =
@@ -33,7 +32,6 @@ abstract final class S {
   static const String soonFavorites =
       'Demo song - favorites work for songs in your Library';
   static const String soonWave = 'NEXA Wave arrives in Phase 5';
-  static const String soonQueue = 'Queue editing arrives in Phase 3';
   static const String soonBrowse =
       'Demo collection - NEXA collections arrive with NEXA Wave (Phase 5)';
   static const String lyricsNotInV1 = 'Lyrics are not part of NEXA Music v1.0';
@@ -219,5 +217,32 @@ abstract final class S {
   static const String playOnlyPhase3 = 'Playing songs arrives in Phase 3';
   static const String searchLibraryHint = 'Search your library...';
   static const String clearSearch = 'Clear search';
-}
 
+  // Player (Phase 3)
+  static const String pause = 'Pause';
+  static const String nothingPlaying = 'Nothing playing';
+  static const String pickASong = 'Choose a song to play';
+  static const String shuffleOn = 'Shuffle: on';
+  static const String shuffleOff = 'Shuffle: off';
+  static const String repeatOff = 'Repeat: off';
+  static const String repeatAll = 'Repeat: all';
+  static const String repeatOne = 'Repeat: this song';
+  static const String mute = 'Mute';
+  static const String unmute = 'Unmute';
+  static const String seek = 'Position';
+  static const String playAll = 'Play';
+  static const String playNext = 'Play next';
+  static const String addToQueue = 'Add to queue';
+  static const String removeFromQueue = 'Remove from queue';
+  static const String queueEmpty =
+      'The queue is empty. Play a song or playlist from your Library.';
+  static const String goToLibrary = 'Go to Library';
+  static const String goToAlbum = 'Go to album';
+  static const String goToArtist = 'Go to artist';
+  static const String outputDevice = 'Output device';
+  static const String outputDeviceBody =
+      'Where NEXA plays sound. "System default" follows the Windows setting.';
+  static const String mediaKeysBody =
+      'Keyboard media keys (play/pause, next, previous, stop) control NEXA '
+      'while it is open, also in the background.';
+}

@@ -7,6 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/app.dart';
 import 'package:nexa_music/core/database/app_database.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
+import 'package:nexa_music/features/player/player_controller.dart';
+
+import 'fake_engine.dart';
 
 /// In-memory database for widget tests. Streams close synchronously, so no
 /// drift timer is left pending when a test ends.
@@ -16,7 +19,7 @@ AppDatabase memoryDatabase() => AppDatabase(
 
 /// Provider overrides for widget tests: an empty in-memory database instead
 /// of the user's library file, and no real app-data folder.
-List<Override> testOverrides({AppDatabase? database}) {
+List<Override> testOverrides({AppDatabase? database, FakeEngine? engine}) {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
   return [
     appDatabaseProvider.overrideWith((ref) {
@@ -26,6 +29,11 @@ List<Override> testOverrides({AppDatabase? database}) {
     }),
     artworkDirProvider.overrideWith((ref) async => ''),
     autoRescanProvider.overrideWithValue(false),
+    playbackEngineProvider.overrideWith((ref) {
+      final e = engine ?? FakeEngine();
+      ref.onDispose(e.dispose);
+      return e;
+    }),
   ];
 }
 

@@ -8,6 +8,7 @@ import '../../core/models/track.dart';
 import '../../demo/demo_data.dart' show formatClock;
 import '../../ui/nexa_widgets.dart';
 import 'library_dialogs.dart';
+import '../player/player_controller.dart';
 import 'library_providers.dart';
 import 'track_art.dart';
 
@@ -57,7 +58,7 @@ class TrackListHeader extends StatelessWidget {
 
 /// Library or playlist rows. With [playlistId], rows also offer remove and
 /// move actions ([entryIds] must then match [tracks]).
-class SliverTrackList extends StatelessWidget {
+class SliverTrackList extends ConsumerWidget {
   const SliverTrackList({
     super.key,
     required this.tracks,
@@ -72,11 +73,19 @@ class SliverTrackList extends StatelessWidget {
   final List<int>? entryIds;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentId = ref.watch(
+      playerProvider.select((p) => p.current?.id),
+    );
     return SliverFixedExtentList(
       itemExtent: kTrackRowHeight,
       delegate: SliverChildBuilderDelegate(
         (context, i) => TrackRow(
+          isCurrent: tracks[i].id == currentId,
+          // Clicking a song plays this list from that song.
+          onPlay: () => ref
+              .read(playerProvider.notifier)
+              .playTracks(tracks, start: i),
           key: ValueKey(entryIds?[i] ?? tracks[i].id),
           index: i,
           track: tracks[i],
@@ -92,7 +101,15 @@ class SliverTrackList extends StatelessWidget {
   }
 }
 
-enum _RowAction { addToPlaylist, favorite, remove, moveUp, moveDown }
+enum _RowAction {
+  playNext,
+  addToQueue,
+  addToPlaylist,
+  favorite,
+  remove,
+  moveUp,
+  moveDown,
+}
 
 class TrackRow extends ConsumerWidget {
   const TrackRow({
@@ -104,6 +121,8 @@ class TrackRow extends ConsumerWidget {
     this.entryId,
     this.isFirst = false,
     this.isLast = false,
+    this.isCurrent = false,
+    this.onPlay,
   });
 
   final int index;
@@ -113,6 +132,8 @@ class TrackRow extends ConsumerWidget {
   final int? entryId;
   final bool isFirst;
   final bool isLast;
+  final bool isCurrent;
+  final VoidCallback? onPlay;
 
   Future<void> _onAction(
     BuildContext context,
@@ -120,7 +141,12 @@ class TrackRow extends ConsumerWidget {
     _RowAction action,
   ) async {
     final repo = ref.read(libraryRepositoryProvider);
+    final player = ref.read(playerProvider.notifier);
     switch (action) {
+      case _RowAction.playNext:
+        player.playNext([track]);
+      case _RowAction.addToQueue:
+        player.addToQueue([track]);
       case _RowAction.addToPlaylist:
         await addTracksToPlaylist(context, ref, [track.id]);
       case _RowAction.favorite:
@@ -139,7 +165,11 @@ class TrackRow extends ConsumerWidget {
     final dim = !track.available;
     final titleStyle = NexaText.body.copyWith(
       fontWeight: FontWeight.w600,
-      color: dim ? NexaColors.textTertiary : NexaColors.textPrimary,
+      color: dim
+          ? NexaColors.textTertiary
+          : isCurrent
+          ? NexaColors.accent
+          : NexaColors.textPrimary,
     );
     final duration = track.duration;
     return Container(
@@ -161,56 +191,73 @@ class TrackRow extends ConsumerWidget {
                       color: NexaColors.coral,
                     ),
                   )
+                : isCurrent
+                ? const Icon(
+                    Icons.graphic_eq_rounded,
+                    size: 18,
+                    color: NexaColors.accent,
+                  )
                 : Text('${index + 1}', style: NexaText.caption),
           ),
-          Opacity(
-            opacity: dim ? 0.45 : 1,
-            child: TrackArt(
-              artworkPath: track.artworkPath,
-              seed: track.id,
-              size: 40,
-            ),
-          ),
-          const SizedBox(width: 12),
           Expanded(
-            flex: 5,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  track.title,
-                  style: titleStyle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  dim
-                      ? '${track.problem ?? S.unavailable} - ${track.artist}'
-                      : track.artist,
-                  style: NexaText.caption.copyWith(
-                    color: dim ? NexaColors.coral : null,
+            child: NexaTappable(
+              onTap: onPlay,
+              semanticLabel: '${S.play} ${track.title}',
+              borderRadius: BorderRadius.circular(NexaRadius.sm),
+              child: Row(
+                children: [
+                  Opacity(
+                    opacity: dim ? 0.45 : 1,
+                    child: TrackArt(
+                      artworkPath: track.artworkPath,
+                      seed: track.id,
+                      size: 40,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          if (showAlbum)
-            Expanded(
-              flex: 4,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Text(
-                  track.album,
-                  style: NexaText.bodySecondary,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          track.title,
+                          style: titleStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          dim
+                              ? '${track.problem ?? S.unavailable} - ${track.artist}'
+                              : track.artist,
+                          style: NexaText.caption.copyWith(
+                            color: dim ? NexaColors.coral : null,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (showAlbum)
+                    Expanded(
+                      flex: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Text(
+                          track.album,
+                          style: NexaText.bodySecondary,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
+          ),
           SizedBox(
             width: 64,
             child: Text(
@@ -241,6 +288,15 @@ class TrackRow extends ConsumerWidget {
             color: NexaColors.panelRaised,
             onSelected: (a) => _onAction(context, ref, a),
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: _RowAction.playNext,
+                child: Text(S.playNext),
+              ),
+              const PopupMenuItem(
+                value: _RowAction.addToQueue,
+                child: Text(S.addToQueue),
+              ),
+              const PopupMenuDivider(),
               const PopupMenuItem(
                 value: _RowAction.addToPlaylist,
                 child: Text('${S.addToPlaylist}...'),

@@ -72,9 +72,21 @@ class PlaylistEntries extends Table {
   DateTimeColumn get addedAt => dateTime()();
 }
 
+/// Small local settings (volume, shuffle, repeat, output device ...).
+@DataClassName('SettingRow')
+class AppSettings extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text()();
+
+  @override
+  Set<Column> get primaryKey => {key};
+}
+
 /// Local SQLite database (Drift). Schema changes must add a migration step
 /// in [migration] and bump [schemaVersion].
-@DriftDatabase(tables: [LibraryFolders, Tracks, Playlists, PlaylistEntries])
+@DriftDatabase(
+  tables: [LibraryFolders, Tracks, Playlists, PlaylistEntries, AppSettings],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -89,7 +101,7 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -104,8 +116,11 @@ class AppDatabase extends _$AppDatabase {
       );
     },
     onUpgrade: (m, from, to) async {
-      // Version 1 is the first schema. Future versions add their steps here,
-      // e.g. `if (from < 2) await m.addColumn(tracks, tracks.someColumn);`.
+      // One step per schema version; never edit a released step.
+      if (from < 2) {
+        // v2 (Phase 3): player settings.
+        await m.createTable(appSettings);
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');

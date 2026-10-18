@@ -164,6 +164,11 @@ class LibraryRepository {
     return row == null ? null : toTrack(row);
   }
 
+  Stream<Track?> watchTrack(int id) =>
+      (db.select(db.tracks)..where((t) => t.id.equals(id)))
+          .watchSingleOrNull()
+          .map((row) => row == null ? null : toTrack(row));
+
   Stream<int> watchTrackCount({TrackFilter filter = TrackFilter.all}) {
     final count = db.tracks.id.count();
     final q = db.selectOnly(db.tracks)..addColumns([count]);

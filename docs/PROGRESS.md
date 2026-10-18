@@ -10,8 +10,8 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | 0 — Diagnostics, audio proof | Accepted by owner (2026-10-16) | `phase/00-review` `eb9fcbd` |
 | 1 — Design system, Home, Now Playing | Implemented; crash fix 2026-10-18; owner acceptance pending (final stage) | `phase/01-review` |
 | 2 — Local library and database | Implemented 2026-10-18 (automated checks PASS; manual check in final stage) | `dev/v1` |
-| 3 — Playback Engine | In progress | `dev/v1` |
-| 4 — NEXA Mix Engine | Not started | |
+| 3 — Playback Engine | Implemented 2026-10-18 (automated checks PASS; 20-track manual run in final stage) | `dev/v1` |
+| 4 — NEXA Mix Engine | In progress | `dev/v1` |
 | 5 — NEXA DNA and NEXA Wave v1 | Not started | |
 | 6 — Allowed online catalogues (Audius, Jamendo) | Not started | |
 | 7 — Polish, performance, Windows build | Not started | |
@@ -26,8 +26,11 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | TD-03 | Phase 1 | Low | Manual checklist items г–е (queue button, audio test, Play/Pause tooltip) not re-confirmed by the owner after the fix. | Final stage |
 | TD-04 | Phase 2 | Low | WAV files: RIFF INFO tags are decoded as Latin-1 by `audio_metadata_reader`, so Cyrillic WAV tags look garbled (MP3/FLAC tags are fine; untagged files use the file name). | Open |
 | TD-05 | Phase 2 | Medium | Import of the owner's real music folder through the Windows folder dialog not yet tried by hand (covered by tests with 35 generated WAV files). | Final stage |
+| TD-06 | Phase 3 | Medium | Windows media keys use `RegisterHotKey`: while NEXA runs, other players (browser, Spotify) do not receive Play/Pause/Next. System Media Transport Controls would be the cleaner integration. | Open — decide in Phase 7 |
+| TD-07 | Phase 3 | Medium | Real audio of Phase 3 (20 tracks in a row, pause/resume, repeat/shuffle, output-device change, media keys) only tested with a fake engine; real Windows run with the owner's files pending. | Final stage |
 
 ## Log
 
+- 2026-10-18 — **Phase 3** (Playback Engine): `PlaybackEngine` interface + media_kit engine, queue (play now / next / add / remove / clear), play/pause, seek bar, next/previous (restart after 3 s), shuffle (keeps every track once, restores order), repeat off/all/one, volume and mute, output-device choice, missing files skipped with a notice, engine errors shown, settings saved (schema v2: settings table), Windows media keys (runner hot keys + `WM_APPCOMMAND`). Checks: analyze 0 issues, 70/70 tests, `flutter build windows` OK.
 - 2026-10-18 — **Phase 2** (local library): Drift/SQLite database (schema v1 with migration strategy), folder and file import (MP3/FLAC/WAV, recursive, never copies/moves/deletes files), metadata and covers (embedded or cover.jpg/folder.jpg, cached in the app-data folder), duplicate-free rescans, missing files kept and marked with a clear reason, startup rescan, search (case-insensitive incl. Cyrillic), favorites, playlists (create, rename, delete, add, remove, reorder), Library page (songs, favorites, albums, artists, folders), playlist page, real sidebar playlists, real top-bar search. Checks: analyze 0 issues, 60/60 tests, `flutter build windows` OK.
 - 2026-10-18 — Phase 1 crash fix (D-016), capture harness: a screenshot that fails to save now makes the run FAIL. Owner decision D-015 recorded. Phase 2 started.

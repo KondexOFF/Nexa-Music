@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,14 +5,18 @@ import '../../app/navigation.dart';
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
-import '../../demo/demo_data.dart';
-import '../../ui/cover_art.dart';
+import '../../core/models/track.dart';
+import '../../demo/demo_data.dart' show formatClock;
+import '../library/library_providers.dart';
+import '../library/track_art.dart';
+import '../library/track_list.dart';
 import '../../ui/nexa_widgets.dart';
-import '../../ui/play_ring_button.dart';
 import '../mix_engine/mix_engine_panel.dart';
+import 'player_controller.dart';
+import 'player_controls.dart';
 import 'up_next_card.dart';
 
-/// Full Now Playing screen (Phase 1 layout with DEMO track).
+/// Full Now Playing screen: the current song, transport, position, queue.
 class NowPlayingPage extends ConsumerWidget {
   const NowPlayingPage({super.key, required this.inlineMixEngine});
 
@@ -24,7 +26,7 @@ class NowPlayingPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const track = DemoData.nowPlaying;
+    final track = ref.watch(playerProvider.select((p) => p.current));
     return LayoutBuilder(
       builder: (context, constraints) {
         final contentWidth = constraints.maxWidth - 48;
@@ -45,8 +47,9 @@ class NowPlayingPage extends ConsumerWidget {
               ),
             ],
           ),
-          child: CoverArt(
-            spec: track.art,
+          child: TrackArt(
+            artworkPath: track?.artworkPath,
+            seed: track?.id ?? 0,
             size: coverSize,
             radius: NexaRadius.lg,
           ),
@@ -65,14 +68,7 @@ class NowPlayingPage extends ConsumerWidget {
                 spacing: 16,
                 runSpacing: 12,
                 children: [
-                  const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(S.nowPlaying, style: NexaText.overline),
-                      SizedBox(width: 12),
-                      StatusBadge.demo(),
-                    ],
-                  ),
+                  const Text(S.nowPlaying, style: NexaText.overline),
                   _WaveChip(
                     onTap: () => ref
                         .read(navigationProvider.notifier)
@@ -84,7 +80,11 @@ class NowPlayingPage extends ConsumerWidget {
               if (stacked)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [cover, const SizedBox(height: 24), const _TrackDetails()],
+                  children: [
+                    cover,
+                    const SizedBox(height: 24),
+                    _TrackDetails(track: track),
+                  ],
                 )
               else
                 Row(
@@ -92,11 +92,11 @@ class NowPlayingPage extends ConsumerWidget {
                   children: [
                     cover,
                     const SizedBox(width: 36),
-                    const Expanded(child: _TrackDetails()),
+                    Expanded(child: _TrackDetails(track: track)),
                   ],
                 ),
               const SizedBox(height: 28),
-              const _WaveformProgress(),
+              const SeekBar(compact: false),
               const SizedBox(height: 18),
               const _NowPlayingTabs(),
               if (inlineMixEngine) ...[
@@ -148,25 +148,34 @@ class _WaveChip extends StatelessWidget {
   }
 }
 
-class _TrackDetails extends StatelessWidget {
-  const _TrackDetails();
+class _TrackDetails extends ConsumerWidget {
+  const _TrackDetails({required this.track});
+
+  final Track? track;
 
   @override
-  Widget build(BuildContext context) {
-    const track = DemoData.nowPlaying;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = track;
+    final duration = t?.duration;
+    final format = t == null
+        ? S.navLibrary.toUpperCase()
+        : [
+            t.fileExtension,
+            if (duration != null) formatClock(duration),
+          ].join(' - ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          track.title,
+          t?.title ?? S.nothingPlaying,
           style: NexaText.display.copyWith(fontSize: 46),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 6),
         Text(
-          track.artist,
+          t == null ? S.nothingToPlay : '${t.artist} - ${t.album}',
           style: NexaText.h2.copyWith(
             fontSize: 22,
             fontWeight: FontWeight.w500,
@@ -186,14 +195,18 @@ class _TrackDetails extends StatelessWidget {
               borderRadius: BorderRadius.circular(NexaRadius.sm),
               border: Border.all(color: NexaColors.border),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.graphic_eq_rounded, size: 16, color: NexaColors.accent),
-                SizedBox(width: 8),
+                const Icon(
+                  Icons.graphic_eq_rounded,
+                  size: 16,
+                  color: NexaColors.accent,
+                ),
+                const SizedBox(width: 8),
                 Text(
-                  DemoData.nowPlayingFormat,
-                  style: TextStyle(
+                  format,
+                  style: const TextStyle(
                     fontFamily: NexaText.family,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -206,188 +219,100 @@ class _TrackDetails extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        const FittedBox(
+        FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ActionCircle(
-                icon: Icons.favorite_border_rounded,
-                label: S.like,
-                reason: S.soonFavorites,
-              ),
-              SizedBox(width: 14),
-              _ActionCircle(
-                icon: Icons.add_rounded,
-                label: S.addToPlaylist,
-                reason: S.soonPlaylists,
-              ),
-              SizedBox(width: 14),
-              _ActionCircle(
-                icon: Icons.more_horiz_rounded,
-                label: S.moreActions,
-                reason: S.soonLibrary,
-              ),
-            ],
-          ),
+          child: t == null
+              ? NexaPillButton(
+                  label: S.goToLibrary,
+                  icon: Icons.library_music_outlined,
+                  height: 44,
+                  onPressed: () => ref
+                      .read(navigationProvider.notifier)
+                      .go(NexaDestination.library),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _Circle(child: FavoriteButton(track: t, iconSize: 24, boxSize: 52)),
+                    const SizedBox(width: 14),
+                    _Circle(
+                      child: NexaIconButton(
+                        icon: Icons.add_rounded,
+                        label: S.addToPlaylist,
+                        iconSize: 24,
+                        boxSize: 52,
+                        color: NexaColors.textSecondary,
+                        onPressed: () =>
+                            addTracksToPlaylist(context, ref, [t.id]),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    _Circle(
+                      child: NexaIconButton(
+                        icon: Icons.album_outlined,
+                        label: S.goToAlbum,
+                        iconSize: 24,
+                        boxSize: 52,
+                        color: NexaColors.textSecondary,
+                        onPressed: () => _goToGroup(ref, album: t.album),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    _Circle(
+                      child: NexaIconButton(
+                        icon: Icons.person_outline_rounded,
+                        label: S.goToArtist,
+                        iconSize: 24,
+                        boxSize: 52,
+                        color: NexaColors.textSecondary,
+                        onPressed: () => _goToGroup(ref, artist: t.artist),
+                      ),
+                    ),
+                  ],
+                ),
         ),
         const SizedBox(height: 28),
         const FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _BigIcon(Icons.shuffle_rounded, S.shuffleLabel, 28),
-              SizedBox(width: 18),
-              _BigIcon(Icons.skip_previous_rounded, S.previous, 40),
-              SizedBox(width: 18),
-              PlayRingButton(size: 88),
-              SizedBox(width: 18),
-              _BigIcon(Icons.skip_next_rounded, S.next, 40),
-              SizedBox(width: 18),
-              _BigIcon(Icons.repeat_rounded, S.repeat, 28),
-            ],
+          child: TransportControls(
+            ringSize: 88,
+            skipSize: 40,
+            modeSize: 28,
+            gap: 14,
           ),
         ),
       ],
     );
   }
+
+  void _goToGroup(WidgetRef ref, {String? album, String? artist}) {
+    ref
+        .read(groupFilterProvider.notifier)
+        .set(GroupFilter(album: album, artist: artist));
+    ref.read(libraryTabProvider.notifier).set(LibraryTab.songs);
+    ref.read(libraryQueryProvider.notifier).set('');
+    ref.read(navigationProvider.notifier).go(NexaDestination.library);
+  }
 }
 
-class _ActionCircle extends StatelessWidget {
-  const _ActionCircle({
-    required this.icon,
-    required this.label,
-    required this.reason,
-  });
+class _Circle extends StatelessWidget {
+  const _Circle({required this.child});
 
-  final IconData icon;
-  final String label;
-  final String reason;
+  final Widget child;
 
-  /// Non-functional in Phase 1: same muted style for every action, no fake
-  /// "liked" state; the tooltip says which phase brings it.
   @override
   Widget build(BuildContext context) {
-    return NexaTooltip(
-      message: '$label - $reason',
-      child: Semantics(
-        button: true,
-        enabled: false,
-        label: label,
-        child: Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0x08FFFFFF),
-            border: Border.all(color: const Color(0x1FFFFFFF)),
-          ),
-          child: Icon(icon, size: 24, color: NexaColors.textDisabled),
-        ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0x08FFFFFF),
+        border: Border.all(color: const Color(0x1FFFFFFF)),
       ),
+      child: child,
     );
   }
-}
-
-class _BigIcon extends StatelessWidget {
-  const _BigIcon(this.icon, this.label, this.size);
-
-  final IconData icon;
-  final String label;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return NexaIconButton(
-      icon: icon,
-      label: label,
-      disabledReason: S.soonPlayback,
-      iconSize: size,
-      boxSize: size + 20,
-    );
-  }
-}
-
-/// Code-drawn waveform with the DEMO position. Seeking arrives in Phase 3.
-class _WaveformProgress extends StatelessWidget {
-  const _WaveformProgress();
-
-  @override
-  Widget build(BuildContext context) {
-    const position = DemoData.nowPlayingPosition;
-    final duration = DemoData.nowPlaying.duration;
-    final fraction = position.inMilliseconds / duration.inMilliseconds;
-    return NexaTooltip(
-      message: S.soonSeek,
-      child: Column(
-        children: [
-          SizedBox(
-            height: 56,
-            width: double.infinity,
-            child: CustomPaint(painter: WaveformPainter(progress: fraction)),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Text(formatClock(position), style: NexaText.caption),
-              const Spacer(),
-              Text(formatClock(duration), style: NexaText.caption),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class WaveformPainter extends CustomPainter {
-  WaveformPainter({required this.progress});
-
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final count = (size.width / 7).floor().clamp(40, 220).toInt();
-    final step = size.width / count;
-    final mid = size.height / 2;
-    final played = Paint()
-      ..color = NexaColors.accent.withValues(alpha: 0.7)
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = math.max(2.0, step * 0.45);
-    final rest = Paint()
-      ..color = const Color(0x40FFFFFF)
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = math.max(2.0, step * 0.45);
-    for (var i = 0; i < count; i++) {
-      final xn = i / count;
-      final envelope = 0.35 + 0.65 * math.sin(math.pi * xn).abs();
-      final detail = 0.55 +
-          0.45 *
-              (math.sin(i * 0.9) * 0.5 + math.sin(i * 0.37 + 1.3) * 0.5).abs();
-      final h = mid * 0.95 * envelope * detail;
-      final x = (i + 0.5) * step;
-      canvas.drawLine(
-        Offset(x, mid - h),
-        Offset(x, mid + h),
-        xn <= progress ? played : rest,
-      );
-    }
-    final px = size.width * progress;
-    canvas.drawLine(
-      Offset(px, 0),
-      Offset(px, size.height),
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.55)
-        ..strokeWidth = 2,
-    );
-  }
-
-  @override
-  bool shouldRepaint(WaveformPainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }
 
 class _NowPlayingTabs extends StatelessWidget {
@@ -468,7 +393,7 @@ class _NowPlayingTabs extends StatelessWidget {
         ),
         const Divider(height: 1, color: NexaColors.divider),
         const SizedBox(height: 10),
-        const UpNextCard(maxItems: 3, framed: false),
+        const UpNextCard(maxItems: 8, framed: false),
       ],
     );
   }

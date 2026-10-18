@@ -6,6 +6,7 @@ import '../../features/home/home_side_panel.dart';
 import '../../features/library/library_page.dart';
 import '../../features/library/library_providers.dart';
 import '../../features/library/playlist_page.dart';
+import '../../features/player/player_controller.dart';
 import '../../features/mix_engine/mix_engine_panel.dart';
 import '../../features/pages/planned_page.dart';
 import '../../features/pages/settings_page.dart';
@@ -42,12 +43,29 @@ class _AppShellState extends ConsumerState<AppShell> {
         ref.read(libraryScanProvider.notifier).rescanIfLibraryExists();
       }
     });
+    bindMediaKeys(ref);
   }
 
   @override
   Widget build(BuildContext context) {
     final nav = ref.watch(navigationProvider);
     final panelWanted = ref.watch(rightPanelVisibleProvider);
+    // Player notices (skipped missing file, playback error) as a snack bar.
+    ref.listen(playerProvider.select((p) => p.noticeId), (previous, next) {
+      final text = ref.read(playerProvider).notice;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (text != null && messenger != null) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(text),
+              behavior: SnackBarBehavior.floating,
+              width: 420,
+            ),
+          );
+      }
+    });
 
     return LayoutBuilder(
       builder: (context, constraints) {

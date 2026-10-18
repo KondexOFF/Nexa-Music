@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/navigation.dart';
@@ -76,24 +75,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('disabled playback controls do nothing and explain why', (
+  testWidgets('with nothing to play, Play does nothing and explains why', (
     tester,
   ) async {
     await pumpNexaApp(tester, size1280);
 
-    final play = find.byTooltip('${S.playPause} - ${S.soonPlayback}');
+    final play = find.byTooltip('${S.playPause} - ${S.nothingToPlay}');
     expect(play, findsOneWidget);
     await tester.tap(play, warnIfMissed: false);
     await settle(tester);
 
     // Still on Home, nothing started.
     expect(find.text(S.waveTitle), findsOneWidget);
-    final buttons = tester.widgetList<IconButton>(find.byType(IconButton));
-    final shuffle = buttons.where(
-      (b) => (b.icon as Icon).icon == Icons.shuffle_rounded,
-    );
-    expect(shuffle, isNotEmpty);
-    expect(shuffle.every((b) => b.onPressed == null), isTrue);
+    expect(find.text(S.nothingPlaying), findsOneWidget);
   });
 
   testWidgets('Recently Played tabs switch the table', (tester) async {
