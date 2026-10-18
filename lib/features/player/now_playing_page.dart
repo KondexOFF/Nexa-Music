@@ -271,7 +271,7 @@ class _ActionCircle extends StatelessWidget {
   /// "liked" state; the tooltip says which phase brings it.
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
+    return NexaTooltip(
       message: '$label - $reason',
       child: Semantics(
         button: true,
@@ -320,7 +320,7 @@ class _WaveformProgress extends StatelessWidget {
     const position = DemoData.nowPlayingPosition;
     final duration = DemoData.nowPlaying.duration;
     final fraction = position.inMilliseconds / duration.inMilliseconds;
-    return Tooltip(
+    return NexaTooltip(
       message: S.soonSeek,
       child: Column(
         children: [
@@ -432,7 +432,7 @@ class _NowPlayingTabs extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Tooltip(
+                child: NexaTooltip(
                   message: S.lyricsNotInV1,
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(4, 8, 12, 10),

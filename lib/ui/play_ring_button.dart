@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app/strings.dart';
 import '../app/theme/tokens.dart';
+import 'nexa_widgets.dart';
 
 /// Large circular play / pause control. Disabled until Phase 3.
 class PlayRingButton extends StatelessWidget {
@@ -11,7 +12,7 @@ class PlayRingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
+    return NexaTooltip(
       message: '${S.playPause} - ${S.soonPlayback}',
       child: Semantics(
         button: true,

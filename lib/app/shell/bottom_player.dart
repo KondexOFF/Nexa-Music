@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../demo/demo_data.dart';
 import '../../features/mix_engine/mix_preview.dart';
 import '../../ui/cover_art.dart';
+import '../../ui/isolated_slider.dart';
 import '../../ui/nexa_widgets.dart';
 import '../../ui/play_ring_button.dart';
 import '../navigation.dart';
@@ -75,9 +76,11 @@ class BottomPlayer extends ConsumerWidget {
               if (!compact)
                 const SizedBox(
                   width: 120,
-                  child: Tooltip(
+                  child: NexaTooltip(
                     message: S.soonVolume,
-                    child: Slider(value: 0.65, onChanged: null),
+                    child: IsolatedSlider(
+                      child: Slider(value: 0.65, onChanged: null),
+                    ),
                   ),
                 ),
               const _VerticalRule(),
@@ -218,7 +221,7 @@ class _ProgressDemo extends StatelessWidget {
     const position = DemoData.nowPlayingPosition;
     final duration = DemoData.nowPlaying.duration;
     final fraction = position.inMilliseconds / duration.inMilliseconds;
-    return Tooltip(
+    return NexaTooltip(
       message: S.soonSeek,
       child: Row(
         children: [

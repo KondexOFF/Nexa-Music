@@ -10,6 +10,13 @@ import '../app.dart';
 import '../navigation.dart';
 import '../theme/tokens.dart';
 
+/// Final verdict of a capture run: PASS only if there were no Flutter errors
+/// and every required screenshot was saved.
+bool captureRunPassed({
+  required int flutterErrors,
+  required int failedCaptures,
+}) => flutterErrors == 0 && failedCaptures == 0;
+
 /// Renders the real app at fixed logical sizes, saves PNG screenshots and a
 /// log (including any Flutter layout errors such as overflows), then exits.
 ///
@@ -34,6 +41,10 @@ class _CaptureHarnessState extends State<CaptureHarness> {
   final ProviderContainer _container = ProviderContainer();
   final GlobalKey _boundaryKey = GlobalKey();
   final List<String> _errors = [];
+
+  /// Required screenshots that could not be saved. Any entry makes the
+  /// whole run FAIL (a missing screenshot is missing evidence).
+  final List<String> _failedCaptures = [];
   Size _size = CaptureHarness.sizes.first;
   FlutterExceptionHandler? _previousHandler;
 
@@ -81,6 +92,9 @@ class _CaptureHarnessState extends State<CaptureHarness> {
         final name =
             'phase01_${entry.key}_${size.width.round()}x${size.height.round()}.png';
         final ok = await _capture('${dir.path}${Platform.pathSeparator}$name');
+        if (!ok) {
+          _failedCaptures.add(name);
+        }
         log.writeln(
           '${ok ? 'SAVED' : 'FAILED'}  $name  '
           'layout errors during this screen: ${_errors.length - errorsBefore}',
@@ -97,6 +111,9 @@ class _CaptureHarnessState extends State<CaptureHarness> {
           final endOk = await _capture(
             '${dir.path}${Platform.pathSeparator}$endName',
           );
+          if (!endOk) {
+            _failedCaptures.add(endName);
+          }
           log.writeln('${endOk ? 'SAVED' : 'FAILED'}  $endName');
           flush();
           _scrollAll(toEnd: false);
@@ -105,16 +122,22 @@ class _CaptureHarnessState extends State<CaptureHarness> {
       }
     }
 
+    final passed = captureRunPassed(
+      flutterErrors: _errors.length,
+      failedCaptures: _failedCaptures.length,
+    );
     log
       ..writeln('Total Flutter errors: ${_errors.length}')
       ..writeAll(_errors.map((e) => '  - $e\n'))
-      ..writeln('RESULT: ${_errors.isEmpty ? 'PASS' : 'FAIL'}')
+      ..writeln('Screenshots not saved: ${_failedCaptures.length}')
+      ..writeAll(_failedCaptures.map((e) => '  - $e\n'))
+      ..writeln('RESULT: ${passed ? 'PASS' : 'FAIL'}')
       ..writeln('Finished: ${DateTime.now().toIso8601String()}');
     flush();
 
     FlutterError.onError = _previousHandler;
     _container.dispose();
-    exit(_errors.isEmpty ? 0 : 1);
+    exit(passed ? 0 : 1);
   }
 
   /// Jumps every vertical scroll view in the app to its end (or start).
@@ -132,19 +155,26 @@ class _CaptureHarnessState extends State<CaptureHarness> {
     _boundaryKey.currentContext?.visitChildElements(visit);
   }
 
+  /// Saves the current frame as PNG. Returns false (never throws) if the
+  /// image could not be produced or written; the caller records it as FAIL.
   Future<bool> _capture(String path) async {
-    final boundary = _boundaryKey.currentContext?.findRenderObject();
-    if (boundary is! RenderRepaintBoundary) {
+    try {
+      final boundary = _boundaryKey.currentContext?.findRenderObject();
+      if (boundary is! RenderRepaintBoundary) {
+        return false;
+      }
+      final image = await boundary.toImage(pixelRatio: 1);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      if (data == null) {
+        return false;
+      }
+      File(path).writeAsBytesSync(data.buffer.asUint8List());
+      return File(path).existsSync();
+    } on Object catch (error) {
+      _errors.add('screenshot $path: $error');
       return false;
     }
-    final image = await boundary.toImage(pixelRatio: 1);
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    if (data == null) {
-      return false;
-    }
-    File(path).writeAsBytesSync(data.buffer.asUint8List());
-    return true;
   }
 
   @override

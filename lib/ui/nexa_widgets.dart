@@ -4,6 +4,42 @@ import '../app/strings.dart';
 import '../app/theme/nexa_theme.dart';
 import '../app/theme/tokens.dart';
 
+/// Tooltip that owns its semantics node.
+///
+/// Flutter's [Tooltip] shows its bubble through an OverlayPortal, which
+/// registers an "overlay anchor" on the nearest semantics node above it. When
+/// two anchors (two tooltips, or a tooltip and a Slider) end up on the same
+/// node, Flutter keeps only one; the other overlay node becomes an orphan,
+/// Windows rejects the accessibility update ("N will not be in the tree and
+/// is not the new root") and the app later crashes in flutter_windows.dll
+/// while an accessibility client is active (flutter/flutter#182444,
+/// #190357). The outer container gives this tooltip its own node; the inner
+/// one keeps any anchor inside [child] off that node.
+///
+/// Every tooltip in NEXA Music must use this widget instead of [Tooltip].
+class NexaTooltip extends StatelessWidget {
+  const NexaTooltip({super.key, required this.message, required this.child});
+
+  /// Tooltip text; null or empty shows no tooltip.
+  final String? message;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = message;
+    if (text == null || text.isEmpty) {
+      return child;
+    }
+    return Semantics(
+      container: true,
+      child: Tooltip(
+        message: text,
+        child: Semantics(container: true, child: child),
+      ),
+    );
+  }
+}
+
 /// Hover / focus / click surface that paints its highlight above the parent
 /// decoration. A null [onTap] means the surface is inert (no hover, no focus).
 class NexaTappable extends StatelessWidget {
@@ -45,7 +81,7 @@ class NexaTappable extends StatelessWidget {
       );
     }
     if (tooltip != null) {
-      result = Tooltip(message: tooltip, child: result);
+      result = NexaTooltip(message: tooltip, child: result);
     }
     return result;
   }
@@ -81,7 +117,7 @@ class NexaIconButton extends StatelessWidget {
     final message = enabled || disabledReason == null
         ? label
         : '$label - $disabledReason';
-    return Tooltip(
+    return NexaTooltip(
       message: message,
       child: SizedBox.square(
         dimension: boxSize,
@@ -174,7 +210,7 @@ class NexaPillButton extends StatelessWidget {
     );
     final button = TextButton(onPressed: onPressed, style: style, child: child);
     if (onPressed == null && disabledReason != null) {
-      return Tooltip(message: disabledReason, child: button);
+      return NexaTooltip(message: disabledReason, child: button);
     }
     return button;
   }
@@ -217,7 +253,7 @@ class StatusBadge extends StatelessWidget {
     if (tooltip == null) {
       return badge;
     }
-    return Tooltip(message: tooltip, child: badge);
+    return NexaTooltip(message: tooltip, child: badge);
   }
 }
 

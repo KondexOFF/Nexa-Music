@@ -240,7 +240,7 @@ class _NavItem extends StatelessWidget {
       ),
     );
     if (compact) {
-      return Tooltip(message: entry.label, child: item);
+      return NexaTooltip(message: entry.label, child: item);
     }
     return item;
   }

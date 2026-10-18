@@ -5,9 +5,15 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../ui/isolated_slider.dart';
 import 'audio_self_test.dart';
 import 'media_kit_probe_player.dart';
 import 'probe_results_view.dart';
+
+/// Test hook: creates the player instead of media_kit, whose native library
+/// is not available in widget tests. Null in the app.
+@visibleForTesting
+ProbePlayer Function()? debugProbePlayerFactory;
 
 /// Phase 0 technical screen for testing the Windows audio engine.
 /// Not the NEXA user interface (that is Phase 1).
@@ -30,7 +36,15 @@ class ProbeScreen extends StatefulWidget {
 }
 
 class _ProbeScreenState extends State<ProbeScreen> {
-  final MediaKitProbePlayer _player = MediaKitProbePlayer();
+  final ProbePlayer _player =
+      debugProbePlayerFactory?.call() ?? MediaKitProbePlayer();
+
+  Future<void> _disposePlayer() async {
+    final player = _player;
+    if (player is MediaKitProbePlayer) {
+      await player.dispose();
+    }
+  }
   late final TextEditingController _pathController = TextEditingController(
     text: widget.initialPath,
   );
@@ -58,7 +72,7 @@ class _ProbeScreenState extends State<ProbeScreen> {
   void dispose() {
     _ticker?.cancel();
     _pathController.dispose();
-    unawaited(_player.dispose());
+    unawaited(_disposePlayer());
     super.dispose();
   }
 
@@ -135,7 +149,7 @@ class _ProbeScreenState extends State<ProbeScreen> {
     }
 
     await _player.pause();
-    await _player.dispose();
+    await _disposePlayer();
     exit(code);
   }
 
@@ -250,21 +264,25 @@ class _ProbeScreenState extends State<ProbeScreen> {
           ),
           const SizedBox(height: 16),
           const Text('Position'),
-          Slider(
-            value: positionSeconds,
-            max: maxSeconds,
-            onChanged: interactive
-                ? (value) => setState(() => _dragSeconds = value)
-                : null,
-            onChangeEnd: interactive ? _seekTo : null,
+          IsolatedSlider(
+            child: Slider(
+              value: positionSeconds,
+              max: maxSeconds,
+              onChanged: interactive
+                  ? (value) => setState(() => _dragSeconds = value)
+                  : null,
+              onChangeEnd: interactive ? _seekTo : null,
+            ),
           ),
           const Text('Volume'),
-          Slider(
-            value: volume,
-            max: 100,
-            divisions: 20,
-            label: volume.toStringAsFixed(0),
-            onChanged: _selfTestRunning ? null : _player.setVolume,
+          IsolatedSlider(
+            child: Slider(
+              value: volume,
+              max: 100,
+              divisions: 20,
+              label: volume.toStringAsFixed(0),
+              onChanged: _selfTestRunning ? null : _player.setVolume,
+            ),
           ),
           const Divider(height: 32),
           Text('Self-test', style: Theme.of(context).textTheme.titleMedium),

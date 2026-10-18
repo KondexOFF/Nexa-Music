@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
+import '../../ui/isolated_slider.dart';
 import '../../ui/nexa_widgets.dart';
 import 'mix_preview.dart';
 
@@ -47,7 +48,7 @@ class MixEnginePanel extends ConsumerWidget {
             children: [
               Text(S.transitions, style: NexaText.h3),
               SizedBox(width: 8),
-              Tooltip(
+              NexaTooltip(
                 message: S.transitionsInfo,
                 child: Icon(
                   Icons.info_outline_rounded,
@@ -64,13 +65,15 @@ class MixEnginePanel extends ConsumerWidget {
             children: [
               const Text('0s', style: NexaText.caption),
               Expanded(
-                child: Slider(
-                  value: mix.crossfadeSeconds,
-                  min: MixPreview.minSeconds,
-                  max: MixPreview.maxSeconds,
-                  divisions: 12,
-                  label: '${mix.crossfadeSeconds.round()} s',
-                  onChanged: sliderEnabled ? controller.setSeconds : null,
+                child: IsolatedSlider(
+                  child: Slider(
+                    value: mix.crossfadeSeconds,
+                    min: MixPreview.minSeconds,
+                    max: MixPreview.maxSeconds,
+                    divisions: 12,
+                    label: '${mix.crossfadeSeconds.round()} s',
+                    onChanged: sliderEnabled ? controller.setSeconds : null,
+                  ),
                 ),
               ),
               const Text('12s', style: NexaText.caption),
@@ -130,7 +133,7 @@ class MixEnginePanel extends ConsumerWidget {
             children: [
               const Text(S.smartMixTitle, style: NexaText.h3),
               const SizedBox(width: 8),
-              const Tooltip(
+              const NexaTooltip(
                 message: S.smartMixInfo,
                 child: Icon(
                   Icons.info_outline_rounded,

@@ -83,7 +83,7 @@ class _SearchPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
+    return NexaTooltip(
       message: S.soonSearch,
       child: Container(
         height: 42,

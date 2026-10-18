@@ -114,7 +114,7 @@ class _CardPlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
+    return NexaTooltip(
       message: '${S.play} - ${S.soonPlayback}',
       child: Container(
         width: 36,
@@ -405,7 +405,7 @@ class _TableRow extends StatelessWidget {
             ),
             SizedBox(
               width: _iconWidth,
-              child: Tooltip(
+              child: NexaTooltip(
                 message: S.soonFavorites,
                 child: const Icon(
                   Icons.favorite_border_rounded,
