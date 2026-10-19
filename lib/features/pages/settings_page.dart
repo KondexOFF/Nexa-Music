@@ -7,6 +7,7 @@ import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../audio_probe/probe_screen.dart';
 import '../../core/audio/playback_engine.dart';
+import '../discover/catalog_settings.dart';
 import '../nexa_dna/privacy_controls.dart';
 import '../player/player_controller.dart';
 import '../../ui/nexa_widgets.dart';
@@ -62,6 +63,12 @@ class SettingsPage extends StatelessWidget {
             title: S.settingsPrivacy,
             body: S.settingsPrivacyBody,
             action: PrivacyControls(),
+          ),
+          const _SettingsCard(
+            icon: Icons.public_rounded,
+            title: S.settingsCatalogs,
+            body: S.settingsCatalogsBody,
+            action: CatalogSettingsControls(),
           ),
           const _SettingsCard(
             icon: Icons.graphic_eq_rounded,

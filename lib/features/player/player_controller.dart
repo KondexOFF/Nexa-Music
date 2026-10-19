@@ -221,7 +221,7 @@ class PlayerController extends Notifier<PlayerState> {
       return; // Prepared again after the current file is loaded.
     }
     final next = state.nextEntry?.track;
-    if (next == null || !File(next.path).existsSync()) {
+    if (next == null || !_playable(next)) {
       await _engine.prepareNext(null, TransitionPlan.cut);
       return;
     }
@@ -242,6 +242,9 @@ class PlayerController extends Notifier<PlayerState> {
     _beginListening();
   }
 
+  /// Local files must exist; catalog streams are checked by the engine.
+  static bool _playable(Track t) => t.isOnline || File(t.path).existsSync();
+
   // ---- listening history (NEXA DNA, recorded only with consent) ----
 
   void _beginListening() {
@@ -249,7 +252,9 @@ class PlayerController extends Notifier<PlayerState> {
       _endListening(EndReason.skipped);
     }
     final track = state.current;
-    if (track == null) {
+    // Only library songs are part of the history (catalog tracks: D-017,
+    // no history of online tracks without a terms review).
+    if (track == null || track.isOnline) {
       return;
     }
     _listenTrack = track;
@@ -480,7 +485,7 @@ class PlayerController extends Notifier<PlayerState> {
     var skipped = 0;
     while (state.current != null) {
       final track = state.current!;
-      if (File(track.path).existsSync()) {
+      if (_playable(track)) {
         _beginListening();
         await _engine.load(track.path, play: play);
         await _applyVolume();

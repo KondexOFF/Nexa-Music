@@ -158,10 +158,6 @@ abstract final class S {
 
   // Pages
   static const String waveHeading = 'Your Wave';
-  static const String discoverHeading = 'Discover online catalogs';
-  static const String discoverBody =
-      'Audius and Jamendo will be searchable through their official APIs, '
-      "respecting each provider's rules. Planned for Phase 6.";
   static const String settingsHeading = 'Settings';
   static const String settingsAbout = 'About';
   static const String settingsAboutBody =
@@ -345,4 +341,57 @@ abstract final class S {
       'Removes your genre and artist choices, all dislikes and the '
       'Familiar - Discovery setting. Favorites and history stay.';
   static const String reset = 'Reset';
+
+  // Online catalogs (Phase 6)
+  static const String onlineNotSaved =
+      'Online catalog songs are not saved in your library in this version';
+  static const String onlineNotInLibrary = 'Not part of your library';
+  static const String discoverOverline = 'DISCOVER';
+  static const String discoverTitle = 'Free music from open catalogs';
+  static const String discoverIntro =
+      'Search Audius and Jamendo through their official APIs. Every result '
+      'shows where it comes from and whether it can be played here. Your '
+      'search text is sent to these catalogs; your library and history are '
+      'not.';
+  static const String discoverSearchHint = 'Search artists, songs or genres';
+  static const String search = 'Search';
+  static const String allSources = 'All';
+  static const String discoverEmpty = 'Search to see results from the catalogs.';
+  static const String noCatalogResults = 'No results';
+  static const String searching = 'Searching...';
+  static const String streamHere = 'Stream in NEXA';
+  static const String notPlayableHere = 'Not playable here';
+  static const String openPage = 'Open page';
+  static String onSource(String source) => 'on $source';
+  static String sourceLicense(String license) => 'Licence: $license';
+  static const String noMixOnline =
+      'Streams only - no crossfade (no right to process the audio)';
+  static const String catalogOffline =
+      'Cannot reach the catalog. Check the internet connection - your '
+      'library keeps working.';
+  static const String catalogRateLimited =
+      'The catalog asks to slow down. Try again in a minute.';
+  static const String catalogProviderError = 'The catalog answered with an error';
+  static const String audiusNotConfigured =
+      'Audius refused the request (it may now require an API key).';
+  static const String jamendoNotConfigured =
+      'Jamendo needs your own free client id: create one at '
+      'devportal.jamendo.com and enter it in Settings - Online catalogs.';
+  static const String jamendoBadKey =
+      'Jamendo rejected the client id. Check it in Settings - Online catalogs.';
+  static const String openSettings = 'Open Settings';
+  static const String catalogDisabled = 'Switched off in Settings';
+
+  // Settings: online catalogs
+  static const String settingsCatalogs = 'Online catalogs';
+  static const String settingsCatalogsBody =
+      'Audius and Jamendo are searched through their official APIs. Songs '
+      'are streamed, never downloaded. Keys are stored only on this PC.';
+  static const String useAudius = 'Use Audius';
+  static const String useAudiusInfo = 'Free, no account or key needed.';
+  static const String jamendoClientId = 'Jamendo client id';
+  static const String jamendoClientIdInfo =
+      'Free for personal, non-commercial use. Create it at '
+      'devportal.jamendo.com; it stays on this PC.';
+  static const String jamendoTerms = 'Jamendo API terms';
 }

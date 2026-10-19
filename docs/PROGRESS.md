@@ -11,11 +11,17 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | 1 — Design system, Home, Now Playing | Implemented; crash fix 2026-10-18; owner acceptance pending (final stage) | `phase/01-review` |
 | 2 — Local library and database | Implemented 2026-10-18 (automated checks PASS; manual check in final stage) | `dev/v1` |
 | 3 — Playback Engine | Implemented 2026-10-18 (automated checks PASS; 20-track manual run in final stage) | `dev/v1` |
-| 4 — NEXA Mix Engine | Implemented 2026-10-18 (automated checks PASS; listening test in final stage) | `dev/v1` |
-| 5 — NEXA DNA and NEXA Wave v1 | Implemented 2026-10-19 (automated checks PASS; real listening check in final stage) | `dev/v1` |
-| 6 — Allowed online catalogues (Audius, Jamendo) | Not started | |
+| 4 — NEXA Mix Engine | Implemented 2026-10-18 (automated checks PASS; listening test in final stage) | `dev/v1` `53d1f21` |
+| 5 — NEXA DNA and NEXA Wave v1 | Implemented 2026-10-19 (automated checks PASS; real listening check in final stage) | `dev/v1` `9dc3116` |
+| 6 — Allowed online catalogues (Audius, Jamendo) | Implemented 2026-10-19 (automated checks PASS; live Audius check PASS; Jamendo live check needs the owner's client id) | `dev/v1` |
 | 7 — Polish, performance, Windows build | Not started | |
 | Final stage — full Windows testing and fixes | Not started | |
+| E1 — NEXA Wave across catalogs (D-017) | Approved, after the final stage | |
+| E2 — YouTube official embedded player (CR-001) | Approved, after E1; feasibility gate first | |
+| E3 — SoundCloud official widget (CR-002) | Approved, after E2 | |
+| E4 — Ports: macOS, Linux, Android, iOS/iPadOS, Web (CR-003) | Approved, after the Windows version | |
+
+Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITECTURE.md`.
 
 ## Technical debt / known problems (for the final stage)
 
@@ -32,9 +38,14 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | TD-09 | Phase 4 | High | Crossfade/gapless only verified with fake decks; listening test on Windows (no clipping, no abrupt cut, 0 s = no overlap, album tracks not mixed, several formats, short files) pending. | Final stage |
 | TD-10 | Phase 5 | Medium | NEXA Wave ranking checked on generated test libraries only; whether the picks feel right on the owner's real library (and the weights in `wave_ranker.dart`) is not yet judged by a person. | Final stage |
 | TD-11 | Phase 5 | Low | "Listened" time of a history event is the playback position when the track ended, so seeking forward counts as listening. Good enough for skip / finish signals. | Open |
+| TD-13 | Phase 6 | Medium | Jamendo only tested with recorded API answers: a live search needs the owner's own `client_id` (Settings - Online catalogs). | Open - owner enters the id, then one search on the Discover page |
+| TD-14 | Phase 6 | Medium | Streams were not listened to by a person yet. Live check 2026-10-19: Audius search 10 results / 9 playable, stream endpoint answered HTTP 206 `audio/mpeg`. | Final stage |
+| TD-15 | Phase 6 | Low | Catalog songs cannot be liked, disliked, added to playlists or recorded in the history (buttons disabled with an explanation). Planned with E1 after a terms review. | By design (D-017) |
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
 
 ## Log
+
+- 2026-10-19 — **Phase 6** (Audius, Jamendo) and **plan extension D-017** recorded (CR-001 YouTube approved, CR-002 SoundCloud, CR-003 platforms; new `ARCHITECTURE.md` with source capabilities and the order E1-E4). `MusicSource` interface with official adapters: Audius REST API (search, API stream endpoint, gated / non-streamable tracks shown as not playable with the reason) and Jamendo API v3 (owner's own client id stored only in the local database, Creative Commons licence and track page shown). Discover page: one search over the catalogs, filter by source, each result with source badge and "Stream in NEXA" or "Not playable here: reason", link to the track page; each catalog fails on its own (offline, rate limit, missing / rejected key) without touching the local library. Catalog tracks stream through the normal player, never crossfaded (no right to process the audio), not written to the history. Settings - Online catalogs (Audius on/off, Jamendo client id). Checks: analyze 0 issues, 126/126 tests, live Audius check on the PC PASS.
 
 - 2026-10-19 — **Phase 5** (NEXA DNA and NEXA Wave v1): schema v3 (dislikes on tracks, `listening_events`, `taste_items`; migration from v2 tested); listening history written only with consent and never in a private session or while learning is paused (event: track, start, listened time, completed / skipped / stopped, Library or Wave); NEXA DNA picker with the library's genres and artists (like / exclude / clear, can be skipped, history consent asked there); like and dislike (a like clears a dislike, a dislike clears the like; a dislike skips a playing Wave song); Familiar <-> Discovery slider; private session (not saved, ends with the app); "why this song" in the Wave list and on Now Playing; own explainable ranker (liked artist / genre, favorites, finished listenings, fast skips weaker than a dislike, recently played left out, unavailable and excluded never); endless Wave that refills itself; Home "Play Wave" / "Shuffle" and the My Taste card now real; Settings: consent, pause learning, private session, delete history, reset NEXA DNA. All local, no network.
 

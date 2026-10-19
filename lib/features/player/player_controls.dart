@@ -234,11 +234,11 @@ class FavoriteButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = track;
-    if (t == null) {
+    if (t == null || t.isOnline) {
       return NexaIconButton(
         icon: Icons.favorite_border_rounded,
         label: S.like,
-        disabledReason: S.nothingToPlay,
+        disabledReason: t == null ? S.nothingToPlay : S.onlineNotSaved,
         iconSize: iconSize,
         boxSize: boxSize,
       );

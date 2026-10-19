@@ -5,8 +5,8 @@ A request written here is **NOT approved** until the project owner explicitly ac
 ## CR-001 — YouTube listening option
 
 - **Proposed:** 2026-10-16 (user asked whether YouTube can be a listening alternative).
-- **Status:** **DRAFT — feasibility and owner approval pending**.
-- **Candidate phase:** Phase 6, after original providers or a separately approved amendment.
+- **Status:** **APPROVED by the owner on 2026-10-19** (owner message with the plan extension, see D-017), with the restrictions below. YouTube ads are allowed and must stay intact. Implementation still has to pass the feasibility gate in `ARCHITECTURE.md`.
+- **Phase:** extension stage E2 (after Phase 6 and the Windows core; see `ARCHITECTURE.md`, "Extension sequence").
 - **Do not modify:** Master Plan v1.0, phase 0–5 scope, local Mix Engine, Spotify restrictions.
 
 ### Desired value
@@ -35,13 +35,9 @@ Let the owner find music videos/songs on YouTube from NEXA, play videos via the 
 4. Local file playback works independently; never overlaps accidentally with YouTube.
 5. No extraction/download or request to undocumented endpoints; no API keys or user data committed.
 
-### Owner decision required
+### Owner decision
 
-- [ ] Approve visible YouTube embed + search as optional Phase 6 addition, **subject to feasibility**.
-- [ ] Approve external-browser links only.
-- [ ] Reject / defer.
-
-Until explicitly selected, Claude **must not implement CR-001**.
+- [x] **2026-10-19:** approved — visible official embedded player inside NEXA, YouTube ads allowed (never blocked), no separate audio track, no circumventing background-playback limits, no changes to the official player. The feasibility gate still applies; if it fails, the fallback is opening the video in the browser.
 
 ### Official references
 
@@ -50,3 +46,17 @@ Until explicitly selected, Claude **must not implement CR-001**.
 - https://developers.google.com/youtube/terms/developer-policies
 - https://developers.google.com/youtube/terms/developer-policies-guide
 - https://developers.google.com/youtube/v3/docs/search/list
+
+## CR-002 — SoundCloud (official embedded player)
+
+- **Proposed and approved:** 2026-10-19 by the owner (plan extension, D-017).
+- **Phase:** extension stage E3.
+- **Approach:** the official SoundCloud embedded player (Widget API) inside NEXA for SoundCloud links. The SoundCloud API (search, stream URLs) is used only with permitted access. Registering an API app currently requires an Artist Pro subscription, which the owner does not want to require, so **the first version has no SoundCloud search**: it plays a SoundCloud link in the official widget.
+- **Restrictions:** credit the uploader and SoundCloud; no downloading, caching or offline access; no stream ripping; no audio modification (no Mix Engine); no ads around SoundCloud content; no SoundCloud marks in NEXA branding.
+- **References:** https://developers.soundcloud.com/docs/api/terms-of-use, https://developers.soundcloud.com/docs/api/register-app
+
+## CR-003 — Cross-platform targets
+
+- **Proposed and approved:** 2026-10-19 by the owner (plan extension, D-017).
+- **Targets, in order:** Windows (finished first), macOS, Linux, Android, iOS/iPadOS, Web.
+- **Rule:** one Flutter core; platform-specific features (media keys / system media controls, file and folder access, embedded web players, background audio, window size) behind adapters. Ports start only after the Windows version has passed the final stage.

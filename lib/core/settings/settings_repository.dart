@@ -50,4 +50,6 @@ abstract final class SettingKeys {
   static const String learningPaused = 'dna.learningPaused';
   static const String dnaOnboarded = 'dna.onboarded';
   static const String waveDiscovery = 'wave.discovery';
+  static const String audiusEnabled = 'catalog.audius.enabled';
+  static const String jamendoClientId = 'catalog.jamendo.clientId';
 }

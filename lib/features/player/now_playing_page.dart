@@ -12,6 +12,7 @@ import '../library/track_art.dart';
 import '../library/track_list.dart';
 import '../../ui/nexa_widgets.dart';
 import '../mix_engine/mix_engine_panel.dart';
+import '../discover/source_attribution.dart';
 import '../nexa_wave/dislike_button.dart';
 import '../nexa_wave/wave_page.dart' show WaveReasonLine;
 import 'player_controller.dart';
@@ -185,6 +186,7 @@ class _TrackDetails extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
         ),
         if (t != null) WaveReasonLine(track: t),
+        if (t != null && t.isOnline) SourceAttribution(track: t),
         const SizedBox(height: 18),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -248,8 +250,10 @@ class _TrackDetails extends ConsumerWidget {
                         iconSize: 24,
                         boxSize: 52,
                         color: NexaColors.textSecondary,
-                        onPressed: () =>
-                            addTracksToPlaylist(context, ref, [t.id]),
+                        onPressed: t.isOnline
+                            ? null
+                            : () => addTracksToPlaylist(context, ref, [t.id]),
+                        disabledReason: S.onlineNotSaved,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -260,7 +264,10 @@ class _TrackDetails extends ConsumerWidget {
                         iconSize: 24,
                         boxSize: 52,
                         color: NexaColors.textSecondary,
-                        onPressed: () => _goToGroup(ref, album: t.album),
+                        onPressed: t.isOnline
+                            ? null
+                            : () => _goToGroup(ref, album: t.album),
+                        disabledReason: S.onlineNotInLibrary,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -271,7 +278,10 @@ class _TrackDetails extends ConsumerWidget {
                         iconSize: 24,
                         boxSize: 52,
                         color: NexaColors.textSecondary,
-                        onPressed: () => _goToGroup(ref, artist: t.artist),
+                        onPressed: t.isOnline
+                            ? null
+                            : () => _goToGroup(ref, artist: t.artist),
+                        disabledReason: S.onlineNotInLibrary,
                       ),
                     ),
                   ],

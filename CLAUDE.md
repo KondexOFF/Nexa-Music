@@ -21,7 +21,8 @@ You are the code implementer for **NEXA Music**. Work on the owner's Windows PC.
 ## Music source boundaries
 
 - Spotify Premium **does not** license raw Spotify audio playback, download, crossfade or model training in NEXA. Official link/handoff only.
-- YouTube: `docs/CHANGE_REQUESTS.md` contains **CR-001, currently DRAFT**. **Do not implement until owner approves it.** If approved later, use a visible official player, comply with YouTube API policies; no downloading, extracting audio, hiding the player, background playback, advertising interference or mixing YouTube audio into NEXA Mix Engine.
+- YouTube: **CR-001 approved by the owner on 2026-10-19** (D-017), extension stage E2 after the feasibility gate in `docs/ARCHITECTURE.md`. Visible official player only, YouTube ads allowed and never blocked; comply with YouTube API policies; no downloading, extracting audio, hiding the player, background-playback workarounds, changes to the official player or mixing YouTube audio into NEXA Mix Engine.
+- SoundCloud: CR-002 (official embedded widget; API only with permitted access). Platforms: CR-003 (Windows first, then ports behind adapters).
 - Treat provider-specific playback, caching, mixing, use of metadata and recommendations as separate capabilities. Never assume an online source behaves like a local file.
 - No pirated music, DRM bypass or unlicensed scraping.
 

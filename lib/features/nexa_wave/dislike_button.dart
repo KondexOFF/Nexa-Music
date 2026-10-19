@@ -27,11 +27,11 @@ class DislikeButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = track;
-    if (t == null) {
+    if (t == null || t.isOnline) {
       return NexaIconButton(
         icon: Icons.thumb_down_off_alt_rounded,
         label: S.dislike,
-        disabledReason: S.nothingToPlay,
+        disabledReason: t == null ? S.nothingToPlay : S.onlineNotSaved,
         iconSize: iconSize,
         boxSize: boxSize,
       );

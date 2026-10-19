@@ -35,6 +35,22 @@ class TrackArt extends StatelessWidget {
       return placeholder;
     }
     final px = (size * MediaQuery.devicePixelRatioOf(context)).round();
+    if (path.startsWith('https://')) {
+      // Catalog artwork from the provider (not stored on disk).
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: Image.network(
+          path,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          cacheWidth: px,
+          gaplessPlayback: true,
+          filterQuality: FilterQuality.medium,
+          errorBuilder: (context, error, stack) => placeholder,
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Image.file(

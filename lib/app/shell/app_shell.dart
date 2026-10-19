@@ -9,12 +9,11 @@ import '../../features/library/playlist_page.dart';
 import '../../features/player/player_controller.dart';
 import '../../features/mix_engine/mix_engine_panel.dart';
 import '../../features/nexa_wave/wave_page.dart';
-import '../../features/pages/planned_page.dart';
+import '../../features/discover/discover_page.dart';
 import '../../features/pages/settings_page.dart';
 import '../../features/player/now_playing_page.dart';
 import '../../features/player/up_next_card.dart';
 import '../navigation.dart';
-import '../strings.dart';
 import '../theme/tokens.dart';
 import 'bottom_player.dart';
 import 'sidebar.dart';
@@ -176,13 +175,7 @@ class _PageArea extends StatelessWidget {
       inlineMixEngine: inlineMixEngine,
     ),
     NexaDestination.wave => const WavePage(),
-    NexaDestination.discover => const PlannedPage(
-      overline: S.navDiscover,
-      icon: Icons.explore_outlined,
-      heading: S.discoverHeading,
-      body: S.discoverBody,
-      phase: S.phase6,
-    ),
+    NexaDestination.discover => const DiscoverPage(),
     NexaDestination.library => const LibraryPage(),
     NexaDestination.playlist => PlaylistPage(
       playlistId: location.playlistId ?? -1,
