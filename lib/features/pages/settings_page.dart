@@ -7,6 +7,7 @@ import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../audio_probe/probe_screen.dart';
 import '../../core/audio/playback_engine.dart';
+import '../nexa_dna/privacy_controls.dart';
 import '../player/player_controller.dart';
 import '../../ui/nexa_widgets.dart';
 
@@ -60,13 +61,12 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.privacy_tip_outlined,
             title: S.settingsPrivacy,
             body: S.settingsPrivacyBody,
-            badge: S.phase5,
+            action: PrivacyControls(),
           ),
           const _SettingsCard(
             icon: Icons.graphic_eq_rounded,
             title: S.settingsMix,
             body: S.settingsMixBody,
-            badge: S.phase4,
           ),
           _SettingsCard(
             icon: Icons.build_outlined,
@@ -91,14 +91,12 @@ class _SettingsCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.body,
-    this.badge,
     this.action,
   });
 
   final IconData icon;
   final String title;
   final String body;
-  final String? badge;
   final Widget? action;
 
   @override
@@ -116,15 +114,7 @@ class _SettingsCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(child: Text(title, style: NexaText.h3)),
-                      if (badge != null) ...[
-                        const SizedBox(width: 10),
-                        StatusBadge.phase(badge!),
-                      ],
-                    ],
-                  ),
+                  Text(title, style: NexaText.h3),
                   const SizedBox(height: 6),
                   Text(body, style: NexaText.bodySecondary),
                   if (action != null) ...[

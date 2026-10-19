@@ -68,6 +68,7 @@ class LibraryRepository {
         : Duration(milliseconds: row.durationMs!),
     artworkPath: row.artworkPath,
     favorite: row.favorite,
+    disliked: row.disliked,
     available: row.available,
     problem: row.problem,
     addedAt: row.addedAt,
@@ -219,11 +220,14 @@ class LibraryRepository {
     );
   }
 
+  /// A like also removes an explicit dislike (NEXA DNA).
   Future<void> setFavorite(int trackId, bool favorite) =>
       (db.update(db.tracks)..where((t) => t.id.equals(trackId))).write(
         TracksCompanion(
           favorite: Value(favorite),
           favoritedAt: Value(favorite ? DateTime.now() : null),
+          disliked: favorite ? const Value(false) : const Value.absent(),
+          dislikedAt: favorite ? const Value(null) : const Value.absent(),
         ),
       );
 

@@ -51,6 +51,10 @@ class Tracks extends Table {
   BoolColumn get available => boolean().withDefault(const Constant(true))();
   TextColumn get problem => text().nullable()();
   DateTimeColumn get addedAt => dateTime()();
+
+  /// Explicit dislike (NEXA DNA, schema v3): never suggested by NEXA Wave.
+  BoolColumn get disliked => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get dislikedAt => dateTime().nullable()();
 }
 
 @DataClassName('PlaylistRow')
@@ -82,10 +86,61 @@ class AppSettings extends Table {
   Set<Column> get primaryKey => {key};
 }
 
+/// One listening of a track (schema v3). Written only with the user's
+/// consent, never in a private session or while learning is paused.
+@DataClassName('ListeningEventRow')
+class ListeningEvents extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get trackId =>
+      integer().references(Tracks, #id, onDelete: KeyAction.cascade)();
+  DateTimeColumn get startedAt => dateTime()();
+
+  /// How far the track was played (position when it ended).
+  IntColumn get listenedMs => integer()();
+  IntColumn get durationMs => integer().nullable()();
+
+  /// completed / skipped / stopped ([EndReason] name).
+  TextColumn get endReason => text()();
+
+  /// library / wave ([PlayContext] name).
+  TextColumn get mode => text()();
+}
+
+/// Explicit NEXA DNA choices: liked or excluded genres and artists.
+@DataClassName('TasteItemRow')
+class TasteItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// genre / artist ([TasteKind] name).
+  TextColumn get kind => text()();
+  TextColumn get value => text()();
+
+  /// Lower-cased [value] (one row per kind and value).
+  TextColumn get valueKey => text()();
+  RealColumn get weight => real().withDefault(const Constant(1.0))();
+
+  /// True: never suggest tracks with this genre / artist.
+  BoolColumn get excluded => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {kind, valueKey},
+  ];
+}
+
 /// Local SQLite database (Drift). Schema changes must add a migration step
 /// in [migration] and bump [schemaVersion].
 @DriftDatabase(
-  tables: [LibraryFolders, Tracks, Playlists, PlaylistEntries, AppSettings],
+  tables: [
+    LibraryFolders,
+    Tracks,
+    Playlists,
+    PlaylistEntries,
+    AppSettings,
+    ListeningEvents,
+    TasteItems,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
@@ -101,7 +156,7 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -114,6 +169,7 @@ class AppDatabase extends _$AppDatabase {
         'CREATE INDEX IF NOT EXISTS idx_entries_playlist '
         'ON playlist_entries (playlist_id, position)',
       );
+      await _createHistoryIndex();
     },
     onUpgrade: (m, from, to) async {
       // One step per schema version; never edit a released step.
@@ -121,9 +177,28 @@ class AppDatabase extends _$AppDatabase {
         // v2 (Phase 3): player settings.
         await m.createTable(appSettings);
       }
+      if (from < 3) {
+        // v3 (Phase 5): NEXA DNA - dislikes, listening history, taste.
+        await m.addColumn(tracks, tracks.disliked);
+        await m.addColumn(tracks, tracks.dislikedAt);
+        await m.createTable(listeningEvents);
+        await m.createTable(tasteItems);
+        await _createHistoryIndex();
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  Future<void> _createHistoryIndex() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_events_track '
+      'ON listening_events (track_id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_events_started '
+      'ON listening_events (started_at)',
+    );
+  }
 }

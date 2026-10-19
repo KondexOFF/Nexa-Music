@@ -9,10 +9,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/audio/media_kit_engine.dart';
 import '../../core/audio/mixing_engine.dart';
 import '../../core/audio/playback_engine.dart';
+import '../../core/models/listening.dart';
 import '../../core/models/track.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../core/settings/settings_repository.dart';
 import '../mix_engine/mix_settings.dart';
+import '../nexa_dna/dna_providers.dart';
 import '../mix_engine/transition_planner.dart';
 
 enum PlayerRepeat { off, all, one }
@@ -36,6 +38,7 @@ class PlayerState {
     this.muted = false,
     this.shuffle = false,
     this.repeat = PlayerRepeat.off,
+    this.context = PlayContext.library,
     this.notice,
     this.noticeId = 0,
   });
@@ -50,6 +53,9 @@ class PlayerState {
   final bool muted;
   final bool shuffle;
   final PlayerRepeat repeat;
+
+  /// What started the current queue (Library or NEXA Wave).
+  final PlayContext context;
 
   /// Last message for the user (e.g. a skipped missing file).
   final String? notice;
@@ -85,6 +91,7 @@ class PlayerState {
     bool? muted,
     bool? shuffle,
     PlayerRepeat? repeat,
+    PlayContext? context,
     String? notice,
     int? noticeId,
   }) => PlayerState(
@@ -95,6 +102,7 @@ class PlayerState {
     muted: muted ?? this.muted,
     shuffle: shuffle ?? this.shuffle,
     repeat: repeat ?? this.repeat,
+    context: context ?? this.context,
     notice: notice ?? this.notice,
     noticeId: noticeId ?? this.noticeId,
   );
@@ -131,6 +139,13 @@ class PlayerController extends Notifier<PlayerState> {
   /// Order before shuffling (to restore it when shuffle is switched off).
   List<QueueEntry> _original = const [];
 
+  // The listening in progress (for the NEXA DNA history).
+  Track? _listenTrack;
+  DateTime? _listenStart;
+  PlayContext _listenContext = PlayContext.library;
+  Duration _listenPosition = Duration.zero;
+  Duration? _listenDuration;
+
   @override
   PlayerState build() {
     _engine = ref.watch(playbackEngineProvider);
@@ -140,6 +155,13 @@ class PlayerController extends Notifier<PlayerState> {
       ..add(_engine.advanced.listen(_onAdvanced))
       ..add(
         _engine.states.listen((s) {
+          final listening = _listenTrack;
+          if (listening != null && s.path == listening.path) {
+            _listenPosition = s.position;
+            if (s.duration > Duration.zero) {
+              _listenDuration = s.duration;
+            }
+          }
           if (s.playing != state.playing) {
             state = state.copyWith(playing: s.playing);
           }
@@ -215,7 +237,54 @@ class PlayerController extends Notifier<PlayerState> {
     if (next == null) {
       return;
     }
+    _endListening(EndReason.completed);
     state = state.copyWith(cursor: state.queue.indexOf(next));
+    _beginListening();
+  }
+
+  // ---- listening history (NEXA DNA, recorded only with consent) ----
+
+  void _beginListening() {
+    if (_listenTrack != null) {
+      _endListening(EndReason.skipped);
+    }
+    final track = state.current;
+    if (track == null) {
+      return;
+    }
+    _listenTrack = track;
+    _listenStart = DateTime.now();
+    _listenContext = state.context;
+    _listenPosition = Duration.zero;
+    _listenDuration = track.duration;
+  }
+
+  void _endListening(EndReason reason) {
+    final track = _listenTrack;
+    final start = _listenStart;
+    _listenTrack = null;
+    _listenStart = null;
+    if (track == null || start == null) {
+      return;
+    }
+    final duration = _listenDuration;
+    final listened = reason == EndReason.completed && duration != null
+        ? duration
+        : _listenPosition;
+    unawaited(
+      ref
+          .read(listeningRecorderProvider)
+          .record(
+            ListeningEvent(
+              trackId: track.id,
+              startedAt: start,
+              listened: listened,
+              duration: duration,
+              reason: reason,
+              context: _listenContext,
+            ),
+          ),
+    );
   }
 
   Future<void> _applyVolume() =>
@@ -231,10 +300,15 @@ class PlayerController extends Notifier<PlayerState> {
   // ---- starting playback ----
 
   /// Plays [tracks] starting at [start] (the queue is replaced).
-  Future<void> playTracks(List<Track> tracks, {int start = 0}) async {
+  Future<void> playTracks(
+    List<Track> tracks, {
+    int start = 0,
+    PlayContext context = PlayContext.library,
+  }) async {
     if (tracks.isEmpty) {
       return;
     }
+    _endListening(EndReason.skipped);
     final entries = _entries(tracks);
     _original = entries;
     final first = entries[start.clamp(0, entries.length - 1)];
@@ -244,7 +318,7 @@ class PlayerController extends Notifier<PlayerState> {
       queue = [first, ..._shuffled(entries.where((e) => e != first))];
       cursor = 0;
     }
-    state = state.copyWith(queue: queue, cursor: cursor);
+    state = state.copyWith(queue: queue, cursor: cursor, context: context);
     await _loadCurrent(play: true);
   }
 
@@ -316,6 +390,7 @@ class PlayerController extends Notifier<PlayerState> {
     if (index < 0 || index >= state.queue.length) {
       return;
     }
+    _endListening(EndReason.skipped);
     state = state.copyWith(cursor: index);
     await _loadCurrent(play: true);
   }
@@ -342,6 +417,7 @@ class PlayerController extends Notifier<PlayerState> {
   Future<void> pause() => _engine.pause();
 
   Future<void> stop() async {
+    _endListening(EndReason.stopped);
     await _engine.stop();
     state = state.copyWith(playing: false);
   }
@@ -359,9 +435,11 @@ class PlayerController extends Notifier<PlayerState> {
       return;
     }
     if (state.cursor > 0) {
+      _endListening(EndReason.skipped);
       state = state.copyWith(cursor: state.cursor - 1);
       await _loadCurrent(play: true);
     } else if (state.repeat == PlayerRepeat.all && state.queue.length > 1) {
+      _endListening(EndReason.skipped);
       state = state.copyWith(cursor: state.queue.length - 1);
       await _loadCurrent(play: true);
     } else {
@@ -375,18 +453,23 @@ class PlayerController extends Notifier<PlayerState> {
     if (state.current == null) {
       return;
     }
+    final reason = auto ? EndReason.completed : EndReason.skipped;
     if (auto && state.repeat == PlayerRepeat.one) {
+      _endListening(reason);
       await _loadCurrent(play: true);
       return;
     }
     if (state.cursor + 1 < state.queue.length) {
+      _endListening(reason);
       state = state.copyWith(cursor: state.cursor + 1);
       await _loadCurrent(play: true);
     } else if (state.repeat == PlayerRepeat.all && state.queue.isNotEmpty) {
+      _endListening(reason);
       state = state.copyWith(cursor: 0);
       await _loadCurrent(play: true);
     } else if (auto) {
       // End of the queue: stop on the last song.
+      _endListening(reason);
       await _engine.stop();
       state = state.copyWith(playing: false);
     }
@@ -398,6 +481,7 @@ class PlayerController extends Notifier<PlayerState> {
     while (state.current != null) {
       final track = state.current!;
       if (File(track.path).existsSync()) {
+        _beginListening();
         await _engine.load(track.path, play: play);
         await _applyVolume();
         await _prepareNext();

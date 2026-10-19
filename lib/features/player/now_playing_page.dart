@@ -12,6 +12,8 @@ import '../library/track_art.dart';
 import '../library/track_list.dart';
 import '../../ui/nexa_widgets.dart';
 import '../mix_engine/mix_engine_panel.dart';
+import '../nexa_wave/dislike_button.dart';
+import '../nexa_wave/wave_page.dart' show WaveReasonLine;
 import 'player_controller.dart';
 import 'player_controls.dart';
 import 'up_next_card.dart';
@@ -137,8 +139,6 @@ class _WaveChip extends StatelessWidget {
               SizedBox(width: 10),
               Text(S.waveChip, style: NexaText.body),
               SizedBox(width: 8),
-              StatusBadge.phase(S.phase5),
-              SizedBox(width: 6),
               Icon(Icons.chevron_right_rounded, size: 20),
             ],
           ),
@@ -184,6 +184,7 @@ class _TrackDetails extends ConsumerWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        if (t != null) WaveReasonLine(track: t),
         const SizedBox(height: 18),
         FittedBox(
           fit: BoxFit.scaleDown,
@@ -235,6 +236,10 @@ class _TrackDetails extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _Circle(child: FavoriteButton(track: t, iconSize: 24, boxSize: 52)),
+                    const SizedBox(width: 14),
+                    _Circle(
+                      child: DislikeButton(track: t, iconSize: 24, boxSize: 52),
+                    ),
                     const SizedBox(width: 14),
                     _Circle(
                       child: NexaIconButton(

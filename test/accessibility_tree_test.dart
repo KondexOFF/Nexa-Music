@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/strings.dart';
 import 'package:nexa_music/audio_probe/audio_self_test.dart';
 import 'package:nexa_music/audio_probe/probe_screen.dart';
+import 'package:nexa_music/features/nexa_wave/wave_page.dart';
 import 'package:nexa_music/ui/play_ring_button.dart';
 
 import 'helpers/semantics_checker.dart';
@@ -162,6 +163,25 @@ void main() {
           tester.view.physicalSize = size1280;
           await settle(tester);
         }
+        await finish(tester);
+      },
+    );
+
+    testWidgets(
+      'Wave page: tooltips, Familiar - Discovery slider and private session '
+      'keep the accessibility tree valid'
+      '${a11yLater ? ' (accessibility switched on later)' : ''}',
+      (tester) async {
+        await start(tester, size1280, a11yLater: a11yLater);
+        await click(tester, find.text(S.navWave));
+        expect(find.text(S.waveHeading), findsOneWidget);
+        await hoverAllTooltips(tester, size1280);
+        Finder onWave(Type type) => find
+            .descendant(of: find.byType(WavePage), matching: find.byType(type))
+            .first;
+        await click(tester, onWave(Slider));
+        await click(tester, onWave(Switch));
+        await hoverAllTooltips(tester, size1280);
         await finish(tester);
       },
     );

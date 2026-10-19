@@ -35,6 +35,7 @@ class Track {
     this.duration,
     this.artworkPath,
     this.favorite = false,
+    this.disliked = false,
     this.available = true,
     this.problem,
     required this.addedAt,
@@ -61,6 +62,9 @@ class Track {
   /// Cached cover image (inside the app data folder), if any.
   final String? artworkPath;
   final bool favorite;
+
+  /// Explicit dislike (NEXA DNA): never suggested by NEXA Wave.
+  final bool disliked;
 
   /// False when the file is missing or unreadable.
   final bool available;

@@ -8,6 +8,7 @@ import '../../features/library/library_providers.dart';
 import '../../features/library/playlist_page.dart';
 import '../../features/player/player_controller.dart';
 import '../../features/mix_engine/mix_engine_panel.dart';
+import '../../features/nexa_wave/wave_page.dart';
 import '../../features/pages/planned_page.dart';
 import '../../features/pages/settings_page.dart';
 import '../../features/player/now_playing_page.dart';
@@ -174,13 +175,7 @@ class _PageArea extends StatelessWidget {
     NexaDestination.nowPlaying => NowPlayingPage(
       inlineMixEngine: inlineMixEngine,
     ),
-    NexaDestination.wave => const PlannedPage(
-      overline: S.navWave,
-      icon: Icons.waves_rounded,
-      heading: S.waveHeading,
-      body: S.waveBody,
-      phase: S.phase5,
-    ),
+    NexaDestination.wave => const WavePage(),
     NexaDestination.discover => const PlannedPage(
       overline: S.navDiscover,
       icon: Icons.explore_outlined,

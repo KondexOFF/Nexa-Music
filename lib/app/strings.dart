@@ -103,8 +103,7 @@ abstract final class S {
   static const String closeNowPlaying = 'Close Now Playing';
   static const String toggleQueue = 'Show or hide Up Next';
   static const String waveChip = 'NEXA Wave';
-  static const String waveChipTooltip =
-      'Open NEXA Wave. Personal learning starts in Phase 5.';
+  static const String waveChipTooltip = 'Open NEXA Wave';
   static const String addToPlaylist = 'Add to playlist';
   static const String shuffleLabel = 'Shuffle';
   static const String previous = 'Previous';
@@ -158,11 +157,7 @@ abstract final class S {
       'album order. It never lengthens your crossfade.';
 
   // Pages
-  static const String waveHeading = 'Your Wave starts here';
-  static const String waveBody =
-      'NEXA Wave will build a continuous personal queue from the tracks you '
-      'can play, your likes and dislikes and - only with your consent - your '
-      'listening history. It arrives in Phase 5 together with NEXA DNA.';
+  static const String waveHeading = 'Your Wave';
   static const String discoverHeading = 'Discover online catalogs';
   static const String discoverBody =
       'Audius and Jamendo will be searchable through their official APIs, '
@@ -170,12 +165,12 @@ abstract final class S {
   static const String settingsHeading = 'Settings';
   static const String settingsAbout = 'About';
   static const String settingsAboutBody =
-      'NEXA Music - personal Windows music player. Development phase 1: '
-      'design system and screen layout.';
+      'NEXA Music - personal Windows music player. Local library, playback, '
+      'NEXA Mix Engine, NEXA DNA and NEXA Wave.';
   static const String settingsPrivacy = 'Privacy and learning';
   static const String settingsPrivacyBody =
-      'Learning pause, history removal and private sessions arrive with '
-      'NEXA DNA in Phase 5.';
+      'Your listening history stays on this PC and is only kept with your '
+      'consent. Likes, dislikes and NEXA DNA choices always stay local too.';
   static const String settingsMix = 'Mix Engine defaults';
   static const String settingsMixBody =
       'Transition mode, crossfade length and the album rule are saved and '
@@ -263,4 +258,91 @@ abstract final class S {
   static const String mediaKeysBody =
       'Keyboard media keys (play/pause, next, previous, stop) control NEXA '
       'while it is open, also in the background.';
+
+  // NEXA DNA and NEXA Wave (Phase 5)
+  static const String dislike = 'Dislike';
+  static const String undislike = 'Remove dislike';
+  static const String dislikeInfo =
+      'NEXA Wave will never suggest this song. The file stays in your library.';
+  static const String waveOverlineFull = 'NEXA WAVE';
+  static const String waveSubtitleLive =
+      'A continuous queue from your own playable songs - shaped by your '
+      'NEXA DNA, likes and dislikes and, if you allow it, your listening.';
+  static const String startWave = 'Start Wave';
+  static const String refreshWave = 'New picks';
+  static const String waveNextUp = 'Coming up in your Wave';
+  static const String waveEmptyLibrary =
+      'Add music to your Library first - NEXA Wave only uses songs you can '
+      'play.';
+  static const String waveNothingLeft =
+      'Nothing to suggest: every song is disliked, excluded or unavailable. '
+      'Change your NEXA DNA or remove a dislike.';
+  static const String wavePlaying = 'Wave is playing';
+  static const String familiar = 'Familiar';
+  static const String discovery = 'Discovery';
+  static const String familiarDiscovery = 'Familiar - Discovery';
+  static const String familiarDiscoveryInfo =
+      'Left: songs you already know and finish. Right: songs you have not '
+      'played yet.';
+  static const String fresh = 'NEW';
+  static const String privateSession = 'Private session';
+  static const String privateSessionInfo =
+      'Nothing from this session is added to your listening history. Ends '
+      'when NEXA closes.';
+  static const String privateSessionOn = 'Private session - not recorded';
+  static const String editDna = 'Edit NEXA DNA';
+  static const String setUpDna = 'Set up NEXA DNA';
+  static const String dnaTitle = 'Your NEXA DNA';
+  static const String dnaIntro =
+      'Pick a few genres and artists you like. Click again to exclude one '
+      '(never suggested), a third time to clear. You can skip this.';
+  static const String dnaGenres = 'Genres';
+  static const String dnaArtists = 'Artists';
+  static const String dnaNoTags =
+      'Your library has no genre or artist tags yet.';
+  static const String dnaLiked = 'Liked';
+  static const String dnaExcluded = 'Excluded';
+  static const String skip = 'Skip';
+  static const String done = 'Done';
+  static const String historyQuestion = 'Remember what I listen to';
+  static const String historyQuestionInfo =
+      'Keeps a local history (song, time, finished or skipped) on this PC so '
+      'the Wave can learn. Nothing is sent anywhere. You can pause or delete '
+      'it at any time in Settings.';
+  static const String myTasteEmpty =
+      'No NEXA DNA yet. Pick genres and artists you like to shape your Wave.';
+  static const String myTasteLiked = 'You like';
+  static const String myTasteExcluded = 'Never suggest';
+  static const String whyThisTrack = 'Why this song';
+
+  // Reasons (why a song is in the Wave)
+  static String reasonLikedArtist(String artist) => 'Because you like $artist';
+  static String reasonLikedGenre(String genre) => 'Matches your taste: $genre';
+  static const String reasonFavorite = 'One of your favorites';
+  static const String reasonOftenFinished = 'You usually play this to the end';
+  static const String reasonFamiliar = 'A familiar song';
+  static const String reasonNew = 'New to you - not played yet';
+  static const String reasonFromLibrary = 'From your library';
+  static const String reasonRepeat =
+      'Played recently - your library has no other match right now';
+
+  // Privacy settings (Phase 5)
+  static const String historyConsent = 'Keep listening history';
+  static const String historyConsentInfo =
+      'Song, time and whether it was finished or skipped - used only by '
+      'NEXA Wave on this PC.';
+  static const String pauseLearning = 'Pause learning';
+  static const String pauseLearningInfo =
+      'Stop adding to the history until you switch this off again.';
+  static String historyCount(int n) =>
+      n == 1 ? '1 listening saved' : '$n listenings saved';
+  static const String clearHistory = 'Delete history';
+  static const String clearHistoryBody =
+      'All saved listenings are deleted from this PC. Likes, dislikes and '
+      'NEXA DNA stay.';
+  static const String resetDna = 'Reset NEXA DNA';
+  static const String resetDnaBody =
+      'Removes your genre and artist choices, all dislikes and the '
+      'Familiar - Discovery setting. Favorites and history stay.';
+  static const String reset = 'Reset';
 }

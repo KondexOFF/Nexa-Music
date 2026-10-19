@@ -1,14 +1,18 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../ui/nexa_widgets.dart';
+import '../library/library_providers.dart';
+import '../nexa_wave/wave_controller.dart';
+import '../player/player_controller.dart';
 
 /// NEXA Wave hero: a code-drawn, slowly moving ribbon landscape with the
-/// Wave call to action. Playing the Wave arrives in Phase 5.
+/// Wave call to action (starts NEXA Wave or shuffles the library).
 class WaveHero extends StatefulWidget {
   const WaveHero({super.key, this.animate = true});
 
@@ -91,11 +95,20 @@ class _WaveHeroState extends State<WaveHero>
   }
 }
 
-class _HeroContent extends StatelessWidget {
+class _HeroContent extends ConsumerWidget {
   const _HeroContent();
 
+  Future<void> _shuffleLibrary(WidgetRef ref) async {
+    final tracks = await ref.read(libraryRepositoryProvider).getTracks();
+    await ref.read(playerProvider.notifier).shuffleTracks([
+      for (final t in tracks)
+        if (t.available && !t.disliked) t,
+    ]);
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasMusic = (ref.watch(trackCountProvider).value ?? 0) > 0;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,20 +128,24 @@ class _HeroContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        const Wrap(
+        Wrap(
           spacing: NexaSpace.sm,
           runSpacing: NexaSpace.sm,
           children: [
             NexaPillButton(
               label: S.playWave,
               icon: Icons.play_arrow_rounded,
-              disabledReason: S.soonWave,
+              onPressed: hasMusic
+                  ? () => ref.read(waveProvider.notifier).start()
+                  : null,
+              disabledReason: S.waveEmptyLibrary,
             ),
             NexaPillButton(
               label: S.shuffle,
               icon: Icons.shuffle_rounded,
               variant: PillVariant.secondary,
-              disabledReason: S.soonWave,
+              onPressed: hasMusic ? () => _shuffleLibrary(ref) : null,
+              disabledReason: S.waveEmptyLibrary,
             ),
           ],
         ),

@@ -6,10 +6,11 @@ import '../../app/theme/tokens.dart';
 import '../../demo/demo_data.dart';
 import '../../ui/cover_art.dart';
 import '../../ui/nexa_widgets.dart';
+import '../nexa_wave/wave_page.dart' show MyTastePanel;
 import '../player/up_next_card.dart';
 
 /// Right panel on Home and the placeholder pages: Up Next, My Taste,
-/// Discover More (all DEMO).
+/// Discover More (DEMO).
 class HomeSidePanel extends StatelessWidget {
   const HomeSidePanel({super.key});
 
@@ -36,100 +37,7 @@ class MyTasteCard extends StatelessWidget {
   const MyTasteCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return NexaPanel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SectionHeader(
-            title: S.myTaste,
-            style: NexaText.h3,
-            trailing: StatusBadge.phase(
-              S.phase5,
-              tooltip: S.myTasteTooltip,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(S.myTasteNote, style: NexaText.caption),
-          const SizedBox(height: NexaSpace.sm),
-          for (final item in DemoData.taste) _TasteRow(item: item),
-        ],
-      ),
-    );
-  }
-}
-
-class _TasteRow extends StatelessWidget {
-  const _TasteRow({required this.item});
-
-  final DemoTaste item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(item.icon, size: 18, color: item.color),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 88,
-            child: Text(
-              item.label,
-              style: NexaText.body.copyWith(fontSize: 13),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: item.value),
-              duration: const Duration(milliseconds: 900),
-              curve: NexaMotion.curve,
-              builder: (context, value, _) => _Bar(value: value, color: item.color),
-            ),
-          ),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 38,
-            child: Text(
-              '${(item.value * 100).round()}%',
-              textAlign: TextAlign.right,
-              style: NexaText.caption,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Bar extends StatelessWidget {
-  const _Bar({required this.value, required this.color});
-
-  final double value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 6,
-      decoration: BoxDecoration(
-        color: const Color(0x14FFFFFF),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      alignment: Alignment.centerLeft,
-      child: FractionallySizedBox(
-        widthFactor: value.clamp(0.0, 1.0).toDouble(),
-        child: Container(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const MyTastePanel(compact: true);
 }
 
 class DiscoverMoreCard extends StatelessWidget {

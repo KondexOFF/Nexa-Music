@@ -8,6 +8,8 @@ import '../../core/models/track.dart';
 import '../../demo/demo_data.dart' show formatClock;
 import '../../ui/nexa_widgets.dart';
 import 'library_dialogs.dart';
+import '../nexa_dna/dna_providers.dart';
+import '../nexa_wave/wave_controller.dart';
 import '../player/player_controller.dart';
 import 'library_providers.dart';
 import 'track_art.dart';
@@ -106,6 +108,7 @@ enum _RowAction {
   addToQueue,
   addToPlaylist,
   favorite,
+  dislike,
   remove,
   moveUp,
   moveDown,
@@ -151,6 +154,12 @@ class TrackRow extends ConsumerWidget {
         await addTracksToPlaylist(context, ref, [track.id]);
       case _RowAction.favorite:
         await repo.setFavorite(track.id, !track.favorite);
+      case _RowAction.dislike:
+        if (track.disliked) {
+          await ref.read(tasteRepositoryProvider).setDisliked(track.id, false);
+        } else {
+          await ref.read(waveProvider.notifier).dislike(track);
+        }
       case _RowAction.remove:
         await repo.removeFromPlaylist(entryId!);
       case _RowAction.moveUp:
@@ -304,6 +313,10 @@ class TrackRow extends ConsumerWidget {
               PopupMenuItem(
                 value: _RowAction.favorite,
                 child: Text(track.favorite ? S.unlike : S.like),
+              ),
+              PopupMenuItem(
+                value: _RowAction.dislike,
+                child: Text(track.disliked ? S.undislike : S.dislike),
               ),
               if (entryId != null) ...[
                 const PopupMenuDivider(),

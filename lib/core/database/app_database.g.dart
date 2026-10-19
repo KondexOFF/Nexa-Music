@@ -621,6 +621,32 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _dislikedMeta = const VerificationMeta(
+    'disliked',
+  );
+  @override
+  late final GeneratedColumn<bool> disliked = GeneratedColumn<bool>(
+    'disliked',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("disliked" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _dislikedAtMeta = const VerificationMeta(
+    'dislikedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dislikedAt = GeneratedColumn<DateTime>(
+    'disliked_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -646,6 +672,8 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
     available,
     problem,
     addedAt,
+    disliked,
+    dislikedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -827,6 +855,18 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
     } else if (isInserting) {
       context.missing(_addedAtMeta);
     }
+    if (data.containsKey('disliked')) {
+      context.handle(
+        _dislikedMeta,
+        disliked.isAcceptableOrUnknown(data['disliked']!, _dislikedMeta),
+      );
+    }
+    if (data.containsKey('disliked_at')) {
+      context.handle(
+        _dislikedAtMeta,
+        dislikedAt.isAcceptableOrUnknown(data['disliked_at']!, _dislikedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -928,6 +968,14 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}added_at'],
       )!,
+      disliked: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}disliked'],
+      )!,
+      dislikedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}disliked_at'],
+      ),
     );
   }
 
@@ -966,6 +1014,10 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
   final bool available;
   final String? problem;
   final DateTime addedAt;
+
+  /// Explicit dislike (NEXA DNA, schema v3): never suggested by NEXA Wave.
+  final bool disliked;
+  final DateTime? dislikedAt;
   const TrackRow({
     required this.id,
     required this.source,
@@ -990,6 +1042,8 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     required this.available,
     this.problem,
     required this.addedAt,
+    required this.disliked,
+    this.dislikedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1037,6 +1091,10 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       map['problem'] = Variable<String>(problem);
     }
     map['added_at'] = Variable<DateTime>(addedAt);
+    map['disliked'] = Variable<bool>(disliked);
+    if (!nullToAbsent || dislikedAt != null) {
+      map['disliked_at'] = Variable<DateTime>(dislikedAt);
+    }
     return map;
   }
 
@@ -1083,6 +1141,10 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
           ? const Value.absent()
           : Value(problem),
       addedAt: Value(addedAt),
+      disliked: Value(disliked),
+      dislikedAt: dislikedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dislikedAt),
     );
   }
 
@@ -1115,6 +1177,8 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       available: serializer.fromJson<bool>(json['available']),
       problem: serializer.fromJson<String?>(json['problem']),
       addedAt: serializer.fromJson<DateTime>(json['addedAt']),
+      disliked: serializer.fromJson<bool>(json['disliked']),
+      dislikedAt: serializer.fromJson<DateTime?>(json['dislikedAt']),
     );
   }
   @override
@@ -1144,6 +1208,8 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       'available': serializer.toJson<bool>(available),
       'problem': serializer.toJson<String?>(problem),
       'addedAt': serializer.toJson<DateTime>(addedAt),
+      'disliked': serializer.toJson<bool>(disliked),
+      'dislikedAt': serializer.toJson<DateTime?>(dislikedAt),
     };
   }
 
@@ -1171,6 +1237,8 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     bool? available,
     Value<String?> problem = const Value.absent(),
     DateTime? addedAt,
+    bool? disliked,
+    Value<DateTime?> dislikedAt = const Value.absent(),
   }) => TrackRow(
     id: id ?? this.id,
     source: source ?? this.source,
@@ -1195,6 +1263,8 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     available: available ?? this.available,
     problem: problem.present ? problem.value : this.problem,
     addedAt: addedAt ?? this.addedAt,
+    disliked: disliked ?? this.disliked,
+    dislikedAt: dislikedAt.present ? dislikedAt.value : this.dislikedAt,
   );
   TrackRow copyWithCompanion(TracksCompanion data) {
     return TrackRow(
@@ -1237,6 +1307,10 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       available: data.available.present ? data.available.value : this.available,
       problem: data.problem.present ? data.problem.value : this.problem,
       addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+      disliked: data.disliked.present ? data.disliked.value : this.disliked,
+      dislikedAt: data.dislikedAt.present
+          ? data.dislikedAt.value
+          : this.dislikedAt,
     );
   }
 
@@ -1265,7 +1339,9 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
           ..write('favoritedAt: $favoritedAt, ')
           ..write('available: $available, ')
           ..write('problem: $problem, ')
-          ..write('addedAt: $addedAt')
+          ..write('addedAt: $addedAt, ')
+          ..write('disliked: $disliked, ')
+          ..write('dislikedAt: $dislikedAt')
           ..write(')'))
         .toString();
   }
@@ -1295,6 +1371,8 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     available,
     problem,
     addedAt,
+    disliked,
+    dislikedAt,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1322,7 +1400,9 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
           other.favoritedAt == this.favoritedAt &&
           other.available == this.available &&
           other.problem == this.problem &&
-          other.addedAt == this.addedAt);
+          other.addedAt == this.addedAt &&
+          other.disliked == this.disliked &&
+          other.dislikedAt == this.dislikedAt);
 }
 
 class TracksCompanion extends UpdateCompanion<TrackRow> {
@@ -1349,6 +1429,8 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
   final Value<bool> available;
   final Value<String?> problem;
   final Value<DateTime> addedAt;
+  final Value<bool> disliked;
+  final Value<DateTime?> dislikedAt;
   const TracksCompanion({
     this.id = const Value.absent(),
     this.source = const Value.absent(),
@@ -1373,6 +1455,8 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     this.available = const Value.absent(),
     this.problem = const Value.absent(),
     this.addedAt = const Value.absent(),
+    this.disliked = const Value.absent(),
+    this.dislikedAt = const Value.absent(),
   });
   TracksCompanion.insert({
     this.id = const Value.absent(),
@@ -1398,6 +1482,8 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     this.available = const Value.absent(),
     this.problem = const Value.absent(),
     required DateTime addedAt,
+    this.disliked = const Value.absent(),
+    this.dislikedAt = const Value.absent(),
   }) : pathKey = Value(pathKey),
        path = Value(path),
        title = Value(title),
@@ -1431,6 +1517,8 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     Expression<bool>? available,
     Expression<String>? problem,
     Expression<DateTime>? addedAt,
+    Expression<bool>? disliked,
+    Expression<DateTime>? dislikedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1456,6 +1544,8 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
       if (available != null) 'available': available,
       if (problem != null) 'problem': problem,
       if (addedAt != null) 'added_at': addedAt,
+      if (disliked != null) 'disliked': disliked,
+      if (dislikedAt != null) 'disliked_at': dislikedAt,
     });
   }
 
@@ -1483,6 +1573,8 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     Value<bool>? available,
     Value<String?>? problem,
     Value<DateTime>? addedAt,
+    Value<bool>? disliked,
+    Value<DateTime?>? dislikedAt,
   }) {
     return TracksCompanion(
       id: id ?? this.id,
@@ -1508,6 +1600,8 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
       available: available ?? this.available,
       problem: problem ?? this.problem,
       addedAt: addedAt ?? this.addedAt,
+      disliked: disliked ?? this.disliked,
+      dislikedAt: dislikedAt ?? this.dislikedAt,
     );
   }
 
@@ -1583,6 +1677,12 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     if (addedAt.present) {
       map['added_at'] = Variable<DateTime>(addedAt.value);
     }
+    if (disliked.present) {
+      map['disliked'] = Variable<bool>(disliked.value);
+    }
+    if (dislikedAt.present) {
+      map['disliked_at'] = Variable<DateTime>(dislikedAt.value);
+    }
     return map;
   }
 
@@ -1611,7 +1711,9 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
           ..write('favoritedAt: $favoritedAt, ')
           ..write('available: $available, ')
           ..write('problem: $problem, ')
-          ..write('addedAt: $addedAt')
+          ..write('addedAt: $addedAt, ')
+          ..write('disliked: $disliked, ')
+          ..write('dislikedAt: $dislikedAt')
           ..write(')'))
         .toString();
   }
@@ -2488,6 +2590,923 @@ class AppSettingsCompanion extends UpdateCompanion<SettingRow> {
   }
 }
 
+class $ListeningEventsTable extends ListeningEvents
+    with TableInfo<$ListeningEventsTable, ListeningEventRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ListeningEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _trackIdMeta = const VerificationMeta(
+    'trackId',
+  );
+  @override
+  late final GeneratedColumn<int> trackId = GeneratedColumn<int>(
+    'track_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tracks (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _listenedMsMeta = const VerificationMeta(
+    'listenedMs',
+  );
+  @override
+  late final GeneratedColumn<int> listenedMs = GeneratedColumn<int>(
+    'listened_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _durationMsMeta = const VerificationMeta(
+    'durationMs',
+  );
+  @override
+  late final GeneratedColumn<int> durationMs = GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _endReasonMeta = const VerificationMeta(
+    'endReason',
+  );
+  @override
+  late final GeneratedColumn<String> endReason = GeneratedColumn<String>(
+    'end_reason',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modeMeta = const VerificationMeta('mode');
+  @override
+  late final GeneratedColumn<String> mode = GeneratedColumn<String>(
+    'mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    trackId,
+    startedAt,
+    listenedMs,
+    durationMs,
+    endReason,
+    mode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'listening_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ListeningEventRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('track_id')) {
+      context.handle(
+        _trackIdMeta,
+        trackId.isAcceptableOrUnknown(data['track_id']!, _trackIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_trackIdMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('listened_ms')) {
+      context.handle(
+        _listenedMsMeta,
+        listenedMs.isAcceptableOrUnknown(data['listened_ms']!, _listenedMsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_listenedMsMeta);
+    }
+    if (data.containsKey('duration_ms')) {
+      context.handle(
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
+      );
+    }
+    if (data.containsKey('end_reason')) {
+      context.handle(
+        _endReasonMeta,
+        endReason.isAcceptableOrUnknown(data['end_reason']!, _endReasonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endReasonMeta);
+    }
+    if (data.containsKey('mode')) {
+      context.handle(
+        _modeMeta,
+        mode.isAcceptableOrUnknown(data['mode']!, _modeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_modeMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ListeningEventRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ListeningEventRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      trackId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}track_id'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      listenedMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}listened_ms'],
+      )!,
+      durationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_ms'],
+      ),
+      endReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}end_reason'],
+      )!,
+      mode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mode'],
+      )!,
+    );
+  }
+
+  @override
+  $ListeningEventsTable createAlias(String alias) {
+    return $ListeningEventsTable(attachedDatabase, alias);
+  }
+}
+
+class ListeningEventRow extends DataClass
+    implements Insertable<ListeningEventRow> {
+  final int id;
+  final int trackId;
+  final DateTime startedAt;
+
+  /// How far the track was played (position when it ended).
+  final int listenedMs;
+  final int? durationMs;
+
+  /// completed / skipped / stopped ([EndReason] name).
+  final String endReason;
+
+  /// library / wave ([PlayContext] name).
+  final String mode;
+  const ListeningEventRow({
+    required this.id,
+    required this.trackId,
+    required this.startedAt,
+    required this.listenedMs,
+    this.durationMs,
+    required this.endReason,
+    required this.mode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['track_id'] = Variable<int>(trackId);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    map['listened_ms'] = Variable<int>(listenedMs);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = Variable<int>(durationMs);
+    }
+    map['end_reason'] = Variable<String>(endReason);
+    map['mode'] = Variable<String>(mode);
+    return map;
+  }
+
+  ListeningEventsCompanion toCompanion(bool nullToAbsent) {
+    return ListeningEventsCompanion(
+      id: Value(id),
+      trackId: Value(trackId),
+      startedAt: Value(startedAt),
+      listenedMs: Value(listenedMs),
+      durationMs: durationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationMs),
+      endReason: Value(endReason),
+      mode: Value(mode),
+    );
+  }
+
+  factory ListeningEventRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ListeningEventRow(
+      id: serializer.fromJson<int>(json['id']),
+      trackId: serializer.fromJson<int>(json['trackId']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      listenedMs: serializer.fromJson<int>(json['listenedMs']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
+      endReason: serializer.fromJson<String>(json['endReason']),
+      mode: serializer.fromJson<String>(json['mode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'trackId': serializer.toJson<int>(trackId),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'listenedMs': serializer.toJson<int>(listenedMs),
+      'durationMs': serializer.toJson<int?>(durationMs),
+      'endReason': serializer.toJson<String>(endReason),
+      'mode': serializer.toJson<String>(mode),
+    };
+  }
+
+  ListeningEventRow copyWith({
+    int? id,
+    int? trackId,
+    DateTime? startedAt,
+    int? listenedMs,
+    Value<int?> durationMs = const Value.absent(),
+    String? endReason,
+    String? mode,
+  }) => ListeningEventRow(
+    id: id ?? this.id,
+    trackId: trackId ?? this.trackId,
+    startedAt: startedAt ?? this.startedAt,
+    listenedMs: listenedMs ?? this.listenedMs,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
+    endReason: endReason ?? this.endReason,
+    mode: mode ?? this.mode,
+  );
+  ListeningEventRow copyWithCompanion(ListeningEventsCompanion data) {
+    return ListeningEventRow(
+      id: data.id.present ? data.id.value : this.id,
+      trackId: data.trackId.present ? data.trackId.value : this.trackId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      listenedMs: data.listenedMs.present
+          ? data.listenedMs.value
+          : this.listenedMs,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
+      endReason: data.endReason.present ? data.endReason.value : this.endReason,
+      mode: data.mode.present ? data.mode.value : this.mode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ListeningEventRow(')
+          ..write('id: $id, ')
+          ..write('trackId: $trackId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('listenedMs: $listenedMs, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('endReason: $endReason, ')
+          ..write('mode: $mode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    trackId,
+    startedAt,
+    listenedMs,
+    durationMs,
+    endReason,
+    mode,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ListeningEventRow &&
+          other.id == this.id &&
+          other.trackId == this.trackId &&
+          other.startedAt == this.startedAt &&
+          other.listenedMs == this.listenedMs &&
+          other.durationMs == this.durationMs &&
+          other.endReason == this.endReason &&
+          other.mode == this.mode);
+}
+
+class ListeningEventsCompanion extends UpdateCompanion<ListeningEventRow> {
+  final Value<int> id;
+  final Value<int> trackId;
+  final Value<DateTime> startedAt;
+  final Value<int> listenedMs;
+  final Value<int?> durationMs;
+  final Value<String> endReason;
+  final Value<String> mode;
+  const ListeningEventsCompanion({
+    this.id = const Value.absent(),
+    this.trackId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.listenedMs = const Value.absent(),
+    this.durationMs = const Value.absent(),
+    this.endReason = const Value.absent(),
+    this.mode = const Value.absent(),
+  });
+  ListeningEventsCompanion.insert({
+    this.id = const Value.absent(),
+    required int trackId,
+    required DateTime startedAt,
+    required int listenedMs,
+    this.durationMs = const Value.absent(),
+    required String endReason,
+    required String mode,
+  }) : trackId = Value(trackId),
+       startedAt = Value(startedAt),
+       listenedMs = Value(listenedMs),
+       endReason = Value(endReason),
+       mode = Value(mode);
+  static Insertable<ListeningEventRow> custom({
+    Expression<int>? id,
+    Expression<int>? trackId,
+    Expression<DateTime>? startedAt,
+    Expression<int>? listenedMs,
+    Expression<int>? durationMs,
+    Expression<String>? endReason,
+    Expression<String>? mode,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (trackId != null) 'track_id': trackId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (listenedMs != null) 'listened_ms': listenedMs,
+      if (durationMs != null) 'duration_ms': durationMs,
+      if (endReason != null) 'end_reason': endReason,
+      if (mode != null) 'mode': mode,
+    });
+  }
+
+  ListeningEventsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? trackId,
+    Value<DateTime>? startedAt,
+    Value<int>? listenedMs,
+    Value<int?>? durationMs,
+    Value<String>? endReason,
+    Value<String>? mode,
+  }) {
+    return ListeningEventsCompanion(
+      id: id ?? this.id,
+      trackId: trackId ?? this.trackId,
+      startedAt: startedAt ?? this.startedAt,
+      listenedMs: listenedMs ?? this.listenedMs,
+      durationMs: durationMs ?? this.durationMs,
+      endReason: endReason ?? this.endReason,
+      mode: mode ?? this.mode,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (trackId.present) {
+      map['track_id'] = Variable<int>(trackId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (listenedMs.present) {
+      map['listened_ms'] = Variable<int>(listenedMs.value);
+    }
+    if (durationMs.present) {
+      map['duration_ms'] = Variable<int>(durationMs.value);
+    }
+    if (endReason.present) {
+      map['end_reason'] = Variable<String>(endReason.value);
+    }
+    if (mode.present) {
+      map['mode'] = Variable<String>(mode.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ListeningEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('trackId: $trackId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('listenedMs: $listenedMs, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('endReason: $endReason, ')
+          ..write('mode: $mode')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TasteItemsTable extends TasteItems
+    with TableInfo<$TasteItemsTable, TasteItemRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TasteItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueKeyMeta = const VerificationMeta(
+    'valueKey',
+  );
+  @override
+  late final GeneratedColumn<String> valueKey = GeneratedColumn<String>(
+    'value_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _weightMeta = const VerificationMeta('weight');
+  @override
+  late final GeneratedColumn<double> weight = GeneratedColumn<double>(
+    'weight',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1.0),
+  );
+  static const VerificationMeta _excludedMeta = const VerificationMeta(
+    'excluded',
+  );
+  @override
+  late final GeneratedColumn<bool> excluded = GeneratedColumn<bool>(
+    'excluded',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("excluded" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kind,
+    value,
+    valueKey,
+    weight,
+    excluded,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'taste_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TasteItemRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    if (data.containsKey('value_key')) {
+      context.handle(
+        _valueKeyMeta,
+        valueKey.isAcceptableOrUnknown(data['value_key']!, _valueKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueKeyMeta);
+    }
+    if (data.containsKey('weight')) {
+      context.handle(
+        _weightMeta,
+        weight.isAcceptableOrUnknown(data['weight']!, _weightMeta),
+      );
+    }
+    if (data.containsKey('excluded')) {
+      context.handle(
+        _excludedMeta,
+        excluded.isAcceptableOrUnknown(data['excluded']!, _excludedMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {kind, valueKey},
+  ];
+  @override
+  TasteItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TasteItemRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+      valueKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value_key'],
+      )!,
+      weight: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight'],
+      )!,
+      excluded: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}excluded'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TasteItemsTable createAlias(String alias) {
+    return $TasteItemsTable(attachedDatabase, alias);
+  }
+}
+
+class TasteItemRow extends DataClass implements Insertable<TasteItemRow> {
+  final int id;
+
+  /// genre / artist ([TasteKind] name).
+  final String kind;
+  final String value;
+
+  /// Lower-cased [value] (one row per kind and value).
+  final String valueKey;
+  final double weight;
+
+  /// True: never suggest tracks with this genre / artist.
+  final bool excluded;
+  final DateTime updatedAt;
+  const TasteItemRow({
+    required this.id,
+    required this.kind,
+    required this.value,
+    required this.valueKey,
+    required this.weight,
+    required this.excluded,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['kind'] = Variable<String>(kind);
+    map['value'] = Variable<String>(value);
+    map['value_key'] = Variable<String>(valueKey);
+    map['weight'] = Variable<double>(weight);
+    map['excluded'] = Variable<bool>(excluded);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TasteItemsCompanion toCompanion(bool nullToAbsent) {
+    return TasteItemsCompanion(
+      id: Value(id),
+      kind: Value(kind),
+      value: Value(value),
+      valueKey: Value(valueKey),
+      weight: Value(weight),
+      excluded: Value(excluded),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TasteItemRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TasteItemRow(
+      id: serializer.fromJson<int>(json['id']),
+      kind: serializer.fromJson<String>(json['kind']),
+      value: serializer.fromJson<String>(json['value']),
+      valueKey: serializer.fromJson<String>(json['valueKey']),
+      weight: serializer.fromJson<double>(json['weight']),
+      excluded: serializer.fromJson<bool>(json['excluded']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'kind': serializer.toJson<String>(kind),
+      'value': serializer.toJson<String>(value),
+      'valueKey': serializer.toJson<String>(valueKey),
+      'weight': serializer.toJson<double>(weight),
+      'excluded': serializer.toJson<bool>(excluded),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TasteItemRow copyWith({
+    int? id,
+    String? kind,
+    String? value,
+    String? valueKey,
+    double? weight,
+    bool? excluded,
+    DateTime? updatedAt,
+  }) => TasteItemRow(
+    id: id ?? this.id,
+    kind: kind ?? this.kind,
+    value: value ?? this.value,
+    valueKey: valueKey ?? this.valueKey,
+    weight: weight ?? this.weight,
+    excluded: excluded ?? this.excluded,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TasteItemRow copyWithCompanion(TasteItemsCompanion data) {
+    return TasteItemRow(
+      id: data.id.present ? data.id.value : this.id,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      value: data.value.present ? data.value.value : this.value,
+      valueKey: data.valueKey.present ? data.valueKey.value : this.valueKey,
+      weight: data.weight.present ? data.weight.value : this.weight,
+      excluded: data.excluded.present ? data.excluded.value : this.excluded,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TasteItemRow(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('value: $value, ')
+          ..write('valueKey: $valueKey, ')
+          ..write('weight: $weight, ')
+          ..write('excluded: $excluded, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, kind, value, valueKey, weight, excluded, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TasteItemRow &&
+          other.id == this.id &&
+          other.kind == this.kind &&
+          other.value == this.value &&
+          other.valueKey == this.valueKey &&
+          other.weight == this.weight &&
+          other.excluded == this.excluded &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TasteItemsCompanion extends UpdateCompanion<TasteItemRow> {
+  final Value<int> id;
+  final Value<String> kind;
+  final Value<String> value;
+  final Value<String> valueKey;
+  final Value<double> weight;
+  final Value<bool> excluded;
+  final Value<DateTime> updatedAt;
+  const TasteItemsCompanion({
+    this.id = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.value = const Value.absent(),
+    this.valueKey = const Value.absent(),
+    this.weight = const Value.absent(),
+    this.excluded = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  TasteItemsCompanion.insert({
+    this.id = const Value.absent(),
+    required String kind,
+    required String value,
+    required String valueKey,
+    this.weight = const Value.absent(),
+    this.excluded = const Value.absent(),
+    required DateTime updatedAt,
+  }) : kind = Value(kind),
+       value = Value(value),
+       valueKey = Value(valueKey),
+       updatedAt = Value(updatedAt);
+  static Insertable<TasteItemRow> custom({
+    Expression<int>? id,
+    Expression<String>? kind,
+    Expression<String>? value,
+    Expression<String>? valueKey,
+    Expression<double>? weight,
+    Expression<bool>? excluded,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+      if (value != null) 'value': value,
+      if (valueKey != null) 'value_key': valueKey,
+      if (weight != null) 'weight': weight,
+      if (excluded != null) 'excluded': excluded,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  TasteItemsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? kind,
+    Value<String>? value,
+    Value<String>? valueKey,
+    Value<double>? weight,
+    Value<bool>? excluded,
+    Value<DateTime>? updatedAt,
+  }) {
+    return TasteItemsCompanion(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      value: value ?? this.value,
+      valueKey: valueKey ?? this.valueKey,
+      weight: weight ?? this.weight,
+      excluded: excluded ?? this.excluded,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (valueKey.present) {
+      map['value_key'] = Variable<String>(valueKey.value);
+    }
+    if (weight.present) {
+      map['weight'] = Variable<double>(weight.value);
+    }
+    if (excluded.present) {
+      map['excluded'] = Variable<bool>(excluded.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TasteItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('value: $value, ')
+          ..write('valueKey: $valueKey, ')
+          ..write('weight: $weight, ')
+          ..write('excluded: $excluded, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2498,6 +3517,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $ListeningEventsTable listeningEvents = $ListeningEventsTable(
+    this,
+  );
+  late final $TasteItemsTable tasteItems = $TasteItemsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2508,6 +3531,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     playlists,
     playlistEntries,
     appSettings,
+    listeningEvents,
+    tasteItems,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2531,6 +3556,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('playlist_entries', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tracks',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('listening_events', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2863,6 +3895,8 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   Value<bool> available,
   Value<String?> problem,
   required DateTime addedAt,
+  Value<bool> disliked,
+  Value<DateTime?> dislikedAt,
 });
 typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<int> id,
@@ -2888,6 +3922,8 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<bool> available,
   Value<String?> problem,
   Value<DateTime> addedAt,
+  Value<bool> disliked,
+  Value<DateTime?> dislikedAt,
 });
 
 final class $$TracksTableReferences
@@ -2925,6 +3961,26 @@ final class $$TracksTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _playlistEntriesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ListeningEventsTable, List<ListeningEventRow>>
+  _listeningEventsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.listeningEvents,
+    aliasName: 'tracks__id__listening_events__track_id',
+  );
+
+  $$ListeningEventsTableProcessedTableManager get listeningEventsRefs {
+    final manager = $$ListeningEventsTableTableManager(
+      $_db,
+      $_db.listeningEvents,
+    ).filter((f) => f.trackId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _listeningEventsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -3051,6 +4107,16 @@ class $$TracksTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get disliked => $composableBuilder(
+    column: $table.disliked,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dislikedAt => $composableBuilder(
+    column: $table.dislikedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$LibraryFoldersTableFilterComposer get folderId {
     final $$LibraryFoldersTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -3090,6 +4156,31 @@ class $$TracksTableFilterComposer
           }) => $$PlaylistEntriesTableFilterComposer(
             $db: $db,
             $table: $db.playlistEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> listeningEventsRefs(
+    Expression<bool> Function($$ListeningEventsTableFilterComposer f) f,
+  ) {
+    final $$ListeningEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.listeningEvents,
+      getReferencedColumn: (t) => t.trackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ListeningEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.listeningEvents,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3219,6 +4310,16 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get disliked => $composableBuilder(
+    column: $table.disliked,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dislikedAt => $composableBuilder(
+    column: $table.dislikedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$LibraryFoldersTableOrderingComposer get folderId {
     final $$LibraryFoldersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3334,6 +4435,14 @@ class $$TracksTableAnnotationComposer
   GeneratedColumn<DateTime> get addedAt =>
       $composableBuilder(column: $table.addedAt, builder: (column) => column);
 
+  GeneratedColumn<bool> get disliked =>
+      $composableBuilder(column: $table.disliked, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dislikedAt => $composableBuilder(
+    column: $table.dislikedAt,
+    builder: (column) => column,
+  );
+
   $$LibraryFoldersTableAnnotationComposer get folderId {
     final $$LibraryFoldersTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -3381,6 +4490,31 @@ class $$TracksTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> listeningEventsRefs<T extends Object>(
+    Expression<T> Function($$ListeningEventsTableAnnotationComposer a) f,
+  ) {
+    final $$ListeningEventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.listeningEvents,
+      getReferencedColumn: (t) => t.trackId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ListeningEventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.listeningEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TracksTableTableManager
@@ -3396,7 +4530,11 @@ class $$TracksTableTableManager
           $$TracksTableUpdateCompanionBuilder,
           (TrackRow, $$TracksTableReferences),
           TrackRow,
-          PrefetchHooks Function({bool folderId, bool playlistEntriesRefs})
+          PrefetchHooks Function({
+            bool folderId,
+            bool playlistEntriesRefs,
+            bool listeningEventsRefs,
+          })
         > {
   $$TracksTableTableManager(_$AppDatabase db, $TracksTable table)
     : super(
@@ -3434,6 +4572,8 @@ class $$TracksTableTableManager
                 Value<bool> available = const Value.absent(),
                 Value<String?> problem = const Value.absent(),
                 Value<DateTime> addedAt = const Value.absent(),
+                Value<bool> disliked = const Value.absent(),
+                Value<DateTime?> dislikedAt = const Value.absent(),
               }) => TracksCompanion(
                 id: id,
                 source: source,
@@ -3458,6 +4598,8 @@ class $$TracksTableTableManager
                 available: available,
                 problem: problem,
                 addedAt: addedAt,
+                disliked: disliked,
+                dislikedAt: dislikedAt,
               ),
           createCompanionCallback:
               ({
@@ -3484,6 +4626,8 @@ class $$TracksTableTableManager
                 Value<bool> available = const Value.absent(),
                 Value<String?> problem = const Value.absent(),
                 required DateTime addedAt,
+                Value<bool> disliked = const Value.absent(),
+                Value<DateTime?> dislikedAt = const Value.absent(),
               }) => TracksCompanion.insert(
                 id: id,
                 source: source,
@@ -3508,6 +4652,8 @@ class $$TracksTableTableManager
                 available: available,
                 problem: problem,
                 addedAt: addedAt,
+                disliked: disliked,
+                dislikedAt: dislikedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -3518,11 +4664,16 @@ class $$TracksTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({folderId = false, playlistEntriesRefs = false}) {
+              ({
+                folderId = false,
+                playlistEntriesRefs = false,
+                listeningEventsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (playlistEntriesRefs) db.playlistEntries,
+                    if (listeningEventsRefs) db.listeningEvents,
                   ],
                   addJoins:
                       <
@@ -3577,6 +4728,27 @@ class $$TracksTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (listeningEventsRefs)
+                        await $_getPrefetchedData<
+                          TrackRow,
+                          $TracksTable,
+                          ListeningEventRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TracksTableReferences
+                              ._listeningEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TracksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).listeningEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.trackId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3597,7 +4769,11 @@ typedef $$TracksTableProcessedTableManager =
       $$TracksTableUpdateCompanionBuilder,
       (TrackRow, $$TracksTableReferences),
       TrackRow,
-      PrefetchHooks Function({bool folderId, bool playlistEntriesRefs})
+      PrefetchHooks Function({
+        bool folderId,
+        bool playlistEntriesRefs,
+        bool listeningEventsRefs,
+      })
     >;
 typedef $$PlaylistsTableCreateCompanionBuilder = PlaylistsCompanion Function({
   Value<int> id,
@@ -4424,6 +5600,607 @@ typedef $$AppSettingsTableProcessedTableManager =
       SettingRow,
       PrefetchHooks Function()
     >;
+typedef $$ListeningEventsTableCreateCompanionBuilder =
+    ListeningEventsCompanion Function({
+      Value<int> id,
+      required int trackId,
+      required DateTime startedAt,
+      required int listenedMs,
+      Value<int?> durationMs,
+      required String endReason,
+      required String mode,
+    });
+typedef $$ListeningEventsTableUpdateCompanionBuilder =
+    ListeningEventsCompanion Function({
+      Value<int> id,
+      Value<int> trackId,
+      Value<DateTime> startedAt,
+      Value<int> listenedMs,
+      Value<int?> durationMs,
+      Value<String> endReason,
+      Value<String> mode,
+    });
+
+final class $$ListeningEventsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ListeningEventsTable,
+          ListeningEventRow
+        > {
+  $$ListeningEventsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TracksTable _trackIdTable(_$AppDatabase db) =>
+      db.tracks.createAlias('listening_events__track_id__tracks__id');
+
+  $$TracksTableProcessedTableManager get trackId {
+    final $_column = $_itemColumn<int>('track_id')!;
+
+    final manager = $$TracksTableTableManager(
+      $_db,
+      $_db.tracks,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_trackIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ListeningEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $ListeningEventsTable> {
+  $$ListeningEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get listenedMs => $composableBuilder(
+    column: $table.listenedMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get endReason => $composableBuilder(
+    column: $table.endReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TracksTableFilterComposer get trackId {
+    final $$TracksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableFilterComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ListeningEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ListeningEventsTable> {
+  $$ListeningEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get listenedMs => $composableBuilder(
+    column: $table.listenedMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get endReason => $composableBuilder(
+    column: $table.endReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TracksTableOrderingComposer get trackId {
+    final $$TracksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableOrderingComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ListeningEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ListeningEventsTable> {
+  $$ListeningEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get listenedMs => $composableBuilder(
+    column: $table.listenedMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get endReason =>
+      $composableBuilder(column: $table.endReason, builder: (column) => column);
+
+  GeneratedColumn<String> get mode =>
+      $composableBuilder(column: $table.mode, builder: (column) => column);
+
+  $$TracksTableAnnotationComposer get trackId {
+    final $$TracksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.trackId,
+      referencedTable: $db.tracks,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TracksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tracks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ListeningEventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ListeningEventsTable,
+          ListeningEventRow,
+          $$ListeningEventsTableFilterComposer,
+          $$ListeningEventsTableOrderingComposer,
+          $$ListeningEventsTableAnnotationComposer,
+          $$ListeningEventsTableCreateCompanionBuilder,
+          $$ListeningEventsTableUpdateCompanionBuilder,
+          (ListeningEventRow, $$ListeningEventsTableReferences),
+          ListeningEventRow,
+          PrefetchHooks Function({bool trackId})
+        > {
+  $$ListeningEventsTableTableManager(
+    _$AppDatabase db,
+    $ListeningEventsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ListeningEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ListeningEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ListeningEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> trackId = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<int> listenedMs = const Value.absent(),
+                Value<int?> durationMs = const Value.absent(),
+                Value<String> endReason = const Value.absent(),
+                Value<String> mode = const Value.absent(),
+              }) => ListeningEventsCompanion(
+                id: id,
+                trackId: trackId,
+                startedAt: startedAt,
+                listenedMs: listenedMs,
+                durationMs: durationMs,
+                endReason: endReason,
+                mode: mode,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int trackId,
+                required DateTime startedAt,
+                required int listenedMs,
+                Value<int?> durationMs = const Value.absent(),
+                required String endReason,
+                required String mode,
+              }) => ListeningEventsCompanion.insert(
+                id: id,
+                trackId: trackId,
+                startedAt: startedAt,
+                listenedMs: listenedMs,
+                durationMs: durationMs,
+                endReason: endReason,
+                mode: mode,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ListeningEventsTable, ListeningEventRow>(table),
+                  $$ListeningEventsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({trackId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (trackId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.trackId,
+                        referencedTable: $$ListeningEventsTableReferences
+                            ._trackIdTable(db),
+                        referencedColumn: $$ListeningEventsTableReferences
+                            ._trackIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ListeningEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ListeningEventsTable,
+      ListeningEventRow,
+      $$ListeningEventsTableFilterComposer,
+      $$ListeningEventsTableOrderingComposer,
+      $$ListeningEventsTableAnnotationComposer,
+      $$ListeningEventsTableCreateCompanionBuilder,
+      $$ListeningEventsTableUpdateCompanionBuilder,
+      (ListeningEventRow, $$ListeningEventsTableReferences),
+      ListeningEventRow,
+      PrefetchHooks Function({bool trackId})
+    >;
+typedef $$TasteItemsTableCreateCompanionBuilder = TasteItemsCompanion Function({
+  Value<int> id,
+  required String kind,
+  required String value,
+  required String valueKey,
+  Value<double> weight,
+  Value<bool> excluded,
+  required DateTime updatedAt,
+});
+typedef $$TasteItemsTableUpdateCompanionBuilder = TasteItemsCompanion Function({
+  Value<int> id,
+  Value<String> kind,
+  Value<String> value,
+  Value<String> valueKey,
+  Value<double> weight,
+  Value<bool> excluded,
+  Value<DateTime> updatedAt,
+});
+
+class $$TasteItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $TasteItemsTable> {
+  $$TasteItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get valueKey => $composableBuilder(
+    column: $table.valueKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get weight => $composableBuilder(
+    column: $table.weight,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get excluded => $composableBuilder(
+    column: $table.excluded,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TasteItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TasteItemsTable> {
+  $$TasteItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get valueKey => $composableBuilder(
+    column: $table.valueKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get weight => $composableBuilder(
+    column: $table.weight,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get excluded => $composableBuilder(
+    column: $table.excluded,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TasteItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TasteItemsTable> {
+  $$TasteItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<String> get valueKey =>
+      $composableBuilder(column: $table.valueKey, builder: (column) => column);
+
+  GeneratedColumn<double> get weight =>
+      $composableBuilder(column: $table.weight, builder: (column) => column);
+
+  GeneratedColumn<bool> get excluded =>
+      $composableBuilder(column: $table.excluded, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$TasteItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TasteItemsTable,
+          TasteItemRow,
+          $$TasteItemsTableFilterComposer,
+          $$TasteItemsTableOrderingComposer,
+          $$TasteItemsTableAnnotationComposer,
+          $$TasteItemsTableCreateCompanionBuilder,
+          $$TasteItemsTableUpdateCompanionBuilder,
+          (
+            TasteItemRow,
+            BaseReferences<_$AppDatabase, $TasteItemsTable, TasteItemRow>,
+          ),
+          TasteItemRow,
+          PrefetchHooks Function()
+        > {
+  $$TasteItemsTableTableManager(_$AppDatabase db, $TasteItemsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TasteItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TasteItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TasteItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> value = const Value.absent(),
+                Value<String> valueKey = const Value.absent(),
+                Value<double> weight = const Value.absent(),
+                Value<bool> excluded = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => TasteItemsCompanion(
+                id: id,
+                kind: kind,
+                value: value,
+                valueKey: valueKey,
+                weight: weight,
+                excluded: excluded,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String kind,
+                required String value,
+                required String valueKey,
+                Value<double> weight = const Value.absent(),
+                Value<bool> excluded = const Value.absent(),
+                required DateTime updatedAt,
+              }) => TasteItemsCompanion.insert(
+                id: id,
+                kind: kind,
+                value: value,
+                valueKey: valueKey,
+                weight: weight,
+                excluded: excluded,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TasteItemsTable, TasteItemRow>(table),
+                  BaseReferences<_$AppDatabase, $TasteItemsTable, TasteItemRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TasteItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TasteItemsTable,
+      TasteItemRow,
+      $$TasteItemsTableFilterComposer,
+      $$TasteItemsTableOrderingComposer,
+      $$TasteItemsTableAnnotationComposer,
+      $$TasteItemsTableCreateCompanionBuilder,
+      $$TasteItemsTableUpdateCompanionBuilder,
+      (
+        TasteItemRow,
+        BaseReferences<_$AppDatabase, $TasteItemsTable, TasteItemRow>,
+      ),
+      TasteItemRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4438,4 +6215,8 @@ class $AppDatabaseManager {
       $$PlaylistEntriesTableTableManager(_db, _db.playlistEntries);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$ListeningEventsTableTableManager get listeningEvents =>
+      $$ListeningEventsTableTableManager(_db, _db.listeningEvents);
+  $$TasteItemsTableTableManager get tasteItems =>
+      $$TasteItemsTableTableManager(_db, _db.tasteItems);
 }
