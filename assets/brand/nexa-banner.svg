@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 430" role="img" aria-labelledby="title desc">
+  <title id="title">NEXA MUSIC — Find your frequency</title>
+  <desc id="desc">Graphite banner with a lavender flowing wave, light typography and the NEXA Music name.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101219"/>
+      <stop offset="0.55" stop-color="#171a28"/>
+      <stop offset="1" stop-color="#101219"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c6dff" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="#ad9aff" stop-opacity="0.96"/>
+      <stop offset="0.72" stop-color="#88bde1" stop-opacity="0.86"/>
+      <stop offset="1" stop-color="#f0a5a6" stop-opacity="0.18"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#806bf1" stop-opacity="0.27"/>
+      <stop offset="1" stop-color="#806bf1" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="46" height="46" patternUnits="userSpaceOnUse">
+      <path d="M46 0H0V46" fill="none" stroke="#ffffff" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
+    <clipPath id="clip"><rect x="0" y="0" width="1400" height="430" rx="22"/></clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <rect width="1400" height="430" fill="url(#background)"/>
+    <rect width="1400" height="430" fill="url(#grid)"/>
+    <ellipse cx="1075" cy="220" rx="490" ry="390" fill="url(#glow)"/>
+    <path d="M 700,263 C 821,230 832,100 933,112 S 1044,345 1166,252 S 1298,134 1450,166" fill="none" stroke="url(#wave)" stroke-width="2" opacity="0.95"/>
+    <path d="M 690,281 C 840,270 860,128 957,146 S 1068,328 1186,273 S 1333,170 1449,198" fill="none" stroke="url(#wave)" stroke-width="1.6" opacity="0.75"/>
+    <path d="M 690,244 C 795,190 866,67 943,94 S 1099,360 1207,233 S 1338,121 1450,146" fill="none" stroke="url(#wave)" stroke-width="1.4" opacity="0.6"/>
+    <path d="M 696,304 C 823,282 882,173 974,172 S 1085,325 1196,289 S 1318,190 1450,216" fill="none" stroke="url(#wave)" stroke-width="1.2" opacity="0.6"/>
+    <path d="M 704,226 C 823,173 871,60 951,74 S 1102,374 1217,219 S 1373,92 1450,131" fill="none" stroke="url(#wave)" stroke-width="1" opacity="0.38"/>
+    <path d="M 700,328 C 850,288 907,209 996,198 S 1125,341 1232,299 S 1352,217 1450,235" fill="none" stroke="url(#wave)" stroke-width="1" opacity="0.46"/>
+    <circle cx="938" cy="114" r="3.4" fill="#c4b8ff"/>
+    <circle cx="1168" cy="252" r="3.4" fill="#a4c1eb"/>
+    <circle cx="1207" cy="233" r="2" fill="#f0a5a6"/>
+    <g fill="#f0efeb" font-family="Segoe UI, Inter, Arial, sans-serif">
+      <text x="81" y="76" font-size="16" letter-spacing="5.5" fill="#b4a3ff" font-weight="700">PERSONAL MUSIC SYSTEM</text>
+      <text x="72" y="238" font-size="114" font-weight="800" letter-spacing="-7">NEXA</text>
+      <text x="82" y="294" font-size="49" font-weight="500" letter-spacing="18">MUSIC</text>
+      <text x="84" y="356" font-size="23" fill="#b5b8c9" letter-spacing="0.6">Find your frequency.</text>
+      <text x="1248" y="55" font-size="13" letter-spacing="2.5" fill="#a3a6b7">DESIGN 04</text>
+    </g>
+    <path d="M80 104H580" stroke="#ad9aff" stroke-opacity="0.35"/>
+    <path d="M80 389H1320" stroke="#ffffff" stroke-opacity="0.11"/>
+    <rect x="1262" y="367" width="58" height="5" rx="2.5" fill="#ad9aff"/>
+    <rect x="1202" y="367" width="45" height="5" rx="2.5" fill="#7b839e" opacity="0.5"/>
+  </g>
+</svg>
