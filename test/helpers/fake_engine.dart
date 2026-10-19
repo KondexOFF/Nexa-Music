@@ -8,6 +8,12 @@ class FakeEngine implements PlaybackEngine {
   final _completed = StreamController<void>.broadcast(sync: true);
   final _errors = StreamController<String>.broadcast(sync: true);
   final _devices = StreamController<List<OutputDevice>>.broadcast(sync: true);
+  final _advanced = StreamController<String>.broadcast(sync: true);
+
+  /// Last [prepareNext] call (path, plan).
+  String? preparedPath;
+  TransitionPlan? preparedPlan;
+  int prepareCalls = 0;
   EngineState _state = const EngineState();
 
   /// Every file passed to [load], in order.
@@ -33,6 +39,30 @@ class FakeEngine implements PlaybackEngine {
       _emit(_state.copyWith(position: position));
 
   void fail(String message) => _errors.add(message);
+
+  /// Simulates mpv moving on to the gapless file that was prepared.
+  void advanceGapless() {
+    final next = preparedPath!;
+    preparedPath = null;
+    _emit(
+      EngineState(
+        path: next,
+        playing: _state.playing,
+        duration: const Duration(minutes: 3),
+      ),
+    );
+    _advanced.add(next);
+  }
+
+  @override
+  Stream<String> get advanced => _advanced.stream;
+
+  @override
+  Future<void> prepareNext(String? path, TransitionPlan plan) async {
+    prepareCalls++;
+    preparedPath = path;
+    preparedPlan = plan;
+  }
 
   @override
   Stream<EngineState> get states => _states.stream;
@@ -82,5 +112,6 @@ class FakeEngine implements PlaybackEngine {
     await _completed.close();
     await _errors.close();
     await _devices.close();
+    await _advanced.close();
   }
 }

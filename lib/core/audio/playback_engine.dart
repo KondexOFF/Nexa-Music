@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'transition.dart';
+
+export 'transition.dart';
+
 /// An audio output device reported by the engine.
 @immutable
 class OutputDevice {
@@ -64,6 +68,14 @@ abstract interface class PlaybackEngine {
 
   /// Readable engine errors (file cannot be decoded, device lost ...).
   Stream<String> get errors;
+
+  /// Fires with the path that became current through a prepared transition
+  /// (gapless or crossfade); [completed] does not fire in that case.
+  Stream<String> get advanced;
+
+  /// Tells the engine what follows the current file and how ([path] null:
+  /// nothing prepared, the file ends normally). Phase 4 Mix Engine.
+  Future<void> prepareNext(String? path, TransitionPlan plan);
 
   EngineState get state;
 

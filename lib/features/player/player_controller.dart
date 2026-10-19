@@ -7,10 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/audio/media_kit_engine.dart';
+import '../../core/audio/mixing_engine.dart';
 import '../../core/audio/playback_engine.dart';
 import '../../core/models/track.dart';
+import '../../core/settings/settings_provider.dart';
 import '../../core/settings/settings_repository.dart';
-import '../library/library_providers.dart';
+import '../mix_engine/mix_settings.dart';
+import '../mix_engine/transition_planner.dart';
 
 enum PlayerRepeat { off, all, one }
 
@@ -59,6 +62,21 @@ class PlayerState {
       cursor < 0 ? queue : queue.sublist(math.min(cursor + 1, queue.length));
   bool get hasNext => cursor + 1 < queue.length || repeat == PlayerRepeat.all;
 
+  /// The entry that follows automatically (null: playback stops or the
+  /// current song repeats).
+  QueueEntry? get nextEntry {
+    if (cursor < 0 || repeat == PlayerRepeat.one) {
+      return null;
+    }
+    if (cursor + 1 < queue.length) {
+      return queue[cursor + 1];
+    }
+    if (repeat == PlayerRepeat.all && queue.length > 1) {
+      return queue[0];
+    }
+    return null;
+  }
+
   PlayerState copyWith({
     List<QueueEntry>? queue,
     int? cursor,
@@ -84,14 +102,11 @@ class PlayerState {
 
 /// The audio engine. Tests override this with a fake.
 final playbackEngineProvider = Provider<PlaybackEngine>((ref) {
-  final engine = MediaKitEngine();
+  // Two media_kit decks: preloading, gapless and crossfade (Phase 4).
+  final engine = MixingEngine(createDeck: MediaKitEngine.new);
   ref.onDispose(engine.dispose);
   return engine;
 });
-
-final settingsRepositoryProvider = Provider<SettingsRepository>(
-  (ref) => SettingsRepository(ref.watch(appDatabaseProvider)),
-);
 
 /// Engine position / duration (separate so that only progress widgets
 /// rebuild several times per second).
@@ -122,6 +137,7 @@ class PlayerController extends Notifier<PlayerState> {
     _subs
       ..add(_engine.completed.listen((_) => _onCompleted()))
       ..add(_engine.errors.listen(_onError))
+      ..add(_engine.advanced.listen(_onAdvanced))
       ..add(
         _engine.states.listen((s) {
           if (s.playing != state.playing) {
@@ -134,6 +150,16 @@ class PlayerController extends Notifier<PlayerState> {
         s.cancel();
       }
       _subs.clear();
+    });
+    // Re-plan the next transition when the Mix settings or the queue change.
+    ref.listen(mixSettingsProvider, (_, _) => unawaited(_prepareNext()));
+    listenSelf((previous, next) {
+      if (previous == null ||
+          previous.currentEntry?.uid != next.currentEntry?.uid ||
+          previous.nextEntry?.uid != next.nextEntry?.uid ||
+          previous.repeat != next.repeat) {
+        unawaited(_prepareNext());
+      }
     });
     unawaited(_restoreSettings());
     return const PlayerState();
@@ -164,6 +190,32 @@ class PlayerController extends Notifier<PlayerState> {
     } on Object {
       // Settings are a convenience; defaults are fine.
     }
+  }
+
+  /// Tells the engine what follows and how (Mix Engine plan).
+  Future<void> _prepareNext() async {
+    final current = state.current;
+    if (current == null || _engine.state.path != current.path) {
+      return; // Prepared again after the current file is loaded.
+    }
+    final next = state.nextEntry?.track;
+    if (next == null || !File(next.path).existsSync()) {
+      await _engine.prepareNext(null, TransitionPlan.cut);
+      return;
+    }
+    await _engine.prepareNext(
+      next.path,
+      planTransition(ref.read(mixSettingsProvider), current, next),
+    );
+  }
+
+  /// The engine moved to the prepared next file (gapless or crossfade).
+  void _onAdvanced(String path) {
+    final next = state.nextEntry;
+    if (next == null) {
+      return;
+    }
+    state = state.copyWith(cursor: state.queue.indexOf(next));
   }
 
   Future<void> _applyVolume() =>
@@ -348,6 +400,7 @@ class PlayerController extends Notifier<PlayerState> {
       if (File(track.path).existsSync()) {
         await _engine.load(track.path, play: play);
         await _applyVolume();
+        await _prepareNext();
         return;
       }
       _notice('Skipped "${track.title}": file not found');

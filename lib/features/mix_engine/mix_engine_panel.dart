@@ -8,18 +8,20 @@ import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../ui/isolated_slider.dart';
 import '../../ui/nexa_widgets.dart';
-import 'mix_preview.dart';
+import '../../core/audio/transition.dart';
+import '../player/player_controller.dart';
+import 'mix_settings.dart';
+import 'transition_planner.dart';
 
-/// NEXA Mix Engine panel. In Phase 1 the controls are an interactive
-/// PREVIEW: they change the visualisation and the chip in the bottom player,
-/// but do not touch audio (Phase 4).
+/// NEXA Mix Engine panel (Phase 4): the settings are applied to playback and
+/// saved; the panel also explains the next transition.
 class MixEnginePanel extends ConsumerWidget {
   const MixEnginePanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mix = ref.watch(mixPreviewProvider);
-    final controller = ref.read(mixPreviewProvider.notifier);
+    final mix = ref.watch(mixSettingsProvider);
+    final controller = ref.read(mixSettingsProvider.notifier);
     final sliderEnabled = mix.mode != TransitionMode.gapless;
 
     return NexaPanel(
@@ -42,7 +44,9 @@ class MixEnginePanel extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const _PreviewNote(),
+          const _MixNote(),
+          const SizedBox(height: 12),
+          const _NextTransition(),
           const Divider(height: 28, color: NexaColors.divider),
           const Row(
             children: [
@@ -68,8 +72,8 @@ class MixEnginePanel extends ConsumerWidget {
                 child: IsolatedSlider(
                   child: Slider(
                     value: mix.crossfadeSeconds,
-                    min: MixPreview.minSeconds,
-                    max: MixPreview.maxSeconds,
+                    min: MixSettings.minSeconds,
+                    max: MixSettings.maxSeconds,
                     divisions: 12,
                     label: '${mix.crossfadeSeconds.round()} s',
                     onChanged: sliderEnabled ? controller.setSeconds : null,
@@ -175,12 +179,39 @@ class MixEnginePanel extends ConsumerWidget {
               ),
             ],
           ),
+          const Divider(height: 32, color: NexaColors.divider),
+          Row(
+            children: [
+              const Flexible(
+                child: Text(
+                  S.albumGaplessTitle,
+                  style: NexaText.h3,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const NexaTooltip(
+                message: S.albumGaplessInfo,
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  size: 18,
+                  color: NexaColors.textSecondary,
+                ),
+              ),
+              const Spacer(),
+              Switch(
+                value: mix.albumGapless,
+                onChanged: controller.setAlbumGapless,
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  static String _secondsLabel(MixPreview mix) {
+  static String _secondsLabel(MixSettings mix) {
     if (mix.mode == TransitionMode.gapless) {
       return S.gaplessNote;
     }
@@ -192,20 +223,57 @@ class MixEnginePanel extends ConsumerWidget {
   }
 }
 
-class _PreviewNote extends StatelessWidget {
-  const _PreviewNote();
+class _MixNote extends StatelessWidget {
+  const _MixNote();
 
   @override
   Widget build(BuildContext context) {
+    return Text(
+      S.mixNote,
+      style: NexaText.caption.copyWith(color: NexaColors.textSecondary),
+    );
+  }
+}
+
+/// The plan for the upcoming transition, from the real queue.
+final _nextTransitionProvider = Provider<TransitionPlan?>((ref) {
+  final player = ref.watch(playerProvider);
+  final settings = ref.watch(mixSettingsProvider);
+  final current = player.current;
+  final next = player.nextEntry?.track;
+  if (current == null || next == null) {
+    return null;
+  }
+  return planTransition(settings, current, next);
+});
+
+class _NextTransition extends ConsumerWidget {
+  const _NextTransition();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final plan = ref.watch(_nextTransitionProvider);
+    final text = switch (plan) {
+      null => S.noNextTrack,
+      TransitionPlan(
+        kind: TransitionKind.crossfade,
+        :final fade,
+        :final reason,
+      ) =>
+        '$reason - ${(fade.inMilliseconds / 1000).toStringAsFixed(1)} s',
+      TransitionPlan(:final reason) => reason,
+    };
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const StatusBadge.phase(S.preview),
-        const SizedBox(width: 10),
+        const Icon(Icons.swap_horiz_rounded, size: 18, color: NexaColors.accent),
+        const SizedBox(width: 8),
+        Text('${S.nextTransition}: ', style: NexaText.caption),
         Expanded(
           child: Text(
-            S.mixPreviewNote,
-            style: NexaText.caption.copyWith(color: NexaColors.textSecondary),
+            text,
+            style: NexaText.caption.copyWith(color: NexaColors.textPrimary),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

@@ -118,13 +118,30 @@ abstract final class S {
 
   // Mix Engine
   static const String mixEngine = 'NEXA MIX ENGINE';
-  static const String mixPreviewNote =
-      'Preview of the controls. Not applied to audio until Phase 4.';
+  static const String mixNote =
+      'Applied to playback and saved. Smart Mix v1 uses track length and '
+      'albums only; silence and level analysis come later.';
+  static const String albumGaplessTitle = 'Keep albums gapless';
+  static const String albumGaplessInfo =
+      'The next track of the same album always follows without overlap, so '
+      'live and continuous albums are never mixed.';
+  static const String nextTransition = 'Next transition';
+  static const String noNextTrack = 'No next track in the queue';
+  // Transition reasons (Mix Engine).
+  static const String planNoMixRights = 'Source does not allow mixing';
+  static const String planSameAlbum = 'Same album: gapless';
+  static const String planGaplessMode = 'Gapless';
+  static const String planCrossfadeOff = 'Crossfade off: no overlap';
+  static const String planCrossfade = 'Crossfade';
+  static const String planSmartDefault = 'Smart Mix: your crossfade length';
+  static const String planSmartShortTrack = 'Smart Mix: shorter for a short track';
+  static const String planLimitedByLength = 'Limited by track length';
+  static const String planTooShort = 'Too short to overlap: gapless';
   static const String transitions = 'Transitions';
   static const String transitionsInfo =
       'Crossfade overlaps the end of one track with the start of the next. '
-      'Gapless removes extra silence without overlap. Smart Mix v1 picks the '
-      'transition moment from track length, silence and signal level.';
+      'Gapless removes extra silence without overlap. Smart Mix v1 shortens '
+      'the overlap for short tracks.';
   static const String modeCrossfade = 'Crossfade';
   static const String modeSmartMix = 'Smart Mix';
   static const String modeGapless = 'Gapless';
@@ -134,11 +151,11 @@ abstract final class S {
   static const String gaplessNote = 'No overlap in Gapless';
   static const String smartMixTitle = 'Smart Mix';
   static const String smartMixDescription =
-      'Lets NEXA adjust transition timing using track length, silence and '
-      'signal level. Tempo and key matching are not part of v1.';
+      'Lets NEXA shorten the overlap for short tracks, based on track '
+      'length. Tempo and key matching are not part of v1.';
   static const String smartMixInfo =
-      'Smart Mix v1 is planned for Phase 4. It will only use simple, '
-      'explainable signals.';
+      'Smart Mix v1 only uses simple, explainable signals: track length and '
+      'album order. It never lengthens your crossfade.';
 
   // Pages
   static const String waveHeading = 'Your Wave starts here';
@@ -161,7 +178,8 @@ abstract final class S {
       'NEXA DNA in Phase 5.';
   static const String settingsMix = 'Mix Engine defaults';
   static const String settingsMixBody =
-      'Saved crossfade and gapless defaults arrive in Phase 4.';
+      'Transition mode, crossfade length and the album rule are saved and '
+      'used on every start. Change them in the NEXA Mix Engine panel.';
   static const String settingsDev = 'Developer tools';
   static const String settingsDevBody =
       'Phase 0 audio engine test (media_kit): open a local file and test '

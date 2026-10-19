@@ -42,4 +42,8 @@ abstract final class SettingKeys {
   static const String shuffle = 'player.shuffle';
   static const String repeat = 'player.repeat';
   static const String audioDevice = 'player.audioDevice';
+  static const String mixMode = 'mix.mode';
+  static const String mixSeconds = 'mix.seconds';
+  static const String mixSmartAdjust = 'mix.smartAdjust';
+  static const String mixAlbumGapless = 'mix.albumGapless';
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/mix_engine/mix_preview.dart';
+import '../../features/mix_engine/mix_settings.dart';
 import '../../features/library/track_art.dart';
 import '../../features/player/player_controller.dart';
 import '../../features/player/player_controls.dart';
@@ -22,7 +22,7 @@ class BottomPlayer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final nav = ref.watch(navigationProvider);
     final controller = ref.read(navigationProvider.notifier);
-    final mix = ref.watch(mixPreviewProvider);
+    final mix = ref.watch(mixSettingsProvider);
     final onNowPlaying = nav.current == NexaDestination.nowPlaying;
 
     void toggleNowPlaying() {
