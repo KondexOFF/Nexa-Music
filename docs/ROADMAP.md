@@ -1,52 +1,61 @@
 # NEXA Music · Development record
 
-*Updated 19 October 2026 · Private development*
+*Updated 20 October 2026 · Private development*
 
-This page is the public-facing summary **within the private repository**. The implementation record lives in the phase reports and the local `docs/PROGRESS.md` working copy. A passed automated test is not the same as an accepted Windows release.
+NEXA Music is a Windows-first personal player in active development. **Implementation progress is not the same as release acceptance:** the owner moved full manual testing, visual polish and non-blocking fixes to a final stage after Phase 7 (decision D-015).
 
-## Milestones
+The latest published development snapshot is [`dev/v1` at `52b76c6`](https://github.com/KondexOFF/Nexa-Music/tree/dev/v1). The default `main` branch carries the project presentation and documentation, not the app's current source tree.
 
-| Phase | Focus | Reported result | Repository availability |
-| :-- | :-- | :-- | :-- |
-| 00 | Environment and audio proof | Accepted by owner; media_kit chosen | [`phase/00-review`](https://github.com/KondexOFF/Nexa-Music/tree/phase/00-review) |
-| 01 | Design system and desktop shell | Implemented; crash fix reported; final manual sign-off pending | [`phase/01-review`](https://github.com/KondexOFF/Nexa-Music/tree/phase/01-review) |
-| 02 | Local library and SQLite | Implemented in local working copy; generated-file tests passed | Local `dev/v1` — not yet pushed |
-| 03 | Playback and queue | Implemented in local working copy; real 20-track listen pending | Local `dev/v1` — not yet pushed |
-| 04 | Mix Engine | Implemented in local working copy; real crossfade/gapless listen pending | Local `dev/v1` — not yet pushed |
-| 05 | NEXA DNA and Wave | Implemented in local working copy; real-world recommendations pending | Local `dev/v1` — not yet pushed |
-| 06 | Audius / Jamendo adapters | Not started at last report | — |
-| 07 | Stability, Windows packaging | Not started at last report | — |
-| Final | End-to-end Windows validation | Pending | — |
+## Core roadmap
 
-## What the milestone reports establish
+| Phase | Scope | Status at the latest owner report |
+| :-- | :-- | :-- |
+| **00** | Environment and Windows audio proof | Accepted by owner (16 Oct); [`phase/00-review`](https://github.com/KondexOFF/Nexa-Music/tree/phase/00-review) |
+| **01** | Design 04, Home and Now Playing | Implemented; accessibility crash fix reported, owner re-check pending; [`phase/01-review`](https://github.com/KondexOFF/Nexa-Music/tree/phase/01-review) |
+| **02** | Local MP3/FLAC/WAV library, metadata and playlists | Implemented on `dev/v1`; real music-folder import pending |
+| **03** | Playback Engine, queue, media keys and devices | Implemented on `dev/v1`; long real-audio run pending |
+| **04** | Gapless, Crossfade and Smart Mix v1 | Implemented on `dev/v1`; listening checks pending |
+| **05** | NEXA DNA and personal NEXA Wave | Implemented on `dev/v1`; recommendations await human evaluation |
+| **06** | Audius and Jamendo catalogues | Implemented on `dev/v1`, commit [`52b76c6`](https://github.com/KondexOFF/Nexa-Music/commit/52b76c6); reported automated and API checks passed |
+| **07** | Windows polish, performance and packaging | Not started |
+| **Final** | Full Windows test, fixes and owner acceptance | Not started |
 
-**Audio foundation.** The Windows proof established a playback backend and tested core state operations with a local audio file. It did not establish a production player.
+### Phase 6: what is in scope
 
-**Interface foundation.** The Design 04 shell includes Home, Now Playing, queue presentation and Mix Engine preview. Screen captures were generated at multiple desktop sizes. An accessibility-related Windows crash was subsequently reported and addressed; owner confirmation remains outstanding.
+- **Discover:** one search across Audius and Jamendo, with source labels, availability notices and links to the original track pages.
+- **Playback:** permitted catalogue streams pass through the regular player. The Mix Engine does **not** crossfade online sources; catalog tracks do not enter personal listening history at this stage.
+- **Resilience:** online providers can fail independently without breaking local playback. Jamendo needs the owner's own client ID, stored locally rather than committed to GitHub.
+- **Verification reported:** `flutter analyze` returned no issues and 126/126 automated tests passed; live Audius and Jamendo API checks were reported successful. A person has not yet listened through the streaming scenarios.
 
-**Library and playback.** The local development journal records folder rescans, metadata, playlists, a queue, device controls and saved settings. The real Windows music-folder import and a long playback session remain acceptance checks.
+The owner's latest journal also reports a Jamendo live check with 10 playable results and an HTTP 206 audio response. This confirms API accessibility in that test, not the quality of a complete listening session.
 
-**Mix and discovery.** The journal records two-deck crossfades, gapless playback, taste choices, private listening sessions and explainable Wave ranking. These were tested with controlled fixtures; musical quality and behavior with the owner's files still need listening tests.
+## Approved extensions — after the Windows core
 
-## Validation priorities
+| Step | Direction | Boundary |
+| :-- | :-- | :-- |
+| **E1** | NEXA Wave across permitted catalogues | New source capabilities and privacy/terms review first |
+| **E2** | YouTube in an official visible embedded player | Feasibility gate; official branding, controls and ads intact; no audio extraction or Mix Engine |
+| **E3** | SoundCloud official widget | Permitted links and widget playback; no promise of unrestricted API search |
+| **E4** | macOS, Linux, Android, iOS/iPadOS and Web | Ports one by one after Windows acceptance, with platform-specific adapters |
 
-1. **Real audio:** mixed MP3/FLAC/WAV library, long queue, output-device changes, pause/resume and missing files.
-2. **Transitions:** gapless album boundaries, crossfade limits, clipping, short tracks and unavailable next items.
-3. **Windows accessibility:** repeat the original crash scenario, window resizing and screen-reader navigation.
-4. **Personalization:** consent, private sessions, dislikes, skip behavior and recommendations with real metadata.
-5. **Provider rights:** only integrate features explicitly allowed by each source; show unavailable states clearly.
-6. **Release:** package the desktop application, review performance and complete owner acceptance.
+These extensions were approved as a direction under D-017 and CR-001–003; **none is shipped**. Availability of individual songs depends on provider access and rights, not on NEXA alone.
 
-## Further direction
+## Final validation priorities
 
-The owner has proposed a wider cross-platform edition and more free, in-app music sources, including YouTube's visible official player and SoundCloud's supported playback surfaces. This is a **scope expansion under review** until its change requests, architecture and builds are reflected in the repository. Neither all-platform support nor universal song availability is a shipped claim.
+1. **Real Windows audio:** long mixed-format queue, seek/pause, device change, missing files, repeat/shuffle and media keys.
+2. **Transitions:** crossfade/gapless without clipped or abrupt boundaries, album continuity, short tracks and the 0-second setting.
+3. **Accessibility:** re-check the fixed `flutter_windows.dll` crash and investigate the remaining AXTree update warning after window resizing.
+4. **Real library and personalization:** Windows folder picker, Cyrillic metadata, NEXA DNA/Wave selection quality, privacy consent and private sessions.
+5. **Online listening:** Audius/Jamendo stream start, errors, attribution, client ID handling and no unauthorized online audio mixing.
+6. **Release:** Windows package, performance, final visual review, documented limitations and owner acceptance.
 
-## Detailed source material
+The most consequential open checks are the **real-audio playback/crossfade tests** and **Windows accessibility validation**. Automated tests with fake engines or generated libraries do not close those items.
 
+## Source of truth
+
+- [Development progress and technical debt (`dev/v1`)](https://github.com/KondexOFF/Nexa-Music/blob/dev/v1/docs/PROGRESS.md)
+- [Implementation architecture and source-capability rules (`dev/v1`)](https://github.com/KondexOFF/Nexa-Music/blob/dev/v1/docs/ARCHITECTURE.md)
 - [Phase 0 report](https://github.com/KondexOFF/Nexa-Music/blob/phase/00-review/reports/PHASE_00_REPORT.md)
 - [Phase 1 report](https://github.com/KondexOFF/Nexa-Music/blob/phase/01-review/reports/PHASE_01_REPORT.md)
-- [Architecture and source policy](ARCHITECTURE.md)
-- [Decision log](DECISIONS.md)
-- [Change requests](CHANGE_REQUESTS.md)
 
-*Milestone states above reflect the owner's shared progress journal, not a fresh audit of unpushed source code.*
+*Milestone and test statements reflect the owner-provided development journal, not an independent test run of the Windows application.*
