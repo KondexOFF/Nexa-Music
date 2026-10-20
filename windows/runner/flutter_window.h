@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "media_session.h"
 #include "win32_window.h"
 
 // A window that does nothing but host a Flutter view.
@@ -31,16 +32,19 @@ class FlutterWindow : public Win32Window {
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
 
-  // Windows media keys (play/pause, next, previous, stop) -> Dart
-  // ("nexa/media_keys"). Registered as global hot keys so they also work
-  // while NEXA Music is in the background; WM_APPCOMMAND is the fallback
-  // when another app already owns a key.
+  // Media keys and the Windows media overlay -> Dart ("nexa/media_keys").
+  // Through the Windows media controls (SMTC), so keys reach NEXA only when
+  // Windows routes them here and other players keep theirs (TD-06; no
+  // global hot keys). WM_APPCOMMAND covers keys while NEXA is focused when
+  // SMTC is unavailable. Dart sends "update" (playing, title, artist).
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       media_keys_channel_;
-  bool media_hotkeys_registered_[4] = {false, false, false, false};
-  void RegisterMediaKeys();
-  void UnregisterMediaKeys();
+  MediaSession media_session_;
+  bool media_session_attached_ = false;
   void SendMediaKey(const char* method);
+  void HandleMediaCall(
+      const flutter::MethodCall<flutter::EncodableValue>& call,
+      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

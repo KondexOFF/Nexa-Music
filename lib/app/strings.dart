@@ -162,7 +162,10 @@ abstract final class S {
   static const String settingsAbout = 'About';
   static const String settingsAboutBody =
       'NEXA Music - personal Windows music player. Local library, playback, '
-      'NEXA Mix Engine, NEXA DNA and NEXA Wave.';
+      'NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo.';
+  static const String licences = 'Open-source licences';
+  static String versionLine(String version) =>
+      'Version $version - pre-release build (Phase 7), final testing pending.';
   static const String settingsPrivacy = 'Privacy and learning';
   static const String settingsPrivacyBody =
       'Your listening history stays on this PC and is only kept with your '
@@ -252,8 +255,14 @@ abstract final class S {
   static const String outputDeviceBody =
       'Where NEXA plays sound. "System default" follows the Windows setting.';
   static const String mediaKeysBody =
-      'Keyboard media keys (play/pause, next, previous, stop) control NEXA '
-      'while it is open, also in the background.';
+      'Media keys and the Windows media overlay control NEXA, also in the '
+      'background. Windows sends the keys to the app that is playing, so '
+      'other players keep their media keys.';
+  static const String keyboardTitle = 'Keyboard shortcuts';
+  static const String keyboardBody =
+      'Space: play / pause  -  Ctrl + Right / Left: next / previous  -  '
+      'Ctrl + Up / Down: volume  -  Ctrl + M: mute. Tab moves between '
+      'controls; Enter or Space activates the focused control.';
 
   // NEXA DNA and NEXA Wave (Phase 5)
   static const String dislike = 'Dislike';

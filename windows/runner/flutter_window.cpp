@@ -1,17 +1,26 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <string>
+#include <variant>
 
 #include "flutter/generated_plugin_registrant.h"
 
 namespace {
 
-// Hot key ids and the Dart method each media key sends.
-constexpr int kMediaHotKeyBase = 0xB100;
-constexpr UINT kMediaVirtualKeys[4] = {VK_MEDIA_PLAY_PAUSE, VK_MEDIA_NEXT_TRACK,
-                                       VK_MEDIA_PREV_TRACK, VK_MEDIA_STOP};
+// Dart methods the media keys send.
 constexpr const char* kMediaMethods[4] = {"playPause", "next", "previous",
                                           "stop"};
+
+std::string StringArg(const flutter::EncodableMap& map, const char* key) {
+  auto it = map.find(flutter::EncodableValue(key));
+  if (it != map.end()) {
+    if (const auto* value = std::get_if<std::string>(&it->second)) {
+      return *value;
+    }
+  }
+  return std::string();
+}
 
 }  // namespace
 
@@ -40,7 +49,11 @@ bool FlutterWindow::OnCreate() {
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
           flutter_controller_->engine()->messenger(), "nexa/media_keys",
           &flutter::StandardMethodCodec::GetInstance());
-  RegisterMediaKeys();
+  media_keys_channel_->SetMethodCallHandler(
+      [this](const auto& call, auto result) {
+        HandleMediaCall(call, std::move(result));
+      });
+  media_session_attached_ = media_session_.Attach(GetHandle());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -55,21 +68,26 @@ bool FlutterWindow::OnCreate() {
   return true;
 }
 
-void FlutterWindow::RegisterMediaKeys() {
-  for (int i = 0; i < 4; i++) {
-    media_hotkeys_registered_[i] =
-        RegisterHotKey(GetHandle(), kMediaHotKeyBase + i, MOD_NOREPEAT,
-                       kMediaVirtualKeys[i]) != 0;
-  }
-}
-
-void FlutterWindow::UnregisterMediaKeys() {
-  for (int i = 0; i < 4; i++) {
-    if (media_hotkeys_registered_[i]) {
-      UnregisterHotKey(GetHandle(), kMediaHotKeyBase + i);
-      media_hotkeys_registered_[i] = false;
+void FlutterWindow::HandleMediaCall(
+    const flutter::MethodCall<flutter::EncodableValue>& call,
+    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+  if (call.method_name() == "update") {
+    const auto* args = std::get_if<flutter::EncodableMap>(call.arguments());
+    if (args) {
+      bool playing = false;
+      auto it = args->find(flutter::EncodableValue("playing"));
+      if (it != args->end()) {
+        if (const auto* value = std::get_if<bool>(&it->second)) {
+          playing = *value;
+        }
+      }
+      media_session_.Update(playing, StringArg(*args, "title"),
+                            StringArg(*args, "artist"));
     }
+    result->Success(flutter::EncodableValue(media_session_attached_));
+    return;
   }
+  result->NotImplemented();
 }
 
 void FlutterWindow::SendMediaKey(const char* method) {
@@ -79,7 +97,8 @@ void FlutterWindow::SendMediaKey(const char* method) {
 }
 
 void FlutterWindow::OnDestroy() {
-  UnregisterMediaKeys();
+  media_session_.Detach();
+  media_session_attached_ = false;
   media_keys_channel_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
@@ -106,15 +125,31 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;
-    case WM_HOTKEY: {
-      const int index = static_cast<int>(wparam) - kMediaHotKeyBase;
-      if (index >= 0 && index < 4) {
-        SendMediaKey(kMediaMethods[index]);
-        return 0;
+    case MediaSession::kButtonMessage:
+      switch (wparam) {
+        case MediaSession::kPlay:
+          SendMediaKey("play");
+          return 0;
+        case MediaSession::kPause:
+          SendMediaKey("pause");
+          return 0;
+        case MediaSession::kStop:
+          SendMediaKey(kMediaMethods[3]);
+          return 0;
+        case MediaSession::kNext:
+          SendMediaKey(kMediaMethods[1]);
+          return 0;
+        case MediaSession::kPrevious:
+          SendMediaKey(kMediaMethods[2]);
+          return 0;
       }
       break;
-    }
     case WM_APPCOMMAND: {
+      // With the Windows media controls attached, Windows routes media keys
+      // itself (no double handling); without them, react while focused.
+      if (media_session_attached_) {
+        break;
+      }
       switch (GET_APPCOMMAND_LPARAM(lparam)) {
         case APPCOMMAND_MEDIA_PLAY_PAUSE:
           SendMediaKey(kMediaMethods[0]);

@@ -1,75 +1,58 @@
 # NEXA Music
 
-**Status:** Phase 0 accepted. Phase 1 (design system and the Home / Now Playing layout) submitted for owner review. The UI shows clearly labelled **DEMO** content; there is no music library and no playback in the NEXA screens yet (Phase 2 and 3).
+**Status (2026-10-20):** phases 0–7 implemented; Windows pre-release build **0.9.0** (Phase 7). Full manual testing on the owner's PC (final stage) is still pending — NEXA Music is **not** declared finished before the owner's final acceptance. Progress and known problems: [docs/PROGRESS.md](docs/PROGRESS.md).
 
-NEXA Music is a **private, Windows-first music player** designed around:
-- a personal, offline-capable library;
-- **NEXA Mix Engine** (gapless, crossfade and, later, cautious smart transitions);
-- **NEXA DNA** (explicit musical preferences) and **NEXA Wave** (a local-first recommendation queue);
-- approved online sources in later stages.
+NEXA Music is a **private, Windows-first music player** for personal use:
+- local library (MP3 / FLAC / WAV), playlists, favorites, search — works offline;
+- playback with queue, shuffle / repeat, output device, Windows media keys and media overlay;
+- **NEXA Mix Engine**: gapless, crossfade 0–12 s, Smart Mix v1 (local files only);
+- **NEXA DNA** (explicit taste, likes / dislikes, consent-based local history) and **NEXA Wave** (local recommendation queue with "why this song");
+- **Discover**: Audius and Jamendo through their official APIs (streaming only, source and licence shown).
 
-The primary code implementer is Claude Agent on the owner's Windows PC. KondexOff approves each phase; ChatGPT reviews reports.
+Approved extension (D-017): NEXA Wave across catalogs, YouTube and SoundCloud official embedded players, macOS / Linux / Android / iOS / Web ports — after the Windows version, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Start here
+## Running the Windows build (no Flutter SDK needed)
 
-1. Read [the authoritative development plan](NEXA_Music_Master_Plan_Claude.md) **in full**.
-2. Claude must read [CLAUDE.md](CLAUDE.md) and respect phase gates.
-3. Use [architecture](docs/ARCHITECTURE.md), [design](docs/DESIGN.md), [decision log](docs/DECISIONS.md) and [change requests](docs/CHANGE_REQUESTS.md) as supporting guidance.
-4. Phases run one at a time. Each phase needs explicit owner authorization. Do **not** start later phases automatically.
-5. Deliver reports according to [reporting instructions](reports/README.md). Latest: [Phase 0 report](reports/PHASE_00_REPORT.md).
+The build is a self-contained folder: `NEXA_Music_0.9.0_Windows_x64` (created by the build steps below; it is not stored in the repository).
 
-## Development environment (verified in Phase 0)
+1. Copy the whole folder anywhere (e.g. a folder `NEXA Music` in your Documents). Keep all files together — the `.dll` files and the `data` folder are part of the program.
+2. Start `nexa_music.exe`. Windows SmartScreen may warn because the exe is not signed (personal build): "More info" → "Run anyway".
+3. First start: **Library → Add folder** with your music. Files are read where they are; nothing is copied, moved or deleted.
+4. Optional: **Settings → Online catalogs** — Audius works without a key; Jamendo needs your own free client id from devportal.jamendo.com (stored only on this PC).
 
-| Component | Version |
-|---|---|
-| OS | Windows 11 x64 (build 26200) |
-| Flutter | 3.47.7, channel stable (framework `abaf9c5237`) |
-| Dart | 3.13.5 |
-| Visual Studio | Community 2022 17.14, workload "Desktop development with C++", Windows 10 SDK 10.0.26100.0 |
-| Git | 2.56.0 |
-| Windows Developer Mode | On (needed for plugin symlinks) |
+Requirements: Windows 10/11 x64. The Microsoft Visual C++ runtime is included in the folder. Your library database, settings and listening history live in `%APPDATA%\com.kondexoff\nexa_music` (not in the program folder), so replacing the program folder keeps your data.
 
-Exact package versions are locked in `pubspec.lock` (media_kit 1.2.6, media_kit_libs_audio 1.0.7, media_kit_libs_windows_audio 1.0.9, flutter_riverpod 3.4.3).
+Keyboard: Space play / pause · Ctrl + → / ← next / previous · Ctrl + ↑ / ↓ volume · Ctrl + M mute · Esc leaves a text field. Media keys work through the Windows media controls and do not take the keys away from other players.
 
-## Running the app
+## Building it yourself
+
+Environment (verified): Windows 11 x64, Flutter 3.47.7 stable / Dart 3.13.5, Visual Studio 2022 17.14 with "Desktop development with C++" and Windows 10 SDK 10.0.26100.0, Windows Developer Mode on (plugin symlinks).
 
 ```powershell
 flutter pub get
 flutter analyze
 flutter test
-flutter run -d windows
+flutter build windows --release
+# Result: build\windows\x64\runner\Release\  (copy this whole folder)
 ```
 
-Phase 1 screens: Home (NEXA Wave hero, For Your Moment, Recently Played, Up Next / My Taste / Discover More) and Now Playing with the NEXA Mix Engine panel. Disabled controls explain in a tooltip which phase brings them.
-
-Screenshot evidence (renders 1280x720, 1920x1080 and 1024x640 to PNG and exits):
+Developer tools (all outputs must stay outside the repository):
 
 ```powershell
-flutter run -d windows "--dart-define=NEXA_CAPTURE_DIR=<folder outside the repo>"
+flutter run -d windows                                   # debug run
+flutter test test/online/audius_live.dart                # live Audius check (network)
+flutter test test/online/jamendo_live.dart               # live Jamendo check (client id file outside the repo)
+flutter run -d windows "--dart-define=NEXA_CAPTURE_DIR=<folder>"   # screenshots of the Phase 1 layouts
+flutter run -d windows --dart-define=NEXA_SELFTEST=true "--dart-define=NEXA_TEST_AUDIO=<own file>" "--dart-define=NEXA_PROBE_LOG_DIR=<folder>"
 ```
 
-## Phase 0 audio prototype
+## Rules for this repository
 
-Kept as a developer tool: **Settings -> Open audio engine test**, or the automated self-test below. It will be replaced by the real PlaybackEngine in Phase 3.
-
-```powershell
-# Automated self-test: plays ~15 s, checks open/play/pause/seek/volume, writes a log + PNG, then exits
-flutter run -d windows --dart-define=NEXA_SELFTEST=true `
-  "--dart-define=NEXA_TEST_AUDIO=<path to your own audio file>" `
-  "--dart-define=NEXA_PROBE_LOG_DIR=<folder outside the repo>"
-```
-
-Test audio files and logs must stay **outside** the repository.
-
-## External services
-
-- **Local owned/licensed files:** primary source; Mix Engine applies where technically feasible.
-- **Audius / Jamendo:** future provider adapters, subject to each service's terms and rights.
-- **Spotify:** open in the official app; **not** a NEXA audio source, even with Premium.
-- **YouTube:** user-requested option, **currently a proposed change request**, not an approved implementation. The potential path is an official visible embedded video player or opening YouTube externally. No audio extraction or mixing.
-
-This private repository must **never contain copyrighted music files, secrets, private listening databases, tokens or personal history**.
+- Plan: [NEXA_Music_Master_Plan_Claude.md](NEXA_Music_Master_Plan_Claude.md); agent rules: [CLAUDE.md](CLAUDE.md); decisions: [docs/DECISIONS.md](docs/DECISIONS.md); change requests: [docs/CHANGE_REQUESTS.md](docs/CHANGE_REQUESTS.md); reports: [reports/](reports/).
+- Never commit music files, databases, listening history, keys / client ids, tokens or personal paths. The repository is private; the app is for personal use.
+- Spotify is not an audio source. YouTube / SoundCloud only through their official visible players (approved extension, not implemented yet).
+- Every push to GitHub needs the owner's permission.
 
 ## Design references
 
-The approved visual concept is NEXA Design 04: Home and Player. The original PNGs are in `assets/design/` as references (not used as app backgrounds).
+NEXA Design 04 (Home and Player) in `assets/design/` — references only, not bundled. The app icon is original, drawn for NEXA (Phase 7).

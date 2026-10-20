@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'shell/app_shell.dart';
+import 'shell/keyboard_shortcuts.dart';
 import 'strings.dart';
 import 'theme/nexa_theme.dart';
 
@@ -17,7 +18,7 @@ class NexaApp extends StatelessWidget {
       title: S.appTitle,
       debugShowCheckedModeBanner: false,
       theme: buildNexaTheme(),
-      home: AppShell(ambientMotion: ambientMotion),
+      home: KeyboardShortcuts(child: AppShell(ambientMotion: ambientMotion)),
     );
   }
 }

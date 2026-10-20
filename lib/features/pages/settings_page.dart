@@ -42,10 +42,21 @@ class SettingsPage extends StatelessWidget {
         children: [
           const Text(S.settingsHeading, style: NexaText.display),
           const SizedBox(height: 24),
-          const _SettingsCard(
+          _SettingsCard(
             icon: Icons.info_outline_rounded,
             title: S.settingsAbout,
-            body: S.settingsAboutBody,
+            body: '${S.settingsAboutBody}\n${S.versionLine(kAppVersion)}',
+            action: NexaPillButton(
+              label: S.licences,
+              icon: Icons.description_outlined,
+              variant: PillVariant.secondary,
+              height: 42,
+              onPressed: () => showLicensePage(
+                context: context,
+                applicationName: S.appTitle,
+                applicationVersion: kAppVersion,
+              ),
+            ),
           ),
           const _SettingsCard(
             icon: Icons.speaker_outlined,
@@ -54,9 +65,14 @@ class SettingsPage extends StatelessWidget {
             action: _OutputDevicePicker(),
           ),
           const _SettingsCard(
-            icon: Icons.keyboard_outlined,
+            icon: Icons.music_note_outlined,
             title: 'Media keys',
             body: S.mediaKeysBody,
+          ),
+          const _SettingsCard(
+            icon: Icons.keyboard_outlined,
+            title: S.keyboardTitle,
+            body: S.keyboardBody,
           ),
           const _SettingsCard(
             icon: Icons.privacy_tip_outlined,

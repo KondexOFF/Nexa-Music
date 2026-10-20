@@ -574,6 +574,8 @@ class PlayerController extends Notifier<PlayerState> {
   /// Media keys from the Windows runner ("nexa/media_keys").
   Future<void> handleMediaKey(String key) => switch (key) {
     'playPause' => togglePlay(),
+    'play' => state.playing ? Future<void>.value() : togglePlay(),
+    'pause' => pause(),
     'next' => next(),
     'previous' => previous(),
     'stop' => stop(),
@@ -585,9 +587,32 @@ final playerProvider = NotifierProvider<PlayerController, PlayerState>(
   PlayerController.new,
 );
 
-/// Connects the Windows media keys to the player.
+/// Connects the Windows media keys and the Windows media overlay (System
+/// Media Transport Controls, see windows/runner/media_session.cpp) to the
+/// player: button presses come in, playing state and song go out (TD-06).
 void bindMediaKeys(WidgetRef ref) {
-  const MethodChannel('nexa/media_keys').setMethodCallHandler((call) async {
+  const channel = MethodChannel('nexa/media_keys');
+  channel.setMethodCallHandler((call) async {
     await ref.read(playerProvider.notifier).handleMediaKey(call.method);
   });
+  if (!Platform.isWindows || Platform.environment['FLUTTER_TEST'] == 'true') {
+    return; // The media controls live in the Windows runner only.
+  }
+  ref.listenManual(
+    playerProvider.select(
+      (p) => (p.playing, p.current?.title ?? '', p.current?.artist ?? ''),
+    ),
+    (previous, next) async {
+      try {
+        await channel.invokeMethod<bool>('update', {
+          'playing': next.$1,
+          'title': next.$2,
+          'artist': next.$3,
+        });
+      } on Object {
+        // The overlay is a convenience; playback never depends on it.
+      }
+    },
+    fireImmediately: true,
+  );
 }

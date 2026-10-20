@@ -13,3 +13,6 @@ const String kProbeLogDir = String.fromEnvironment('NEXA_PROBE_LOG_DIR');
 /// When set, the app renders fixed window sizes, saves screenshots into this
 /// folder and exits (Phase 1 visual evidence).
 const String kCaptureDir = String.fromEnvironment('NEXA_CAPTURE_DIR');
+
+/// App version shown in Settings (keep equal to `version:` in pubspec.yaml).
+const String kAppVersion = '0.9.0';
