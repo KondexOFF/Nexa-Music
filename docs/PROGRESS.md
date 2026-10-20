@@ -13,7 +13,7 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | 3 — Playback Engine | Implemented 2026-10-18 (automated checks PASS; 20-track manual run in final stage) | `dev/v1` |
 | 4 — NEXA Mix Engine | Implemented 2026-10-18 (automated checks PASS; listening test in final stage) | `dev/v1` `53d1f21` |
 | 5 — NEXA DNA and NEXA Wave v1 | Implemented 2026-10-19 (automated checks PASS; real listening check in final stage) | `dev/v1` `9dc3116` |
-| 6 — Allowed online catalogues (Audius, Jamendo) | Implemented 2026-10-19 (automated checks PASS; live Audius check PASS; Jamendo live check needs the owner's client id) | `dev/v1` |
+| 6 — Allowed online catalogues (Audius, Jamendo) | Implemented 2026-10-19 (automated checks PASS; live Audius and Jamendo checks PASS) | `dev/v1` `52b76c6`, pushed to GitHub 2026-10-20 (owner's request) |
 | 7 — Polish, performance, Windows build | Not started | |
 | Final stage — full Windows testing and fixes | Not started | |
 | E1 — NEXA Wave across catalogs (D-017) | Approved, after the final stage | |
@@ -38,7 +38,7 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 | TD-09 | Phase 4 | High | Crossfade/gapless only verified with fake decks; listening test on Windows (no clipping, no abrupt cut, 0 s = no overlap, album tracks not mixed, several formats, short files) pending. | Final stage |
 | TD-10 | Phase 5 | Medium | NEXA Wave ranking checked on generated test libraries only; whether the picks feel right on the owner's real library (and the weights in `wave_ranker.dart`) is not yet judged by a person. | Final stage |
 | TD-11 | Phase 5 | Low | "Listened" time of a history event is the playback position when the track ended, so seeking forward counts as listening. Good enough for skip / finish signals. | Open |
-| TD-13 | Phase 6 | Medium | Jamendo only tested with recorded API answers: a live search needs the owner's own `client_id` (Settings - Online catalogs). | Open - owner enters the id, then one search on the Discover page |
+| TD-13 | Phase 6 | Medium | Jamendo live check needed the owner's own `client_id`. | **Checked 2026-10-19** (`test/online/jamendo_live.dart`, id read from a file outside the repo): 10 results, 10 playable, CC licences and pages present, stream HTTP 206 `audio/mpeg`. The owner still enters the id in Settings - Online catalogs for the app itself. |
 | TD-14 | Phase 6 | Medium | Streams were not listened to by a person yet. Live check 2026-10-19: Audius search 10 results / 9 playable, stream endpoint answered HTTP 206 `audio/mpeg`. | Final stage |
 | TD-15 | Phase 6 | Low | Catalog songs cannot be liked, disliked, added to playlists or recorded in the history (buttons disabled with an explanation). Planned with E1 after a terms review. | By design (D-017) |
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
