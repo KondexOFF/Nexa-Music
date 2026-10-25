@@ -52,21 +52,29 @@ public static class NexaWin {
         return SendInput((uint)list.Count, list.ToArray(), Marshal.SizeOf(typeof(INPUT)));
     }
 
-    // One key, optionally with Ctrl, as a real keyboard sends it.
+    [DllImport("user32.dll")] public static extern uint MapVirtualKey(uint code, uint mapType);
+
+    // Keys as a real keyboard sends them: left Ctrl and scan codes (Flutter
+    // tells the keys apart by scan code; without one Ctrl is not seen).
+    static void Down(byte vk, bool ext) { keybd_event(vk, (byte)MapVirtualKey(vk, 0), ext ? 1u : 0u, UIntPtr.Zero); }
+    static void Up(byte vk, bool ext) { keybd_event(vk, (byte)MapVirtualKey(vk, 0), (ext ? 1u : 0u) | 2u, UIntPtr.Zero); }
+
     public static void Press(byte vk, bool ctrl) {
-        if (ctrl) keybd_event(0x11, 0, 0, UIntPtr.Zero);
-        keybd_event(vk, 0, 0, UIntPtr.Zero);
-        keybd_event(vk, 0, 2, UIntPtr.Zero);
-        if (ctrl) keybd_event(0x11, 0, 2, UIntPtr.Zero);
+        if (ctrl) Down(0xA2, false);
+        System.Threading.Thread.Sleep(30);
+        Down(vk, false); Up(vk, false);
+        System.Threading.Thread.Sleep(30);
+        if (ctrl) Up(0xA2, false);
         System.Threading.Thread.Sleep(150);
     }
 
-    // Ctrl + an extended key (arrows), as a real keyboard sends it.
+    // Ctrl + an extended key (arrows).
     public static void CtrlExtended(byte vk) {
-        keybd_event(0x11, 0, 0, UIntPtr.Zero);
-        keybd_event(vk, 0, 1, UIntPtr.Zero);
-        keybd_event(vk, 0, 1 | 2, UIntPtr.Zero);
-        keybd_event(0x11, 0, 2, UIntPtr.Zero);
+        Down(0xA2, false);
+        System.Threading.Thread.Sleep(30);
+        Down(vk, true); Up(vk, true);
+        System.Threading.Thread.Sleep(30);
+        Up(0xA2, false);
     }
 }
 '@
@@ -405,30 +413,8 @@ if (-not $started) {
     $null = Click-Text 'Songs'
     $seq = Find-El 'Seq 01' -Contains -TimeoutSec 8
     Shot '03_library'
-    # Cyrillic song through the search field (the list shows only what fits).
-    $box = Find-El 'Search your library' -Contains -TimeoutSec 4
-    $song = $null
-    if ($box -and (Click-El $box)) {
-        # Typed as Unicode characters (works with any keyboard layout).
-        Focus-Nexa
-        [void][NexaWin]::TypeText('тестовая')
-        Start-Sleep -Seconds 1
-        $song = Find-El 'Тестовая песня' -Contains -TimeoutSec 6
-        Shot '03b_search_cyrillic'
-        # Clear the search again: focus the field, Ctrl+A, Backspace, Esc.
-        $null = Click-El (Find-El 'Search your library' -Contains -TimeoutSec 2)
-        if (-not (Find-El 'Search your library' -Contains -TimeoutSec 1)) {
-            $null = Click-El $box
-        }
-        Focus-Nexa
-        [NexaWin]::Press(0x41, $true)
-        [NexaWin]::Press(0x08, $false)
-        [NexaWin]::Press(0x1B, $false)
-        Start-Sleep -Milliseconds 500
-    }
-    Check 'EX-02-library' 'FT-02' 'Release exe shows the imported test library from its database; Cyrillic search finds the Cyrillic song' `
-        ($null -ne $seq -and $null -ne $song) ("list: $(if ($seq) { "'Seq 01' visible" } else { 'Seq 01 NOT visible' }); " +
-            "search 'тестовая': $(if ($song) { "found '$((Label $song) -replace "`n", ' / ')'" } else { 'not found' })")
+    Check 'EX-02-library' 'FT-02' 'Release exe shows the imported test library from its database' `
+        ($null -ne $seq) $(if ($seq) { "'Seq 01' visible in Library - Songs" } else { 'Seq 01 NOT visible' })
     $null = Click-Text 'Library'
     $null = Click-Text 'Songs'
 
@@ -538,6 +524,34 @@ if (-not $started) {
         ((Alive) -and $treeFollows) ("sizes $($sizes -join ', '); tree follows navigation after resizing $treeFollows; alive $(Alive)")
     Check 'EX-30-minsize' 'FT-30' 'Window cannot be made smaller than 1024 x 640' `
         ($min.w -ge 1020 -and $min.h -ge 636) ("smallest window $($min.w)x$($min.h) (dpi $($min.dpi))")
+
+    # Cyrillic search last (a filter left in the field cannot change what
+    # the playback checks above play).
+    $null = Click-Text 'Library'
+    $null = Click-Text 'Songs'
+    # Cyrillic song through the search field (the list shows only what fits).
+    $box = Find-El 'Search your library' -Contains -TimeoutSec 4
+    $song = $null
+    if ($box -and (Click-El $box)) {
+        # Typed as Unicode characters (works with any keyboard layout).
+        Focus-Nexa
+        [void][NexaWin]::TypeText('тестовая')
+        Start-Sleep -Seconds 1
+        $song = Find-El 'Тестовая песня' -Contains -TimeoutSec 6
+        Shot '03b_search_cyrillic'
+        # Clear the search again: focus the field, Ctrl+A, Backspace, Esc.
+        $null = Click-El (Find-El 'Search your library' -Contains -TimeoutSec 2)
+        if (-not (Find-El 'Search your library' -Contains -TimeoutSec 1)) {
+            $null = Click-El $box
+        }
+        Focus-Nexa
+        [NexaWin]::Press(0x41, $true)
+        [NexaWin]::Press(0x08, $false)
+        [NexaWin]::Press(0x1B, $false)
+        Start-Sleep -Milliseconds 500
+    }
+    Check 'EX-05-search' 'FT-05' 'Release exe: the search field finds the Cyrillic song (typed in Cyrillic)' `
+        ($null -ne $song) ("search 'тестовая': $(if ($song) { "found '$((Label $song) -replace "`n", ' / ')'" } else { 'not found' })")
 
     # ------------------------------------------------- 6. restart
     Stop-Nexa

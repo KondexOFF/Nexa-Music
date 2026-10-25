@@ -202,6 +202,21 @@ if (-not $SkipExe) {
     }
 }
 
+# Integration stage skipped (-SkipIntegration): the report keeps the
+# integration results of the latest earlier run and says where they are from.
+$itJson = Join-Path $run 'it\integration.json'
+if ($SkipIntegration -and -not (Test-Path $itJson)) {
+    $prevIt = Get-ChildItem (Split-Path $run) -Directory | Where-Object { $_.FullName -ne $run } |
+        Sort-Object Name -Descending | Where-Object { Test-Path (Join-Path $_.FullName 'it\integration.json') } |
+        Select-Object -First 1
+    if ($prevIt) {
+        New-Item -ItemType Directory -Force -Path (Split-Path $itJson) | Out-Null
+        Copy-Item (Join-Path $prevIt.FullName 'it\integration.json') $itJson
+        Sys 'SYS-integration-source' '-' 'Integration results taken from an earlier run (stage skipped in this run)' 'PASS' `
+            "integration stage of run $($prevIt.Name); this run: unit / exe stages only"
+    }
+}
+
 # ------------------------------------------------------ 5. event log
 $ev = @(Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = $startTime } -ErrorAction SilentlyContinue |
     Where-Object { $_.ProviderName -in @('Application Error', 'Windows Error Reporting') -and $_.Message -match 'nexa_music' })
