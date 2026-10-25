@@ -73,6 +73,10 @@ void main() {
     engine.finishCurrent();
     await flush();
     expect(state().playing, isFalse);
+    // The end of the last song still plays from the Windows audio buffer;
+    // the engine stops after that.
+    expect(engine.state.path, tracks.last.path, reason: 'not cut at the end');
+    await Future<void>.delayed(PlayerController.endOfQueueDrain + const Duration(milliseconds: 100));
     expect(engine.state.path, isNull, reason: 'stopped at the end');
     expect(engine.loads.length, 20);
   });

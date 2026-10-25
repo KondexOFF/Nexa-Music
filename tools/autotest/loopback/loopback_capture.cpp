@@ -5,6 +5,12 @@
 // gapless gaps, clipping, silence on pause, volume.
 //
 // Usage: loopback_capture.exe <out.wav> <seconds> [pid]
+//        loopback_capture.exe --check     (can sound be measured at all?)
+//
+// During a recording the recorder also watches the Windows output: mute and
+// volume of the default device and of the recorded process's own session
+// (Volume mixer). READY / DONE report them, so a muted output is reported
+// as "not measurable" instead of a wrong result.
 //
 // With a process id the recorder uses WASAPI *process* loopback (Windows 10
 // 2004+ / Windows 11): only the audio of that process tree is recorded, so
@@ -19,16 +25,21 @@
 // Prints "READY ..." when the capture runs and "DONE ..." when the file is
 // written. Built by tools/autotest/NEXA_AutoTest.ps1; never part of the app.
 
+#define NOMINMAX  // std::min, not the Windows macro
 #include <windows.h>
 
 #include <audioclient.h>
 #include <audioclientactivationparams.h>
+#include <audiopolicy.h>
+#include <endpointvolume.h>
 #include <mmdeviceapi.h>
 #include <mmreg.h>
 #include <wrl/implements.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include <vector>
 
 #pragma comment(lib, "ole32.lib")
@@ -154,6 +165,103 @@ IAudioClient* ActivateProcessLoopback(DWORD pid, HRESULT* error) {
   return client;
 }
 
+// Mute / volume of the output: the default device (Windows volume) and the
+// audio session(s) of process [pid] (its slider in the Volume mixer).
+struct OutputState {
+  bool endpoint_mute = false;
+  float endpoint_volume = -1;
+  bool session_found = false;
+  bool session_mute = false;
+  float session_volume = -1;
+};
+
+class OutputMonitor {
+ public:
+  OutputMonitor(IMMDevice* device, DWORD pid) : pid_(pid) {
+    if (!device) return;
+    device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, nullptr,
+                     reinterpret_cast<void**>(&endpoint_));
+    if (pid_ != 0) {
+      device->Activate(__uuidof(IAudioSessionManager2), CLSCTX_ALL, nullptr,
+                       reinterpret_cast<void**>(&sessions_));
+    }
+  }
+  ~OutputMonitor() {
+    SafeRelease(&endpoint_);
+    SafeRelease(&sessions_);
+  }
+
+  OutputState Read() {
+    OutputState s;
+    if (endpoint_) {
+      BOOL mute = FALSE;
+      float volume = 0;
+      if (SUCCEEDED(endpoint_->GetMute(&mute))) s.endpoint_mute = mute != FALSE;
+      if (SUCCEEDED(endpoint_->GetMasterVolumeLevelScalar(&volume))) {
+        s.endpoint_volume = volume;
+      }
+    }
+    IAudioSessionEnumerator* list = nullptr;
+    if (sessions_ && SUCCEEDED(sessions_->GetSessionEnumerator(&list))) {
+      int count = 0;
+      list->GetCount(&count);
+      for (int i = 0; i < count; i++) {
+        IAudioSessionControl* control = nullptr;
+        IAudioSessionControl2* control2 = nullptr;
+        ISimpleAudioVolume* volume = nullptr;
+        if (SUCCEEDED(list->GetSession(i, &control)) &&
+            SUCCEEDED(control->QueryInterface(IID_PPV_ARGS(&control2)))) {
+          DWORD owner = 0;
+          control2->GetProcessId(&owner);
+          if (owner == pid_ &&
+              SUCCEEDED(control->QueryInterface(IID_PPV_ARGS(&volume)))) {
+            BOOL mute = FALSE;
+            float level = 0;
+            volume->GetMute(&mute);
+            volume->GetMasterVolume(&level);
+            s.session_mute = s.session_mute || mute != FALSE;
+            s.session_volume = s.session_found ? std::min(s.session_volume, level) : level;
+            s.session_found = true;
+          }
+        }
+        SafeRelease(&volume);
+        SafeRelease(&control2);
+        SafeRelease(&control);
+      }
+      list->Release();
+    }
+    return s;
+  }
+
+ private:
+  DWORD pid_;
+  IAudioEndpointVolume* endpoint_ = nullptr;
+  IAudioSessionManager2* sessions_ = nullptr;
+};
+
+std::string DeviceName(IMMDevice* device) {
+  std::string out = "unknown";
+  IPropertyStore* store = nullptr;
+  if (device && SUCCEEDED(device->OpenPropertyStore(STGM_READ, &store))) {
+    PROPVARIANT name;
+    PropVariantInit(&name);
+    // PKEY_Device_FriendlyName
+    const PROPERTYKEY friendly = {
+        {0xa45c254e, 0xdf1c, 0x4efd, {0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0}}, 14};
+    if (SUCCEEDED(store->GetValue(friendly, &name)) &&
+        name.vt == VT_LPWSTR) {
+      const int n = WideCharToMultiByte(CP_UTF8, 0, name.pwszVal, -1, nullptr, 0, nullptr, nullptr);
+      if (n > 1) {
+        out.assign(static_cast<size_t>(n - 1), '\0');
+        WideCharToMultiByte(CP_UTF8, 0, name.pwszVal, -1, &out[0], n, nullptr, nullptr);
+      }
+    }
+    PropVariantClear(&name);
+    store->Release();
+  }
+  return out;
+}
+
 LONGLONG Now100ns() {
   static LARGE_INTEGER freq = {};
   if (freq.QuadPart == 0) QueryPerformanceFrequency(&freq);
@@ -162,11 +270,79 @@ LONGLONG Now100ns() {
   return static_cast<LONGLONG>(now.QuadPart * 10000000.0 / freq.QuadPart);
 }
 
+// "--check": can the AutoTest measure sound at all? Prints one CHECK line.
+// Exit 0 = ready, 3 = output muted or at 0 %, 4 = no output device,
+// 5 = loopback capture not available.
+int Check() {
+  IMMDeviceEnumerator* enumerator = nullptr;
+  IMMDevice* device = nullptr;
+  if (FAILED(CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                              IID_PPV_ARGS(&enumerator))) ||
+      FAILED(enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device))) {
+    printf("CHECK device=none\n");
+    SafeRelease(&enumerator);
+    return 4;
+  }
+  OutputState state;
+  {
+    OutputMonitor monitor(device, 0);
+    state = monitor.Read();
+  }
+  // System loopback of the default device.
+  HRESULT system_hr = E_FAIL;
+  IAudioClient* client = nullptr;
+  WAVEFORMATEX* format = nullptr;
+  if (SUCCEEDED(device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                                 reinterpret_cast<void**>(&client))) &&
+      SUCCEEDED(client->GetMixFormat(&format))) {
+    system_hr = client->Initialize(AUDCLNT_SHAREMODE_SHARED,
+                                   AUDCLNT_STREAMFLAGS_LOOPBACK, 2000000, 0,
+                                   format, nullptr);
+  }
+  CoTaskMemFree(format);
+  SafeRelease(&client);
+  // Process loopback (what the AutoTest records), tried on this process.
+  HRESULT process_hr = S_OK;
+  IAudioClient* process = ActivateProcessLoopback(GetCurrentProcessId(), &process_hr);
+  if (process) {
+    WAVEFORMATEX wanted = {};
+    wanted.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
+    wanted.nChannels = 2;
+    wanted.nSamplesPerSec = 48000;
+    wanted.wBitsPerSample = 32;
+    wanted.nBlockAlign = 8;
+    wanted.nAvgBytesPerSec = 48000 * 8;
+    process_hr = process->Initialize(
+        AUDCLNT_SHAREMODE_SHARED,
+        AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, 2000000,
+        0, &wanted, nullptr);
+    process->Release();
+  } else if (SUCCEEDED(process_hr)) {
+    process_hr = E_FAIL;
+  }
+  printf("CHECK device=\"%s\" endpoint_mute=%d endpoint_volume=%.3f "
+         "system_loopback=%s process_loopback=%s\n",
+         DeviceName(device).c_str(), state.endpoint_mute ? 1 : 0, state.endpoint_volume,
+         SUCCEEDED(system_hr) ? "ok" : "failed", SUCCEEDED(process_hr) ? "ok" : "failed");
+  fflush(stdout);
+  SafeRelease(&device);
+  SafeRelease(&enumerator);
+  if (FAILED(system_hr) && FAILED(process_hr)) return 5;
+  if (state.endpoint_mute || (state.endpoint_volume >= 0 && state.endpoint_volume < 0.01f)) return 3;
+  return 0;
+}
+
 }  // namespace
 
 int wmain(int argc, wchar_t** argv) {
+  if (argc >= 2 && wcscmp(argv[1], L"--check") == 0) {
+    if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))) return 5;
+    const int code = Check();
+    CoUninitialize();
+    return code;
+  }
   if (argc < 3) {
-    fprintf(stderr, "usage: loopback_capture <out.wav> <seconds> [pid]\n");
+    fprintf(stderr, "usage: loopback_capture <out.wav> <seconds> [pid] | --check\n");
     return 2;
   }
   const double seconds = _wtof(argv[2]);
@@ -193,6 +369,12 @@ int wmain(int argc, wchar_t** argv) {
   const char* mode = "system";
   HRESULT process_error = S_OK;
 
+  // Default output device: watched for mute / volume during the recording
+  // (and used for system loopback).
+  if (SUCCEEDED(CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                                 IID_PPV_ARGS(&enumerator)))) {
+    enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
+  }
   if (pid != 0) {
     capture = ActivateProcessLoopback(pid, &process_error);
   }
@@ -223,11 +405,7 @@ int wmain(int argc, wchar_t** argv) {
   if (!capture) {
     // System loopback of the default output device. A silent render stream
     // keeps packets coming while nothing plays.
-    hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
-                          IID_PPV_ARGS(&enumerator));
-    if (FAILED(hr)) return Fail("MMDeviceEnumerator", hr);
-    hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
-    if (FAILED(hr)) return Fail("GetDefaultAudioEndpoint", hr);
+    if (!device) return Fail("GetDefaultAudioEndpoint", E_FAIL);
     hr = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
                           reinterpret_cast<void**>(&render));
     if (FAILED(hr)) return Fail("Activate render", hr);
@@ -275,12 +453,34 @@ int wmain(int argc, wchar_t** argv) {
   unsigned long discontinuities = 0;
   unsigned long packets = 0;
 
+  auto* monitor = new OutputMonitor(device, pid);
+  const OutputState first = monitor->Read();
+  bool muted_seen = first.endpoint_mute || first.session_mute;
+  float min_endpoint = first.endpoint_volume;
+  float min_session = first.session_found ? first.session_volume : -1;
+  bool session_seen = first.session_found;
+  auto watch = [&]() {
+    const OutputState s = monitor->Read();
+    muted_seen = muted_seen || s.endpoint_mute || s.session_mute;
+    if (s.endpoint_volume >= 0) {
+      min_endpoint = min_endpoint < 0 ? s.endpoint_volume : std::min(min_endpoint, s.endpoint_volume);
+    }
+    if (s.session_found) {
+      min_session = min_session < 0 ? s.session_volume : std::min(min_session, s.session_volume);
+      session_seen = true;
+    }
+  };
+
   hr = capture->Start();
   if (FAILED(hr)) return Fail("Start capture", hr);
   const LONGLONG start = Now100ns();
   const LONGLONG duration = static_cast<LONGLONG>(seconds * 10000000.0);
-  printf("READY mode=%s rate=%lu channels=%u float=%d bits=%u", mode,
-         static_cast<unsigned long>(rate), channels, is_float ? 1 : 0, bits);
+  LONGLONG next_watch = start;
+  printf("READY mode=%s rate=%lu channels=%u float=%d bits=%u device=\"%s\" "
+         "endpoint_mute=%d endpoint_volume=%.3f session=%d session_mute=%d session_volume=%.3f",
+         mode, static_cast<unsigned long>(rate), channels, is_float ? 1 : 0, bits,
+         DeviceName(device).c_str(), first.endpoint_mute ? 1 : 0, first.endpoint_volume,
+         first.session_found ? 1 : 0, first.session_mute ? 1 : 0, first.session_volume);
   if (pid != 0 && FAILED(process_error)) {
     printf(" process_loopback_error=0x%08lx",
            static_cast<unsigned long>(process_error));
@@ -310,6 +510,10 @@ int wmain(int argc, wchar_t** argv) {
   const size_t max_jump = rate / 50;  // 20 ms
 
   while (Now100ns() - start < duration) {
+    if (Now100ns() >= next_watch) {
+      watch();  // mute / volume, four times a second
+      next_watch = Now100ns() + 2500000;
+    }
     if (render) {
       UINT32 padding = 0;
       if (SUCCEEDED(render->GetCurrentPadding(&padding)) &&
@@ -361,10 +565,14 @@ int wmain(int argc, wchar_t** argv) {
   }
 
   const bool ok = WriteWav(argv[1], samples, rate);
-  printf("DONE mode=%s frames=%zu packets=%lu discontinuities=%lu written=%d\n",
-         mode, samples.size(), packets, discontinuities, ok ? 1 : 0);
+  watch();
+  printf("DONE mode=%s frames=%zu packets=%lu discontinuities=%lu written=%d "
+         "muted_seen=%d min_endpoint_volume=%.3f session_seen=%d min_session_volume=%.3f\n",
+         mode, samples.size(), packets, discontinuities, ok ? 1 : 0, muted_seen ? 1 : 0,
+         min_endpoint, session_seen ? 1 : 0, min_session);
   fflush(stdout);
 
+  delete monitor;
   CoTaskMemFree(mix_format);
   CoTaskMemFree(render_format);
   SafeRelease(&capture_client);

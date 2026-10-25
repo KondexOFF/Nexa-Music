@@ -50,6 +50,8 @@ flutter run -d windows --dart-define=NEXA_SELFTEST=true "--dart-define=NEXA_TEST
 
 Double-click `NEXA_AutoTest.cmd` (about 15 minutes; test tones are played). It never touches your own library or settings: everything runs in a separate test profile with a generated test library (`tools/autotest/library/make_test_library.py`, kept outside the repository). Results: `reports/FINAL_AUTOTEST_REPORT.md`, `reports/autotest/results.json`; logs, recordings and screenshots in the run folder `_autotest_runs/<date>` next to the repository. What still needs a person (Narrator, listening impressions, a real network outage, your own music folder) is listed at the end of the report.
 
+Only some groups: `NEXA_AutoTest.cmd -Groups playback,mix` (groups: library, playback, mix, dna, online; the exe stage only with `-WithExe`). The sound must be on: before and during every recording the run checks Windows mute and volume; with no sound the sound checks are reported BLOCKED, not FAIL. The report names the run and the build (app-code fingerprint) of every result.
+
 ## Rules for this repository
 
 - Plan: [NEXA_Music_Master_Plan_Claude.md](NEXA_Music_Master_Plan_Claude.md); agent rules: [CLAUDE.md](CLAUDE.md); decisions: [docs/DECISIONS.md](docs/DECISIONS.md); change requests: [docs/CHANGE_REQUESTS.md](docs/CHANGE_REQUESTS.md); reports: [reports/](reports/).

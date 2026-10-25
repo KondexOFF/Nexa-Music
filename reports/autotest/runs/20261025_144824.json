@@ -1,0 +1,60 @@
+{
+ "run": {
+  "run": "20261025_144824",
+  "startedAt": "2026-10-25T14:48:24",
+  "commit": "96d0bea",
+  "uncommitted": true,
+  "appVersion": "0.9.0+7",
+  "appCode": "83346d1e171c",
+  "build": "B1",
+  "appCodeKnown": "измерен в начале прогона",
+  "groups": "",
+  "stages": {
+   "unit": true,
+   "integration": false,
+   "exe": false
+  }
+ },
+ "checks": [
+  {
+   "id": "SYS-library",
+   "ft": "-",
+   "title": "Test library present and unchanged (SHA-256)",
+   "status": "PASS",
+   "detail": "36 tracks",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-loopback",
+   "ft": "-",
+   "title": "WASAPI loopback recorder built",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-eventlog",
+   "ft": "FT-28",
+   "title": "Windows Event Log: no crash of nexa_music.exe during the whole run",
+   "status": "PASS",
+   "detail": "0 crash records",
+   "level": "Windows system"
+  },
+  {
+   "id": "UNIT-analyze",
+   "ft": "-",
+   "title": "flutter analyze",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "static analysis"
+  },
+  {
+   "id": "UNIT-tests",
+   "ft": "-",
+   "title": "Existing unit / widget tests (FakeEngine, in-memory database)",
+   "status": "PASS",
+   "detail": "exit 0; +143: All tests passed!",
+   "level": "unit / widget tests"
+  }
+ ]
+}

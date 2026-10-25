@@ -1,0 +1,83 @@
+{
+ "run": {
+  "run": "20261025_142213",
+  "startedAt": "2026-10-25T14:22:13",
+  "commit": "96d0bea",
+  "uncommitted": true,
+  "appVersion": "0.9.0+7",
+  "appCode": "1fd663d5bf2b",
+  "appCodeKnown": "measured at the start of the run",
+  "groups": "playback,mix",
+  "stages": {
+   "unit": true,
+   "integration": true,
+   "exe": false
+  }
+ },
+ "checks": [
+  {
+   "id": "SYS-library",
+   "ft": "-",
+   "title": "Test library present and unchanged (SHA-256)",
+   "status": "PASS",
+   "detail": "36 tracks",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-loopback",
+   "ft": "-",
+   "title": "WASAPI loopback recorder built",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-audio",
+   "ft": "-",
+   "title": "Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available",
+   "status": "PASS",
+   "detail": "device 'Speakers (Logitech PRO X Gaming Headset)', mute off, volume 52 %, process loopback ok, system loopback ok",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-eventlog",
+   "ft": "FT-28",
+   "title": "Windows Event Log: no crash of nexa_music.exe during the whole run",
+   "status": "PASS",
+   "detail": "0 crash records",
+   "level": "Windows system"
+  },
+  {
+   "id": "UNIT-analyze",
+   "ft": "-",
+   "title": "flutter analyze",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "static analysis"
+  },
+  {
+   "id": "UNIT-tests",
+   "ft": "-",
+   "title": "Existing unit / widget tests (FakeEngine, in-memory database)",
+   "status": "PASS",
+   "detail": "exit 0; +143: All tests passed!",
+   "level": "unit / widget tests"
+  },
+  {
+   "id": "AT-playback-crash",
+   "ft": "-",
+   "title": "Group \"playback\" stopped by an exception",
+   "status": "FAIL",
+   "detail": "Bad state: No element\n#0      Iterable.firstWhere (dart:core/iterable.dart:722:5)\n#1      _playback (<repo>/integration_test/autotest_test.dart:305:24)\n<asynchronous suspension>\n#2      Future.timeout.<anonymous closure> (dart:async/future_impl.dart:1061:7)\n<asynchronous suspension>\n#3      main.<anonymous closure>.<anonymous closure> (<repo>/integration_test/autotest_test.dart:81:11)\n<asynchronous suspension>\n#4      LiveTestWidgetsFlutterBinding.runAsync (package:flutter_test/src/binding.dart:3035:14)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-mix-crash",
+   "ft": "-",
+   "title": "Group \"mix\" stopped by an exception",
+   "status": "FAIL",
+   "detail": "Null check operator used on a null value\n#0      _mix.transition (<repo>/integration_test/autotest_test.dart:592:22)\n#1      _mix (<repo>/integration_test/autotest_test.dart:630:11)\n<asynchronous suspension>\n#2      Future.timeout.<anonymous closure> (dart:async/future_impl.dart:1061:7)\n<asynchronous suspension>\n#3      main.<anonymous closure>.<anonymous closure> (<repo>/integration_test/autotest_test.dart:81:11)\n<asynchronous suspension>\n#4      LiveTestWidgetsFlutterBinding.runAsync (package:flutter_test/src/binding.dart:3035:14)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  }
+ ]
+}

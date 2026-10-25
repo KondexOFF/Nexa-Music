@@ -71,6 +71,11 @@ void main() {
         'probe': (() => gaplessProbe(results, manifest, loop), const Duration(minutes: 5)),
       };
       final json = p.join(AutoTestConfig.out, 'integration.json');
+      if (!AutoTestConfig.runs('library')) {
+        // Only some groups selected (e.g. playback,mix): they need the test
+        // library in the profile, which the library group would import.
+        await _importLibraryOnly();
+      }
       for (final entry in groups.entries) {
         final requested = AutoTestConfig.groups.split(',').map((g) => g.trim()).contains(entry.key);
         if (entry.key == 'probe' ? !requested : !AutoTestConfig.runs(entry.key)) {
@@ -105,6 +110,22 @@ void main() {
 }
 
 // ---------------------------------------------------------------- library
+
+/// Imports the test library into the test profile without checking it
+/// (the "library" group does the checks).
+Future<void> _importLibraryOnly() async {
+  final c = autoTestContainer();
+  try {
+    final repo = c.read(libraryRepositoryProvider);
+    if ((await repo.getTracks()).isEmpty) {
+      await c.read(libraryScanProvider.notifier).addFolder();
+    }
+    // ignore: avoid_print
+    print('AUTOTEST setup: test library in the profile, ${(await repo.getTracks()).length} tracks');
+  } finally {
+    c.dispose();
+  }
+}
 
 Future<void> _library(AutoTestResults r, LibraryManifest m) async {
   final root = AutoTestConfig.library;

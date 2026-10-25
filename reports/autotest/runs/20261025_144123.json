@@ -1,0 +1,152 @@
+{
+ "run": {
+  "run": "20261025_144123",
+  "startedAt": "2026-10-25T14:41:23",
+  "commit": "96d0bea",
+  "uncommitted": true,
+  "appVersion": "0.9.0+7",
+  "appCode": "83346d1e171c",
+  "build": "B1",
+  "appCodeKnown": "measured at the start of the run",
+  "groups": "playback",
+  "stages": {
+   "unit": true,
+   "integration": true,
+   "exe": false
+  }
+ },
+ "checks": [
+  {
+   "id": "SYS-library",
+   "ft": "-",
+   "title": "Test library present and unchanged (SHA-256)",
+   "status": "PASS",
+   "detail": "36 tracks",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-loopback",
+   "ft": "-",
+   "title": "WASAPI loopback recorder built",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-audio",
+   "ft": "-",
+   "title": "Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available",
+   "status": "PASS",
+   "detail": "device 'Speakers (Logitech PRO X Gaming Headset)', mute off, volume 52 %, process loopback ok, system loopback ok",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-eventlog",
+   "ft": "FT-28",
+   "title": "Windows Event Log: no crash of nexa_music.exe during the whole run",
+   "status": "PASS",
+   "detail": "0 crash records",
+   "level": "Windows system"
+  },
+  {
+   "id": "UNIT-analyze",
+   "ft": "-",
+   "title": "flutter analyze",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "static analysis"
+  },
+  {
+   "id": "UNIT-tests",
+   "ft": "-",
+   "title": "Existing unit / widget tests (FakeEngine, in-memory database)",
+   "status": "PASS",
+   "detail": "exit 0; +143: All tests passed!",
+   "level": "unit / widget tests"
+  },
+  {
+   "id": "AT-06-order",
+   "ft": "FT-06",
+   "title": "24 tracks in a row: each started once, in order (engine)",
+   "status": "PASS",
+   "detail": "24 tracks started; engine errors: none",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-06-audio",
+   "ft": "FT-06",
+   "title": "24 tracks in a row: audible order, full length, never two at once, no gaps (loopback)",
+   "status": "PASS",
+   "detail": "heard 24 of 24 tones in the right order; largest overlap 0.000 s, largest gap 0.000 s, shortest song heard 5.96 s of 6.00 s",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "recordingSeconds": 148.0,
+    "outputDevice": "mode=process rate=48000 channels=2 float=1 bits=32 device=\"Speakers (Logitech PRO X Gaming Headset)\" endpoint_mute=0 endpoint_volume=0.520 session=0 session_mute=0 session_volume=-1.000"
+   }
+  },
+  {
+   "id": "AT-06-id3-flac",
+   "ft": "FT-06",
+   "title": "Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible",
+   "status": "PASS",
+   "detail": "heard 520 Hz -> 2800 Hz -> 740 Hz (expected 520 Hz -> 2800 Hz -> 740 Hz)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-07-transport",
+   "ft": "FT-07",
+   "title": "Pause holds the position, resume, seek, previous (restart / previous track), next",
+   "status": "PASS",
+   "detail": "pause 1040->1040 ms, resume -> 2260 ms, seek 20 s -> 20439 ms, restart true, next true, previous true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-07-pause-silence",
+   "ft": "FT-07",
+   "title": "Silence while paused (loopback, tone of the paused song)",
+   "status": "PASS",
+   "detail": "440 Hz level while paused 0.00000 (playing at 100 %: about 0.12); other sound on the PC: peak 0.0000",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-08-queue",
+   "ft": "FT-08",
+   "title": "Play next, Add to queue, Remove, Clear; the engine plays the inserted song",
+   "status": "PASS",
+   "detail": "play next/add true, remove true, engine played inserted true, clear true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-09-shuffle",
+   "ft": "FT-09",
+   "title": "Shuffle plays each song once; switching it off restores the order",
+   "status": "PASS",
+   "detail": "10 different files played; order restored true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-09-repeat",
+   "ft": "FT-09",
+   "title": "Repeat this song replays it; Repeat all wraps to the first song",
+   "status": "PASS",
+   "detail": "repeat one true, repeat all wrap true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-10-volume",
+   "ft": "FT-10",
+   "title": "Volume and mute change the real output level (loopback)",
+   "status": "PASS",
+   "detail": "440 Hz level at 100 %: 0.1059, 50 %: 0.0132, mute: 0.00000; recorder mode=process rate=48000 channels=2 float=1 bits=32 device=\"Speakers (Logitech PRO X Gaming Headset)\" endpoint_mute=0 endpoint_volume=0.520 session=1 session_mute=0 session_volume=1.000",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-10-devices",
+   "ft": "FT-10",
+   "title": "Output devices are listed; \"System default\" can be selected",
+   "status": "PASS",
+   "detail": "5 devices reported by the engine",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  }
+ ]
+}

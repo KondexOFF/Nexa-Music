@@ -17,8 +17,13 @@ param(
     [switch]$NoPause,
     [switch]$SkipUnit,
     [switch]$SkipIntegration,
-    [switch]$SkipExe
+    [switch]$SkipExe,
+    [switch]$WithExe
 )
+# -Groups selects integration groups only (for example
+# "NEXA_AutoTest.cmd -Groups playback,mix"): the exe stage then runs only
+# with -WithExe.
+if ($Groups -and -not $WithExe) { $SkipExe = $true }
 
 $ErrorActionPreference = 'Continue'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -74,6 +79,17 @@ $flutterVersion = ((& flutter --version 2>$null | Select-Object -First 1) | Out-
 $version = ((Get-Content (Join-Path $repo 'pubspec.yaml') | Where-Object { $_ -match '^version:' }) -replace 'version:\s*', '').Trim()
 $os = (Get-CimInstance Win32_OperatingSystem).Caption
 Log "commit $git$(if ($dirty) { ' (+ uncommitted changes)' }), app $version, $flutterVersion, $os"
+# Identity of the app code under test (lib, windows, assets, pubspec): the
+# report only combines results of runs with the same app code.
+$appSource = $null
+try {
+    Push-Location $repo
+    $fp = (& dart run tools/autotest/make_report.dart --fingerprint $repo 2>$null | Select-Object -Last 1)
+    Pop-Location
+    $appSource = $fp | ConvertFrom-Json
+    Log "app code $($appSource.fingerprint) (last app commit $($appSource.appCommit)$(if ($appSource.dirty) { ', changed since' }))"
+} catch { Log "app code fingerprint not available: $($_.Exception.Message)" }
+if ($Groups) { Log "groups: $Groups$(if ($SkipExe) { ' (exe stage skipped)' })" }
 
 $srcLib = if ($env:NEXA_AUTOTEST_LIBRARY) { $env:NEXA_AUTOTEST_LIBRARY } else { Join-Path $root '_autotest_library' }
 $lib = Join-Path $run 'library'
@@ -131,6 +147,41 @@ if (Test-Path $vswhere) {
 }
 if (-not (Test-Path $loopExe)) { $loopExe = '' }
 
+# Sound check before any recording: output device present, not muted, not at
+# 0 %, loopback capture available. If not, every sound measurement of the run
+# is BLOCKED with this reason instead of producing a wrong result.
+$soundGroups = @('playback', 'mix', 'online', 'probe')
+$needsSound = -not $SkipIntegration -and (-not $Groups -or @($Groups.Split(',') | Where-Object { $soundGroups -contains $_.Trim() }).Count -gt 0)
+$audioBlocked = ''
+if ($loopExe -or $needsSound) {
+    if (-not $loopExe) {
+        $audioBlocked = 'loopback recorder not built'
+    } else {
+        $out = (& $loopExe --check 2>&1 | Out-String).Trim()
+        $checkCode = $LASTEXITCODE
+        $f = @{}
+        foreach ($mm in [regex]::Matches($out, '(\w+)=("[^"]*"|\S+)')) { $f[$mm.Groups[1].Value] = $mm.Groups[2].Value.Trim('"') }
+        $vol = 0.0; [void][double]::TryParse(("" + $f['endpoint_volume']), [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$vol)
+        $detail = "device '$($f['device'])', mute $(if ($f['endpoint_mute'] -eq '1') { 'ON' } else { 'off' }), volume $([math]::Round($vol * 100)) %, " +
+            "process loopback $($f['process_loopback']), system loopback $($f['system_loopback'])"
+        switch ($checkCode) {
+            0 { }
+            3 { $audioBlocked = "Windows sound is muted or at 0 % ($detail)" }
+            4 { $audioBlocked = 'no audio output device'; $detail = 'no default output device' }
+            5 { $audioBlocked = "loopback capture is not available ($detail)" }
+            default { $audioBlocked = "sound check failed (exit $checkCode): $out" }
+        }
+        if (-not $audioBlocked -and $vol -lt 0.05) { $detail += ' - very quiet, but measurable' }
+    }
+    if ($needsSound) {
+        Sys 'SYS-audio' '-' 'Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available' `
+            $(if ($audioBlocked) { 'BLOCKED' } else { 'PASS' }) $(if ($audioBlocked) { "$audioBlocked - every sound check of this run is BLOCKED; switch the sound on and run again" } else { $detail })
+    } else {
+        Log "sound check (no sound measurements in this run): $(if ($audioBlocked) { $audioBlocked } else { $detail })"
+        $audioBlocked = ''
+    }
+}
+
 # ------------------------------------------------------- 2. unit tests
 $unit = New-Object System.Collections.ArrayList
 if (-not $SkipUnit) {
@@ -156,6 +207,7 @@ if (-not $SkipIntegration -and $libOk) {
     $jamendo = Join-Path $root '_phase1_ctl\jamendo_client_id.txt'
     $defines = "--dart-define=NEXA_AT_LIBRARY=`"$lib`" --dart-define=NEXA_AT_OUT=`"$itOut`" " +
         "--dart-define=NEXA_AT_LOOPBACK=`"$loopExe`" --dart-define=NEXA_AT_GROUPS=$Groups " +
+        $(if ($audioBlocked) { "--dart-define=NEXA_AT_AUDIO_BLOCKED=`"$($audioBlocked -replace '"', "'")`" " } else { '' }) +
         $(if (Test-Path $jamendo) { "--dart-define=NEXA_AT_JAMENDO_ID_FILE=`"$jamendo`"" } else { '' })
     $code = Run "flutter test integration_test/autotest_test.dart -d windows $defines" (Join-Path $run 'integration.log') 2700
     Log "integration exit $code"
@@ -202,20 +254,8 @@ if (-not $SkipExe) {
     }
 }
 
-# Integration stage skipped (-SkipIntegration): the report keeps the
-# integration results of the latest earlier run and says where they are from.
-$itJson = Join-Path $run 'it\integration.json'
-if ($SkipIntegration -and -not (Test-Path $itJson)) {
-    $prevIt = Get-ChildItem (Split-Path $run) -Directory | Where-Object { $_.FullName -ne $run } |
-        Sort-Object Name -Descending | Where-Object { Test-Path (Join-Path $_.FullName 'it\integration.json') } |
-        Select-Object -First 1
-    if ($prevIt) {
-        New-Item -ItemType Directory -Force -Path (Split-Path $itJson) | Out-Null
-        Copy-Item (Join-Path $prevIt.FullName 'it\integration.json') $itJson
-        Sys 'SYS-integration-source' '-' 'Integration results taken from an earlier run (stage skipped in this run)' 'PASS' `
-            "integration stage of run $($prevIt.Name); this run: unit / exe stages only"
-    }
-}
+# Results of stages skipped in this run are not copied: the report takes
+# them from earlier runs with the same app code and names the run.
 
 # ------------------------------------------------------ 5. event log
 $ev = @(Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = $startTime } -ErrorAction SilentlyContinue |
@@ -228,6 +268,10 @@ $meta = [ordered]@{
     run = $stamp; commit = $git; uncommitted = [bool]$dirty; appVersion = $version; flutter = $flutterVersion; windows = $os
     startedAt = $startTime.ToString('s'); finishedAt = (Get-Date).ToString('s')
     loopback = [bool]$loopExe
+    groups = $Groups
+    stages = [ordered]@{ unit = -not $SkipUnit; integration = (-not $SkipIntegration -and $libOk); exe = -not $SkipExe }
+    appSource = $appSource
+    audioBlocked = $audioBlocked
 }
 $sysOut = [ordered]@{ stage = 'system'; meta = $meta; checks = @($system) + @($unit) }
 [System.IO.File]::WriteAllText((Join-Path $run 'system.json'), ($sysOut | ConvertTo-Json -Depth 6), (New-Object System.Text.UTF8Encoding $false))

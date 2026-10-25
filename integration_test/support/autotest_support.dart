@@ -28,6 +28,11 @@ abstract final class AutoTestConfig {
     'NEXA_AT_JAMENDO_ID_FILE',
   );
 
+  /// Set by NEXA_AutoTest.ps1 when its sound check before the run found the
+  /// output muted, at 0 % or without loopback: every sound measurement is
+  /// then BLOCKED with this reason (playback itself is still tested).
+  static const String audioBlocked = String.fromEnvironment('NEXA_AT_AUDIO_BLOCKED');
+
   /// Comma separated groups to run (empty: all).
   static const String groups = String.fromEnvironment('NEXA_AT_GROUPS');
 
@@ -190,9 +195,42 @@ class Loopback {
 
   /// The recorder's READY line (device rate / channels / sample format).
   String? deviceInfo;
+
+  /// The recorder's DONE line of the last recording (mute / volume seen).
+  String? doneInfo;
   int _count = 0;
 
-  bool get available => exe.isNotEmpty && File(exe).existsSync();
+  bool get available =>
+      AutoTestConfig.audioBlocked.isEmpty && exe.isNotEmpty && File(exe).existsSync();
+
+  /// `key=value` pairs of a READY / DONE line (values may be "quoted").
+  static Map<String, String> fields(String line) => {
+    for (final m in RegExp(r'(\w+)=("[^"]*"|\S+)').allMatches(line))
+      m.group(1)!: m.group(2)!.replaceAll('"', ''),
+  };
+
+  /// Why a finished recording cannot be used: the Windows output (device or
+  /// NEXA's own Volume-mixer slider) was muted or at 0 % at some moment.
+  static String? outputProblem(String doneLine) {
+    final f = fields(doneLine);
+    double? volume(String key) {
+      final v = double.tryParse(f[key] ?? '');
+      return v == null || v < 0 ? null : v;
+    }
+
+    final endpoint = volume('min_endpoint_volume');
+    final session = f['session_seen'] == '1' ? volume('min_session_volume') : null;
+    if (f['muted_seen'] == '1') {
+      return 'Windows sound was muted during the recording';
+    }
+    if (endpoint != null && endpoint < 0.01) {
+      return 'Windows volume was at ${(endpoint * 100).round()} % during the recording';
+    }
+    if (session != null && session < 0.01) {
+      return 'NEXA was at ${(session * 100).round()} % in the Windows Volume mixer during the recording';
+    }
+    return null;
+  }
 
   /// Records [seconds] of the Windows output while [during] runs (started
   /// once the recorder is ready). Null when recording failed.
@@ -203,11 +241,14 @@ class Loopback {
     bool expectSound = true,
   }) async {
     if (!available) {
-      lastError = 'loopback_capture.exe not available';
+      lastError = AutoTestConfig.audioBlocked.isNotEmpty
+          ? 'sound check before the run: ${AutoTestConfig.audioBlocked}'
+          : 'loopback_capture.exe not available';
       await during();
       return null;
     }
     final file = p.join(dir, '${(++_count).toString().padLeft(2, '0')}_$name.wav');
+    doneInfo = null;
     await Directory(dir).create(recursive: true);
     // With this process id the recorder captures only NEXA's own audio
     // (process loopback), so other programs cannot disturb the measurement.
@@ -220,6 +261,8 @@ class Loopback {
       if (line.startsWith('READY') && !ready.isCompleted) {
         deviceInfo = line.substring(5).trim();
         ready.complete();
+      } else if (line.startsWith('DONE')) {
+        doneInfo = line.substring(4).trim();
       }
     });
     proc.stderr.transform(utf8.decoder).listen(errors.write);
@@ -243,6 +286,16 @@ class Loopback {
     );
     if (code != 0 || !File(file).existsSync()) {
       lastError = 'recorder exit $code: $errors';
+      return null;
+    }
+    // stdout is read asynchronously: give the DONE line a moment.
+    for (var i = 0; i < 20 && doneInfo == null; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    final problem = outputProblem(doneInfo ?? '');
+    if (problem != null) {
+      lastError = '$problem - the measurement is not possible, not a NEXA result '
+          '(${p.basename(file)}; recorder: ${doneInfo ?? '-'})';
       return null;
     }
     final rec = Recording.readWav(file);

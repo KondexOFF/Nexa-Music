@@ -473,12 +473,22 @@ class PlayerController extends Notifier<PlayerState> {
       state = state.copyWith(cursor: 0);
       await _loadCurrent(play: true);
     } else if (auto) {
-      // End of the queue: stop on the last song.
+      // End of the queue: stop on the last song - but only after the audio
+      // still buffered in Windows has played. Stopping at once cut ~0.3 s
+      // off the end of the last song (measured by NEXA AutoTest, FT-06).
       _endListening(reason);
-      await _engine.stop();
       state = state.copyWith(playing: false);
+      final entry = state.currentEntry;
+      await Future<void>.delayed(endOfQueueDrain);
+      if (ref.mounted && state.currentEntry == entry && !state.playing) {
+        await _engine.stop();
+      }
     }
   }
+
+  /// How long the end of the last song may still sound after the engine
+  /// reported its end (Windows audio buffer).
+  static const Duration endOfQueueDrain = Duration(milliseconds: 600);
 
   /// Loads the current entry; missing files are skipped with a notice.
   Future<void> _loadCurrent({required bool play}) async {
