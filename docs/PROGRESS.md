@@ -16,7 +16,8 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | 6 — Allowed online catalogues (Audius, Jamendo) | Accepted in the final acceptance (2026-10-25) | `dev/v1` `52b76c6` |
 | 7 — Polish, performance, Windows build | Accepted in the final acceptance (2026-10-25) | `dev/v1` |
 | Final stage — full Windows testing and fixes | **Accepted by the owner 2026-10-25**: 30 / 30 FT PASS (MAN-01..MAN-30 PASS, NEXA AutoTest 60 / 60) on the acceptance build `NEXA_Music_0.9.0_Windows_x64_13c260b` (commit 13c260b, app code 83346d1e171c). Defects found and fixed: TD-20, TD-22, TD-19, TD-04. Then version 1.0.0 prepared (D-020, `reports/RELEASE_1.0.0_READINESS.md`); publishing awaits the owner's permission | `dev/v1` |
-| E1 — NEXA Wave across catalogs (D-017) | Approved, after the final stage | |
+| Release v1.0.0 | **Published 2026-10-25** as a private GitHub release (tag `v1.0.0` on `0dcf12c`, `NEXA_Music_1.0.0_Windows_x64.zip`) | `dev/v1` |
+| E1 — NEXA Wave across catalogs (D-017, D-021) | In progress since 2026-10-25 (owner order) | `feature/e1-wave-catalogs` (local) |
 | E2 — YouTube official embedded player (CR-001) | Approved, after E1; feasibility gate first | |
 | E3 — SoundCloud official widget (CR-002) | Approved, after E2 | |
 | E4 — Ports: macOS, Linux, Android, iOS/iPadOS, Web (CR-003) | Approved, after the Windows version | |
@@ -51,6 +52,10 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
 
 ## Log
+
+- 2026-10-25 — **E1 started** on the local branch `feature/e1-wave-catalogs` (owner order after the private release v1.0.0): terms review of Audius and Jamendo, plan in `docs/E1_PLAN.md`, decision D-021. Online Wave picks behind an opt-in switch; see `reports/E1_REPORT.md` for results.
+
+- 2026-10-25 — **v1.0.0 published privately** on GitHub (owner permission): `dev/v1` pushed (`96d0bea..188adc5`), annotated tag `v1.0.0` on `0dcf12c`, release "NEXA Music 1.0.0 - Windows x64" with `NEXA_Music_1.0.0_Windows_x64.zip` (SHA-256 f349c57c743995379860aa44bca9cbe5aeddbcc040c04a8b52d0c25b56cb177d, 36 files, verified after download). The tag and the release were created from the owner's PC (this assistant's cloud session may not create tags or releases). Repository stays private.
 
 - 2026-10-25 — **Final acceptance passed** (owner): MAN-02, MAN-10, MAN-17, MAN-27, MAN-28, MAN-29, MAN-30 PASS on the acceptance build `NEXA_Music_0.9.0_Windows_x64_13c260b`; with FT-01 (2026-10-22) and NEXA AutoTest 60 / 60: 30 / 30 FT PASS. **Version 1.0.0** prepared (D-020): pubspec 1.0.0+8, Settings shows "Version 1.0.0", RELEASE_NOTES.md; new Portable folder `NEXA_Music_1.0.0_Windows_x64` from clean commit 0dcf12c (app code cb5886f118de; analyze 0 issues, 145/145 tests, real exe started, 0 crash records); the 0.9.0 acceptance build kept unchanged (33 / 33 files match its SHA256SUMS.txt). Regression: full NEXA AutoTest `20261025_162405` on this app code and the exe stage on this very folder - 60 / 60 checks PASS, 30 / 30 FT PASS, all from one build. Readiness: `reports/RELEASE_1.0.0_READINESS.md`. Not published: no push, tag or GitHub release yet.
 

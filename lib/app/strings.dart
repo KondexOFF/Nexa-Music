@@ -330,6 +330,43 @@ abstract final class S {
   static const String reasonRepeat =
       'Played recently - your library has no other match right now';
 
+  // NEXA Wave across catalogs (E1)
+  static const String waveOnline = 'Online picks from Audius and Jamendo';
+  static const String waveOnlineInfo =
+      'Mixes streamed catalog songs into your Wave - none at Familiar, up to '
+      'half at Discovery. Your liked genres and artists are sent to the '
+      'catalogs as search words; your listening history and files never '
+      'are. Online songs are streamed only: never saved, never crossfaded, '
+      'not added to your history.';
+  static const String waveOnlineNoSource =
+      'No online catalog is switched on (Settings - Online catalogs). The '
+      'Wave uses your library.';
+  static String waveOnlineUnavailable(String why) =>
+      'Online picks unavailable: $why The Wave continues with your library.';
+  static String waveOnlinePartly(String sources, String why) =>
+      'No picks from $sources right now: $why';
+  static const String waveOnlineWhyOffline = 'the catalogs cannot be reached.';
+  static const String waveOnlineWhyRateLimited =
+      'the catalogs ask to slow down.';
+  static const String waveOnlineWhyKey =
+      'a catalog key is missing or was rejected.';
+  static const String waveOnlineWhyError = 'the catalogs answered with an error.';
+  static String waveOnlineCount(int n) =>
+      n == 1 ? '1 online song ready' : '$n online songs ready';
+  static String basisPopular(String source) => 'Popular on $source right now';
+  static String basisGenre(String source, String genre) =>
+      'Popular on $source in $genre';
+  static String basisGenres(String source) =>
+      'Popular on $source in genres you like';
+  static String basisArtist(String source, String artist) =>
+      'By $artist, whom you like, on $source';
+  static const String hideOnline = 'Not for me';
+  static const String hideOnlineInfo =
+      'Hidden from your Wave until NEXA closes (online songs are not saved).';
+  static String skippedStream(String title) =>
+      'Skipped "$title": the stream is not available';
+  static const String noPlayableStream = 'No playable song in the queue';
+
   // Privacy settings (Phase 5)
   static const String historyConsent = 'Keep listening history';
   static const String historyConsentInfo =

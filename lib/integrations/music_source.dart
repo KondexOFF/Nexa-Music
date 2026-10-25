@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show immutable;
 import 'package:http/http.dart' as http;
 
+import '../core/models/listening.dart' show tasteKey;
 import '../core/models/track.dart';
 
 /// Why a catalog request failed.
@@ -44,6 +46,81 @@ abstract interface class MusicSource {
   bool get configured;
 
   Future<List<Track>> search(String query, {int limit = 20});
+
+  /// Songs this catalog offers to NEXA Wave (E1), each with the basis the
+  /// catalog chose it on. Only what [request] holds is sent to the
+  /// provider: explicitly liked genres and artists - never the listening
+  /// history, local files or excluded items. Without liked genres or
+  /// artists the catalog's own popular songs are used.
+  Future<List<WaveCandidate>> waveCandidates(WaveRequest request);
+}
+
+/// What NEXA Wave asks a catalog for (E1).
+@immutable
+class WaveRequest {
+  const WaveRequest({
+    this.genres = const [],
+    this.artists = const [],
+    this.limit = 12,
+  });
+
+  /// Liked genres (at most [maxTerms] are sent).
+  final List<String> genres;
+
+  /// Liked artists (at most [maxTerms] are sent).
+  final List<String> artists;
+
+  /// Wanted songs in total.
+  final int limit;
+
+  /// Each list is cut to this many words: few requests per refill.
+  static const int maxTerms = 3;
+
+  bool get hasTaste => genres.isNotEmpty || artists.isNotEmpty;
+}
+
+/// A catalog song offered to NEXA Wave and why the catalog returned it.
+@immutable
+class WaveCandidate {
+  const WaveCandidate(this.track, this.basis);
+
+  final Track track;
+
+  /// Plain explanation shown as "why this song" when nothing in the user's
+  /// own taste explains it better, e.g. "Popular on Audius in Electronic".
+  final String basis;
+}
+
+/// Runs [requests] one after another and keeps what succeeded. Throws the
+/// first error only when every request failed (so one bad word does not
+/// hide the rest).
+Future<List<WaveCandidate>> collectCandidates(
+  List<Future<List<WaveCandidate>> Function()> requests,
+) async {
+  final found = <WaveCandidate>[];
+  CatalogException? firstError;
+  var succeeded = 0;
+  for (final request in requests) {
+    try {
+      found.addAll(await request());
+      succeeded++;
+    } on CatalogException catch (e) {
+      firstError ??= e;
+      if (e.kind == CatalogErrorKind.offline ||
+          e.kind == CatalogErrorKind.rateLimited ||
+          e.kind == CatalogErrorKind.notConfigured) {
+        break; // The next request would fail the same way.
+      }
+    }
+  }
+  if (succeeded == 0 && firstError != null) {
+    throw firstError;
+  }
+  final seen = <int>{};
+  return [
+    for (final c in found)
+      if (seen.add(c.track.id)) c,
+  ];
 }
 
 /// Shared JSON GET with the error mapping every catalog uses.
@@ -95,3 +172,32 @@ int? jsonInt(Object? v) => switch (v) {
   String s => int.tryParse(s),
   _ => null,
 };
+
+/// Shortest and longest catalog song NEXA Wave plays: no snippets, no
+/// hour-long DJ sets or radio shows in a song queue.
+const Duration waveMinLength = Duration(seconds: 30);
+const Duration waveMaxLength = Duration(minutes: 15);
+
+/// Catalog "genres" that are not music.
+const Set<String> nonMusicGenres = {
+  'podcasts',
+  'podcast',
+  'audiobooks',
+  'audiobook',
+  'spoken word',
+  'comedy',
+};
+
+/// Whether a catalog song may go into NEXA Wave: playable now (not removed,
+/// gated or without a stream), a song-like length and music.
+bool waveSuitable(Track t) {
+  if (!t.available || t.path.isEmpty) {
+    return false;
+  }
+  final d = t.duration;
+  if (d != null && (d < waveMinLength || d > waveMaxLength)) {
+    return false;
+  }
+  final genre = tasteKey(t.genre ?? '');
+  return !nonMusicGenres.contains(genre);
+}

@@ -41,6 +41,12 @@ class WaveItem {
 ///   played ones up to +1.5 (discovery 0);
 /// * a little randomness so the Wave does not repeat itself.
 /// Recently played tracks are left out while anything else is available.
+///
+/// E1: catalog songs (Audius, Jamendo) are ranked by the same rules - the
+/// same exclusions, liked artists and genres - but they never have history,
+/// so they always count as discoveries; their "why" is the catalog's basis
+/// unless the user's own taste explains them. [merge] then mixes them into
+/// the local picks by the Familiar <-> Discovery setting.
 class WaveRanker {
   const WaveRanker();
 
@@ -85,6 +91,8 @@ class WaveRanker {
     int limit = 20,
     double jitter = 0.75,
     math.Random? random,
+    Map<int, String> basis = const {},
+    bool repeatWhenEmpty = true,
   }) {
     final rnd = random ?? math.Random();
     final d = discovery.clamp(0.0, 1.0).toDouble();
@@ -102,7 +110,7 @@ class WaveRanker {
         if (!skip.contains(t.id) && !excluded(t, taste)) t,
     ];
     var pool = eligible.where((t) => !recent.contains(t.id)).toList();
-    final onlyRecent = pool.isEmpty;
+    final onlyRecent = pool.isEmpty && repeatWhenEmpty;
     if (onlyRecent) {
       pool = eligible; // Small library: repeat rather than stop.
     }
@@ -138,7 +146,12 @@ class WaveRanker {
         add(affinity, S.reasonOftenFinished);
         add((1 - d) * familiarMax, S.reasonFamiliar);
       } else {
-        add(d * newMax, S.reasonNew);
+        add(
+          d * newMax,
+          t.isOnline
+              ? basis[t.id] ?? S.basisPopular(t.source.label)
+              : S.reasonNew,
+        );
       }
       score += rnd.nextDouble() * jitter;
 
@@ -146,13 +159,64 @@ class WaveRanker {
       final best = reasons.firstOrNull;
       final reason = onlyRecent
           ? S.reasonRepeat
-          : (best == null || best.$1 <= 0 ? S.reasonFromLibrary : best.$2);
+          : (best == null || best.$1 <= 0
+                ? (t.isOnline
+                      ? basis[t.id] ?? S.basisPopular(t.source.label)
+                      : S.reasonFromLibrary)
+                : best.$2);
       scored.add(
         WaveItem(track: t, score: score, reason: reason, fresh: !played),
       );
     }
     scored.sort((a, b) => b.score.compareTo(a.score));
     return _spreadArtists(scored, limit);
+  }
+
+  /// At most this share of a Wave batch comes from the catalogs (at
+  /// Discovery 100 %).
+  static const double maxOnlineShare = 0.5;
+
+  /// How many of [limit] picks may come from the catalogs: none at
+  /// Familiar (0), growing to [maxOnlineShare] at Discovery (1), at least
+  /// one as soon as Discovery is above 0.
+  static int onlineSlots(double discovery, int limit) {
+    final d = discovery.clamp(0.0, 1.0).toDouble();
+    if (d <= 0 || limit <= 0) {
+      return 0;
+    }
+    return math.max(1, (limit * maxOnlineShare * d).round());
+  }
+
+  /// One Wave batch from the local and the catalog picks (each already
+  /// ranked): [onlineSlots] catalog songs spread evenly between the local
+  /// ones, starting with a local song. When one side runs short the other
+  /// fills the batch; a "Familiar" setting (0) never adds catalog songs.
+  static List<WaveItem> merge(
+    List<WaveItem> local,
+    List<WaveItem> online, {
+    required double discovery,
+    required int limit,
+  }) {
+    if (onlineSlots(discovery, limit) == 0 || online.isEmpty) {
+      return local.take(limit).toList();
+    }
+    var onlineCount = math.min(onlineSlots(discovery, limit), online.length);
+    final localCount = math.min(local.length, limit - onlineCount);
+    onlineCount = math.min(online.length, limit - localCount);
+    final total = localCount + onlineCount;
+    final result = <WaveItem>[];
+    var li = 0;
+    var oi = 0;
+    for (var i = 0; i < total; i++) {
+      // Catalog songs wanted after i + 1 picks, spread over the batch.
+      final wanted = ((i + 1) * onlineCount) ~/ total;
+      if ((oi < wanted && oi < onlineCount) || li >= localCount) {
+        result.add(online[oi++]);
+      } else {
+        result.add(local[li++]);
+      }
+    }
+    return result;
   }
 
   /// Avoids the same artist twice in a row when a close alternative exists.

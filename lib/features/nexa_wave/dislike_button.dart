@@ -11,7 +11,8 @@ import 'wave_controller.dart';
 
 /// Thumbs-down for a library track (live state). A dislike is the strongest
 /// negative NEXA DNA signal: the song is never suggested by NEXA Wave, and a
-/// Wave song that is playing is skipped.
+/// Wave song that is playing is skipped. For a catalog song (E1) it is
+/// "Not for me": hidden from the Wave until NEXA closes, nothing saved.
 class DislikeButton extends ConsumerWidget {
   const DislikeButton({
     super.key,
@@ -27,13 +28,25 @@ class DislikeButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = track;
-    if (t == null || t.isOnline) {
+    if (t == null) {
       return NexaIconButton(
         icon: Icons.thumb_down_off_alt_rounded,
         label: S.dislike,
-        disabledReason: t == null ? S.nothingToPlay : S.onlineNotSaved,
+        disabledReason: S.nothingToPlay,
         iconSize: iconSize,
         boxSize: boxSize,
+      );
+    }
+    if (t.isOnline) {
+      // E1: catalog songs are not saved, so "Not for me" only hides the
+      // song from the Wave for this session.
+      return NexaIconButton(
+        icon: Icons.thumb_down_off_alt_rounded,
+        label: '${S.hideOnline} - ${S.hideOnlineInfo}',
+        color: NexaColors.textSecondary,
+        iconSize: iconSize,
+        boxSize: boxSize,
+        onPressed: () => ref.read(waveProvider.notifier).dislike(t),
       );
     }
     final live = ref.watch(trackProvider(t.id)).value ?? t;

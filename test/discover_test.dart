@@ -36,6 +36,14 @@ class FakeSource implements MusicSource {
     }
     return tracks;
   }
+
+  @override
+  Future<List<WaveCandidate>> waveCandidates(WaveRequest request) async {
+    if (error != null) {
+      throw error!;
+    }
+    return [for (final t in tracks) WaveCandidate(t, 'test')];
+  }
 }
 
 Track online(TrackSource source, String id, {bool available = true}) => Track(

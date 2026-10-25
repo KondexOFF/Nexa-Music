@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/strings.dart';
 import '../../core/audio/media_kit_engine.dart';
 import '../../core/audio/mixing_engine.dart';
 import '../../core/audio/playback_engine.dart';
@@ -146,6 +147,10 @@ class PlayerController extends Notifier<PlayerState> {
   Duration _listenPosition = Duration.zero;
   Duration? _listenDuration;
 
+  /// Catalog streams skipped in a row because they failed (E1); reset as
+  /// soon as a song really plays.
+  int _failedStreams = 0;
+
   @override
   PlayerState build() {
     _engine = ref.watch(playbackEngineProvider);
@@ -164,6 +169,9 @@ class PlayerController extends Notifier<PlayerState> {
           }
           if (s.playing != state.playing) {
             state = state.copyWith(playing: s.playing);
+          }
+          if (s.playing && s.position > const Duration(seconds: 1)) {
+            _failedStreams = 0;
           }
         }),
       );
@@ -529,6 +537,45 @@ class PlayerController extends Notifier<PlayerState> {
           ? 'Playback error: $message'
           : 'Cannot play "$title": $message',
     );
+    final entry = state.currentEntry;
+    if (entry != null && entry.track.isOnline) {
+      unawaited(_skipFailedStream(entry, _engine.state.position));
+    }
+  }
+
+  /// How long a failed catalog stream may still recover (or the engine
+  /// report its end) before NEXA moves on by itself.
+  static const Duration failedStreamGrace = Duration(milliseconds: 500);
+
+  /// E1: a catalog song that cannot be streamed (removed, gated meanwhile,
+  /// network gone) is skipped, so the Wave keeps going - once per failure,
+  /// never in an endless loop over a queue of dead streams.
+  Future<void> _skipFailedStream(QueueEntry entry, Duration at) async {
+    await Future<void>.delayed(failedStreamGrace);
+    if (!ref.mounted || state.currentEntry?.uid != entry.uid) {
+      return; // Already moved on (e.g. the engine reported the end).
+    }
+    final s = _engine.state;
+    if (s.path == entry.track.path && s.playing && s.position > at) {
+      return; // The stream recovered and plays.
+    }
+    _failedStreams++;
+    final hasNext =
+        state.cursor + 1 < state.queue.length ||
+        (state.repeat == PlayerRepeat.all && state.queue.length > 1);
+    if (!hasNext) {
+      return; // Nothing follows: the error notice stays, as before.
+    }
+    if (_failedStreams >= state.queue.length) {
+      _failedStreams = 0;
+      _endListening(EndReason.stopped);
+      await _engine.stop();
+      state = state.copyWith(playing: false);
+      _notice(S.noPlayableStream);
+      return;
+    }
+    _notice(S.skippedStream(entry.track.title));
+    await _advance(auto: false);
   }
 
   // ---- modes and volume ----

@@ -10,6 +10,7 @@ import '../../core/models/listening.dart';
 import '../../core/models/track.dart';
 import '../../ui/isolated_slider.dart';
 import '../../ui/nexa_widgets.dart';
+import '../discover/source_attribution.dart';
 import '../library/library_providers.dart';
 import '../library/track_art.dart';
 import '../nexa_dna/dna_picker.dart';
@@ -72,7 +73,11 @@ class _WavePageState extends ConsumerState<WavePage> {
                 privateSession: settings.privateSession,
               ),
               const SizedBox(height: NexaSpace.sm),
-              _TuningPanel(settings: settings),
+              _TuningPanel(
+                settings: settings,
+                onlineNote: wave.onlineNote,
+                onlineReady: wave.onlineReady,
+              ),
               if (settings.loaded && !settings.onboarded && trackCount > 0) ...[
                 const SizedBox(height: NexaSpace.sm),
                 const _DnaSetupCard(),
@@ -205,9 +210,17 @@ class _WaveHeader extends ConsumerWidget {
 }
 
 class _TuningPanel extends ConsumerWidget {
-  const _TuningPanel({required this.settings});
+  const _TuningPanel({
+    required this.settings,
+    this.onlineNote,
+    this.onlineReady = 0,
+  });
 
   final DnaSettings settings;
+
+  /// E1: why online picks are missing, if so.
+  final String? onlineNote;
+  final int onlineReady;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -258,15 +271,57 @@ class _TuningPanel extends ConsumerWidget {
         ),
       ],
     );
+    final note = onlineNote;
+    final online = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(S.waveOnline, style: NexaText.title),
+              const SizedBox(height: 4),
+              const Text(S.waveOnlineInfo, style: NexaText.caption),
+              if (settings.waveOnline && note != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  note,
+                  key: const ValueKey('wave-online-note'),
+                  style: NexaText.caption.copyWith(color: NexaColors.coral),
+                ),
+              ] else if (settings.waveOnline && onlineReady > 0) ...[
+                const SizedBox(height: 6),
+                Text(
+                  S.waveOnlineCount(onlineReady),
+                  style: NexaText.caption.copyWith(color: NexaColors.sky),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Switch(
+          key: const ValueKey('wave-online-switch'),
+          value: settings.waveOnline,
+          onChanged: (v) async {
+            await dna.setWaveOnline(v);
+            await ref.read(waveProvider.notifier).refresh();
+          },
+        ),
+      ],
+    );
     return NexaPanel(
       padding: const EdgeInsets.all(20),
       child: LayoutBuilder(
-        builder: (context, constraints) => constraints.maxWidth < 640
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [slider, const SizedBox(height: 18), private],
-              )
-            : Row(
+        builder: (context, constraints) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (constraints.maxWidth < 640) ...[
+              slider,
+              const SizedBox(height: 18),
+              private,
+            ] else
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(flex: 3, child: slider),
@@ -274,6 +329,10 @@ class _TuningPanel extends ConsumerWidget {
                   Expanded(flex: 2, child: private),
                 ],
               ),
+            const SizedBox(height: 18),
+            online,
+          ],
+        ),
       ),
     );
   }
@@ -434,7 +493,10 @@ class _WaveRow extends ConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (fresh) ...[
+                        if (live.isOnline) ...[
+                          const SizedBox(width: 8),
+                          SourceBadge(source: live.source),
+                        ] else if (fresh) ...[
                           const SizedBox(width: 8),
                           const StatusBadge(
                             label: S.fresh,

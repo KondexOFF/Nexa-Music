@@ -24,6 +24,7 @@ class DnaSettings {
     this.privateSession = false,
     this.onboarded = false,
     this.discovery = defaultDiscovery,
+    this.waveOnline = false,
   });
 
   static const double defaultDiscovery = 0.3;
@@ -46,6 +47,11 @@ class DnaSettings {
   /// 0 = familiar only ... 1 = discoveries first.
   final double discovery;
 
+  /// E1: NEXA Wave may add streamed songs from the online catalogs. Off
+  /// until the user switches it on, because it sends the liked genres and
+  /// artists to the catalogs as search words.
+  final bool waveOnline;
+
   /// Whether a finished listening may be written to the history.
   bool get recordsHistory => historyConsent && !learningPaused && !privateSession;
 
@@ -56,6 +62,7 @@ class DnaSettings {
     bool? privateSession,
     bool? onboarded,
     double? discovery,
+    bool? waveOnline,
   }) => DnaSettings(
     loaded: loaded ?? this.loaded,
     historyConsent: historyConsent ?? this.historyConsent,
@@ -63,6 +70,7 @@ class DnaSettings {
     privateSession: privateSession ?? this.privateSession,
     onboarded: onboarded ?? this.onboarded,
     discovery: discovery ?? this.discovery,
+    waveOnline: waveOnline ?? this.waveOnline,
   );
 }
 
@@ -81,6 +89,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
       final paused = await _repo.getBool(SettingKeys.learningPaused);
       final onboarded = await _repo.getBool(SettingKeys.dnaOnboarded);
       final discovery = await _repo.getDouble(SettingKeys.waveDiscovery);
+      final online = await _repo.getBool(SettingKeys.waveOnline);
       if (!ref.mounted) {
         return;
       }
@@ -90,6 +99,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
         learningPaused: paused,
         onboarded: onboarded,
         discovery: discovery?.clamp(0.0, 1.0).toDouble(),
+        waveOnline: online,
       );
     } on Object {
       if (ref.mounted) {
@@ -131,11 +141,19 @@ class DnaSettingsController extends Notifier<DnaSettings> {
     await _save(() => _repo.setDouble(SettingKeys.waveDiscovery, v));
   }
 
-  /// Resets the Wave settings (consent and pause stay as chosen).
+  /// E1: online picks in the Wave on / off (saved).
+  Future<void> setWaveOnline(bool value) async {
+    state = state.copyWith(waveOnline: value);
+    await _save(() => _repo.setBool(SettingKeys.waveOnline, value));
+  }
+
+  /// Resets the Wave settings (consent and pause stay as chosen; online
+  /// picks go back to off).
   Future<void> resetPreferences() async {
     state = state.copyWith(
       discovery: DnaSettings.defaultDiscovery,
       onboarded: false,
+      waveOnline: false,
     );
     await _save(() async {
       await _repo.setDouble(
@@ -143,6 +161,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
         DnaSettings.defaultDiscovery,
       );
       await _repo.setBool(SettingKeys.dnaOnboarded, false);
+      await _repo.setBool(SettingKeys.waveOnline, false);
     });
   }
 }

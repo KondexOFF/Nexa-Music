@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 
+import '../../app/strings.dart';
 import '../../core/models/track.dart';
 import '../music_source.dart';
 
@@ -8,7 +9,9 @@ import '../music_source.dart';
 /// Needs the owner's own `client_id` (free, personal, non-commercial use;
 /// never stored in the repository). Results carry the Creative Commons
 /// licence and the track page for attribution; tracks without a stream URL
-/// are returned as unavailable.
+/// are returned as unavailable. NEXA Wave (E1) uses the same `/tracks/`
+/// endpoint with `fuzzytags` (liked genres), `artist_name` (liked artists)
+/// or, without either, the popularity boost.
 class JamendoSource implements MusicSource {
   JamendoSource(this._client, {required this.clientId, Uri? base})
     : base = base ?? Uri.parse('https://api.jamendo.com/v3.0');
@@ -29,6 +32,66 @@ class JamendoSource implements MusicSource {
     if (q.isEmpty) {
       return const [];
     }
+    return _tracks({'search': q}, limit);
+  }
+
+  @override
+  Future<List<WaveCandidate>> waveCandidates(WaveRequest request) async {
+    if (!configured) {
+      throw const CatalogException(CatalogErrorKind.notConfigured);
+    }
+    final limit = request.limit.clamp(1, 50);
+    final tags = <String>{
+      for (final g in request.genres.take(WaveRequest.maxTerms))
+        if (jamendoTag(g).isNotEmpty) jamendoTag(g),
+    };
+    final calls = <Future<List<WaveCandidate>> Function()>[
+      if (tags.isNotEmpty)
+        () => _candidates(
+          // A space is sent as "+": Jamendo reads it as "any of these tags".
+          {
+            'fuzzytags': tags.join(' '),
+            'boost': 'popularity_month',
+            'groupby': 'artist_id',
+          },
+          limit,
+          S.basisGenres(source.label),
+        ),
+      for (final a in request.artists.take(WaveRequest.maxTerms))
+        if (a.trim().isNotEmpty)
+          () => _candidates(
+            {'artist_name': a.trim()},
+            limit,
+            S.basisArtist(source.label, a.trim()),
+          ),
+    ];
+    if (calls.isEmpty) {
+      calls.add(
+        () => _candidates(
+          {'boost': 'popularity_week', 'groupby': 'artist_id'},
+          limit,
+          S.basisPopular(source.label),
+        ),
+      );
+    }
+    final found = await collectCandidates(calls);
+    return [
+      for (final c in found)
+        if (waveSuitable(c.track)) c,
+    ];
+  }
+
+  Future<List<WaveCandidate>> _candidates(
+    Map<String, String> filter,
+    int limit,
+    String basis,
+  ) async => [
+    for (final t in await _tracks(filter, limit)) WaveCandidate(t, basis),
+  ];
+
+  /// `GET /tracks/` with [filter]; also asks for the genre tags
+  /// (`include=musicinfo`), so excluded genres work for Jamendo songs.
+  Future<List<Track>> _tracks(Map<String, String> filter, int limit) async {
     if (!configured) {
       throw const CatalogException(CatalogErrorKind.notConfigured);
     }
@@ -38,9 +101,10 @@ class JamendoSource implements MusicSource {
         'client_id': clientId.trim(),
         'format': 'json',
         'limit': '$limit',
-        'search': q,
+        ...filter,
         'audioformat': 'mp32',
         'imagesize': '300',
+        'include': 'musicinfo',
       },
     );
     final json = await getJson(_client, uri);
@@ -71,6 +135,37 @@ class JamendoSource implements MusicSource {
     ];
   }
 
+  static const Map<String, String> _tagAliases = {
+    'rb': 'rnb',
+    'drumandbass': 'drumnbass',
+    'drumbass': 'drumnbass',
+    'dnb': 'drumnbass',
+    'electronica': 'electronic',
+    'lofihiphop': 'lofi',
+  };
+
+  /// Jamendo tag for a NEXA DNA genre: lower case letters and digits
+  /// ("Hip-Hop" -> "hiphop", "R&B" -> "rnb").
+  static String jamendoTag(String genre) {
+    final key = genre.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    return _tagAliases[key] ?? key;
+  }
+
+  /// Genre tags of a track object (`musicinfo.tags.genres`), if present.
+  static String? genresOf(Map<dynamic, dynamic> j) {
+    final info = j['musicinfo'];
+    final tags = info is Map ? info['tags'] : null;
+    final genres = tags is Map ? tags['genres'] : null;
+    if (genres is! List) {
+      return null;
+    }
+    final names = [
+      for (final g in genres)
+        if (jsonString(g) != null) jsonString(g)!,
+    ];
+    return names.isEmpty ? null : names.join('; ');
+  }
+
   /// One Jamendo track object -> [Track] (null when unusable).
   Track? parseTrack(Map<dynamic, dynamic> j) {
     final id = jsonString('${j['id'] ?? ''}');
@@ -92,6 +187,7 @@ class JamendoSource implements MusicSource {
       title: title,
       artist: jsonString(j['artist_name']) ?? 'Jamendo artist',
       album: jsonString(j['album_name']) ?? 'Jamendo',
+      genre: genresOf(j),
       duration: seconds == null || seconds <= 0
           ? null
           : Duration(seconds: seconds),
