@@ -18,7 +18,10 @@ param(
     [switch]$SkipUnit,
     [switch]$SkipIntegration,
     [switch]$SkipExe,
-    [switch]$WithExe
+    [switch]$WithExe,
+    # Test an existing Portable folder next to the repository (for example
+    # NEXA_Music_0.9.0_Windows_x64_d691b44) instead of building a new one.
+    [string]$UsePortable = ''
 )
 # -Groups selects integration groups only (for example
 # "NEXA_AutoTest.cmd -Groups playback,mix"): the exe stage then runs only
@@ -218,22 +221,47 @@ if (-not $SkipIntegration -and $libOk) {
 
 # --------------------------------------------- 4. Release build + exe
 if (-not $SkipExe) {
-    Log 'stage 4: Release build and the Portable exe'
-    $blog = Join-Path $run 'release_build.log'
-    $code = Run 'flutter build windows --release' $blog 1800
-    $release = Join-Path $repo 'build\windows\x64\runner\Release'
-    $portable = Join-Path $run 'portable\NEXA_Music'
-    if ($code -eq 0 -and (Test-Path (Join-Path $release 'nexa_music.exe'))) {
-        New-Item -ItemType Directory -Force -Path $portable | Out-Null
-        & robocopy $release $portable /E /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
+    if ($UsePortable) {
+        # An existing Portable folder (the build for manual acceptance): no
+        # new build; its BUILD_INFO.txt must name the same app code as this run.
+        Log "stage 4: the existing Portable folder $UsePortable (no new build)"
+        $portable = Join-Path $root $UsePortable
+        $code = $(if (Test-Path (Join-Path $portable 'nexa_music.exe')) { 0 } else { 1 })
+        $info = @{}
+        $infoFile = Join-Path $portable 'BUILD_INFO.txt'
+        if (Test-Path $infoFile) {
+            foreach ($l in Get-Content $infoFile -Encoding UTF8) { if ($l -match '^([\w ]+):\s*(.+)$') { $info[$Matches[1].Trim()] = $Matches[2].Trim() } }
+        }
+        $same = $appSource -and $info['App code'] -and ($info['App code'] -eq $appSource.fingerprint)
+        Sys 'SYS-portable-source' 'FT-01' 'The tested Portable folder was built from the same app code as this run' `
+            $(if ($same) { 'PASS' } elseif ($code -ne 0) { 'BLOCKED' } else { 'FAIL' }) `
+            "folder $UsePortable; built from commit $($info['Commit']), app code $($info['App code']); this run: app code $($appSource.fingerprint)"
+    } else {
+        Log 'stage 4: Release build and the Portable exe'
+        $blog = Join-Path $run 'release_build.log'
+        $code = Run 'flutter build windows --release' $blog 1800
+        $release = Join-Path $repo 'build\windows\x64\runner\Release'
+        $portable = Join-Path $run 'portable\NEXA_Music'
+        if ($code -eq 0 -and (Test-Path (Join-Path $release 'nexa_music.exe'))) {
+            New-Item -ItemType Directory -Force -Path $portable | Out-Null
+            & robocopy $release $portable /E /NFL /NDL /NJH /NJS /NP /R:1 /W:1 | Out-Null
+        } else {
+            $code = $(if ($code -eq 0) { 1 } else { $code })
+        }
+    }
+    if ($code -eq 0 -and (Test-Path (Join-Path $portable 'nexa_music.exe'))) {
         $missing = @()
         foreach ($pattern in @('nexa_music.exe', 'flutter_windows.dll', 'data\app.so', 'data\icudtl.dat', 'libmpv*.dll',
                 '*sqlite3*.dll', 'url_launcher_windows_plugin.dll', 'media_kit_libs_windows_audio_plugin.dll',
-                'vcruntime140.dll', 'vcruntime140_1.dll', 'msvcp140.dll', 'data\flutter_assets\assets\fonts\OFL.txt')) {
+                'vcruntime140.dll', 'vcruntime140_1.dll', 'msvcp140.dll', 'data\flutter_assets\assets\fonts\OFL.txt',
+                'data\flutter_assets\assets\fonts\Manrope-Regular.ttf', 'data\flutter_assets\assets\fonts\Manrope-Medium.ttf',
+                'data\flutter_assets\assets\fonts\Manrope-SemiBold.ttf', 'data\flutter_assets\assets\fonts\Manrope-Bold.ttf',
+                'data\flutter_assets\assets\fonts\Manrope-ExtraBold.ttf', 'data\flutter_assets\fonts\MaterialIcons-Regular.otf',
+                'data\flutter_assets\AssetManifest.bin', 'data\flutter_assets\NOTICES.Z')) {
             if (-not (Get-ChildItem -Path (Join-Path $portable $pattern) -ErrorAction SilentlyContinue)) { $missing += $pattern }
         }
         $size = [math]::Round(((Get-ChildItem $portable -Recurse -File | Measure-Object -Sum Length).Sum / 1MB), 1)
-        Sys 'SYS-package' 'FT-01' 'Release build copied to a Portable folder with every required file' `
+        Sys 'SYS-package' 'FT-01' "Portable folder with every required file$(if ($UsePortable) { " ($UsePortable)" })" `
             $(if ($missing.Count -eq 0) { 'PASS' } else { 'FAIL' }) $(if ($missing.Count) { "missing: $($missing -join ', ')" } else { "$size MB" })
         $db = Join-Path $run 'it\profile\nexa_library.sqlite'
         if (-not (Test-Path $db)) {
@@ -269,6 +297,7 @@ $meta = [ordered]@{
     startedAt = $startTime.ToString('s'); finishedAt = (Get-Date).ToString('s')
     loopback = [bool]$loopExe
     groups = $Groups
+    exeSource = $(if ($SkipExe) { '' } elseif ($UsePortable) { $UsePortable } else { 'Release build of this run' })
     stages = [ordered]@{ unit = -not $SkipUnit; integration = (-not $SkipIntegration -and $libOk); exe = -not $SkipExe }
     appSource = $appSource
     audioBlocked = $audioBlocked
