@@ -1,3 +1,49 @@
 {
- "MAN-01": {"status": "PASS", "date": "2026-10-22", "note": "Owner: FT-01 OK (Portable build copied and started)"}
+ "MAN-01": {
+  "status": "PASS",
+  "date": "2026-10-22",
+  "note": "Owner: FT-01 OK (Portable build copied and started)"
+ },
+ "MAN-02": {
+  "status": "PASS",
+  "date": "2026-10-25",
+  "build": "0.9.0, commit 13c260b, app code 83346d1e171c",
+  "note": "Owner: PASS in the final manual acceptance on the Portable build NEXA_Music_0.9.0_Windows_x64_13c260b"
+ },
+ "MAN-10": {
+  "status": "PASS",
+  "date": "2026-10-25",
+  "build": "0.9.0, commit 13c260b, app code 83346d1e171c",
+  "note": "Owner: PASS in the final manual acceptance on the Portable build NEXA_Music_0.9.0_Windows_x64_13c260b"
+ },
+ "MAN-17": {
+  "status": "PASS",
+  "date": "2026-10-25",
+  "build": "0.9.0, commit 13c260b, app code 83346d1e171c",
+  "note": "Owner: PASS in the final manual acceptance on the Portable build NEXA_Music_0.9.0_Windows_x64_13c260b"
+ },
+ "MAN-27": {
+  "status": "PASS",
+  "date": "2026-10-25",
+  "build": "0.9.0, commit 13c260b, app code 83346d1e171c",
+  "note": "Owner: PASS in the final manual acceptance on the Portable build NEXA_Music_0.9.0_Windows_x64_13c260b"
+ },
+ "MAN-28": {
+  "status": "PASS",
+  "date": "2026-10-25",
+  "build": "0.9.0, commit 13c260b, app code 83346d1e171c",
+  "note": "Owner: PASS in the final manual acceptance on the Portable build NEXA_Music_0.9.0_Windows_x64_13c260b"
+ },
+ "MAN-29": {
+  "status": "PASS",
+  "date": "2026-10-25",
+  "build": "0.9.0, commit 13c260b, app code 83346d1e171c",
+  "note": "Owner: PASS in the final manual acceptance on the Portable build NEXA_Music_0.9.0_Windows_x64_13c260b"
+ },
+ "MAN-30": {
+  "status": "PASS",
+  "date": "2026-10-25",
+  "build": "0.9.0, commit 13c260b, app code 83346d1e171c",
+  "note": "Owner: PASS in the final manual acceptance on the Portable build NEXA_Music_0.9.0_Windows_x64_13c260b"
+ }
 }

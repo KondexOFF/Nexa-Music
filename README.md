@@ -1,6 +1,6 @@
 # NEXA Music
 
-**Status (2026-10-20):** phases 0–7 implemented; Windows pre-release build **0.9.0** (Phase 7). Full manual testing on the owner's PC (final stage) is still pending — NEXA Music is **not** declared finished before the owner's final acceptance. Progress and known problems: [docs/PROGRESS.md](docs/PROGRESS.md).
+**Status (2026-10-25):** Windows version **1.0.0** — phases 0–7 and the final stage done; the owner's final acceptance passed (30 of 30 scenarios, NEXA AutoTest 60 / 60) on the 0.9.0 acceptance build. The 1.0.0 build is prepared; publishing it is the owner's separate decision. What is new and known limitations: [RELEASE_NOTES.md](RELEASE_NOTES.md); progress and decisions: [docs/PROGRESS.md](docs/PROGRESS.md).
 
 NEXA Music is a **private, Windows-first music player** for personal use:
 - local library (MP3 / FLAC / WAV), playlists, favorites, search — works offline;
@@ -13,7 +13,7 @@ Approved extension (D-017): NEXA Wave across catalogs, YouTube and SoundCloud of
 
 ## Running the Windows build (no Flutter SDK needed)
 
-The build is a self-contained folder: `NEXA_Music_0.9.0_Windows_x64` (created by the build steps below; it is not stored in the repository).
+The build is a self-contained folder: `NEXA_Music_1.0.0_Windows_x64` (created by the build steps below; it is not stored in the repository). `BUILD_INFO.txt` in the folder names the commit and the app-code fingerprint; `SHA256SUMS.txt` lists the SHA-256 of every file.
 
 1. Copy the whole folder anywhere (e.g. a folder `NEXA Music` in your Documents). Keep all files together — the `.dll` files and the `data` folder are part of the program.
 2. Start `nexa_music.exe`. Windows SmartScreen may warn because the exe is not signed (personal build): "More info" → "Run anyway".

@@ -10,7 +10,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$Exe,
     [Parameter(Mandatory = $true)][string]$RunDir,
-    [string]$ProfileDb = ''
+    [string]$ProfileDb = '',
+    [string]$AppVersion = ''
 )
 
 $ErrorActionPreference = 'Continue'
@@ -404,8 +405,8 @@ if (-not $started) {
 
     # Settings: version.
     $null = Click-Text 'Settings'
-    $ver = Find-Scroll 'Version 0.9.0' -Contains
-    Check 'EX-01-version' 'FT-01' 'Settings - About shows version 0.9.0' ($null -ne $ver) $(if ($ver) { Label $ver } else { 'not found' })
+    $ver = Find-Scroll "Version $AppVersion" -Contains
+    Check 'EX-01-version' 'FT-01' "Settings - About shows version $AppVersion (pubspec.yaml)" ($AppVersion -and $null -ne $ver) $(if ($ver) { Label $ver } else { 'not found' })
     Shot '02_settings'
 
     # Library from the real database (filled by the integration stage).

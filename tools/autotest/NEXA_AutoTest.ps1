@@ -20,7 +20,7 @@ param(
     [switch]$SkipExe,
     [switch]$WithExe,
     # Test an existing Portable folder next to the repository (for example
-    # NEXA_Music_0.9.0_Windows_x64_d691b44) instead of building a new one.
+    # NEXA_Music_1.0.0_Windows_x64) instead of building a new one.
     [string]$UsePortable = ''
 )
 # -Groups selects integration groups only (for example
@@ -273,7 +273,7 @@ if (-not $SkipExe) {
             if ($prev) { $db = $prev; Log "exe stage uses the test profile of an earlier run" }
         }
         & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $here 'exe_uia_test.ps1') `
-            -Exe (Join-Path $portable 'nexa_music.exe') -RunDir $run -ProfileDb $db *>&1 |
+            -Exe (Join-Path $portable 'nexa_music.exe') -RunDir $run -ProfileDb $db -AppVersion (($version -split '\+')[0]) *>&1 |
             Out-File -FilePath (Join-Path $run 'exe_stage.log') -Encoding UTF8 -Append
         Get-Process -Name 'nexa_music' -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$portable*" } |
             Stop-Process -Force -ErrorAction SilentlyContinue

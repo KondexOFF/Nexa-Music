@@ -15,4 +15,4 @@ const String kProbeLogDir = String.fromEnvironment('NEXA_PROBE_LOG_DIR');
 const String kCaptureDir = String.fromEnvironment('NEXA_CAPTURE_DIR');
 
 /// App version shown in Settings (keep equal to `version:` in pubspec.yaml).
-const String kAppVersion = '0.9.0';
+const String kAppVersion = '1.0.0';

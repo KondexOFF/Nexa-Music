@@ -528,7 +528,12 @@ Future<void> main(List<String> args) async {
   final minutes = open.fold<int>(0, (s, m) => s + (int.tryParse('${m['minutes']}') ?? 0));
   md
     ..writeln()
-    ..writeln('## Что действительно нужно проверить вручную (≈$minutes мин)')
+    ..writeln(open.isEmpty
+        ? '## Ручные проверки — все подтверждены владельцем'
+        : '## Что действительно нужно проверить вручную (≈$minutes мин)')
+    ..writeln()
+    ..writeln('Ручные подтверждения берутся из `tools/autotest/manual_results.json`; у каждого указаны дата и сборка, '
+        'на которой владелец проверял.')
     ..writeln()
     ..writeln('Ответ: `MAN-xx OK` или `MAN-xx FAIL: что сделали → что ожидали → что увидели`. '
         'MAN-28 и MAN-29 удобно пройти вместе. Если второго устройства вывода нет, ответьте `MAN-10 нет устройства` — '
@@ -537,8 +542,10 @@ Future<void> main(List<String> args) async {
     ..writeln('| ID | FT | Что сделать | Ожидаемый результат | Уже проверено автоматически | Мин. | Статус |')
     ..writeln('|---|---|---|---|---|---|---|');
   for (final m in manualItems) {
+    final conf = m['confirmed'] as Map?;
+    final when = conf == null ? '' : ' (${conf['date']}${conf['build'] != null ? ', сборка ${conf['build']}' : ''})';
     md.writeln('| ${m['id']} | ${m['ft']} | **${m['title']}.** ${m['how']} | ${m['expect']} | ${m['covered']} | '
-        '${m['minutes']} | ${m['status']} |');
+        '${m['minutes']} | ${m['status']}$when |');
   }
   md
     ..writeln()

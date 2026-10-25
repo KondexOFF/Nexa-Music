@@ -164,8 +164,7 @@ abstract final class S {
       'NEXA Music - personal Windows music player. Local library, playback, '
       'NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo.';
   static const String licences = 'Open-source licences';
-  static String versionLine(String version) =>
-      'Version $version - pre-release build (Phase 7), final testing pending.';
+  static String versionLine(String version) => 'Version $version';
   static const String settingsPrivacy = 'Privacy and learning';
   static const String settingsPrivacyBody =
       'Your listening history stays on this PC and is only kept with your '
