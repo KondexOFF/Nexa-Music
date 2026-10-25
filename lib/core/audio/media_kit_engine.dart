@@ -15,7 +15,14 @@ class MediaKitEngine implements PlaybackEngine {
       unawaited(platform.setProperty('gapless-audio', 'weak'));
     }
     _subs = [
-      _player.stream.playing.listen((v) => _emit(_state.copyWith(playing: v))),
+      _player.stream.playing.listen((v) {
+        // End of one file inside a gapless chain: mpv goes on with the
+        // appended file by itself, so this is not a pause.
+        if (!v && _player.state.completed && _inGaplessChain) {
+          return;
+        }
+        _emit(_state.copyWith(playing: v));
+      }),
       _player.stream.position.listen(
         (v) => _emit(_state.copyWith(position: v)),
       ),
@@ -26,9 +33,28 @@ class MediaKitEngine implements PlaybackEngine {
         (v) => _emit(_state.copyWith(buffering: v)),
       ),
       _player.stream.completed.listen((done) {
-        if (done && _state.path != null) {
-          _completed.add(null);
+        if (!done || _state.path == null) {
+          return;
         }
+        if (!_inGaplessChain) {
+          _completed.add(null);
+          return;
+        }
+        // mpv reports the end of every file, also when it continues with
+        // the appended next file without a gap. Reacting to that (loading
+        // the next song again) cut ~0.2 s off every song, left a short
+        // silence and skipped every third song (NEXA AutoTest, FT-06).
+        // Only a real end - mpv did not go on - counts.
+        _endCheck?.cancel();
+        _endCheck = Timer(const Duration(milliseconds: 1500), () {
+          if (_disposed || !_player.state.completed || _player.state.playing) {
+            return;
+          }
+          _gaplessNext = null;
+          _gaplessIndex = null;
+          _emit(_state.copyWith(playing: false));
+          _completed.add(null);
+        });
       }),
       _player.stream.error.listen(_errors.add),
       _player.stream.playlist.listen(_onPlaylist),
@@ -47,8 +73,21 @@ class MediaKitEngine implements PlaybackEngine {
   final _advanced = StreamController<String>.broadcast();
   EngineState _state = const EngineState();
 
-  /// File appended to the mpv playlist for a gapless transition.
+  /// File appended to the mpv playlist for a gapless transition, and its
+  /// index in that playlist.
   String? _gaplessNext;
+  int? _gaplessIndex;
+  Media? _gaplessMedia;
+
+  /// When mpv last moved on to an appended file by itself.
+  DateTime? _lastGaplessAdvance;
+  Timer? _endCheck;
+
+  bool get _inGaplessChain =>
+      _gaplessNext != null ||
+      (_lastGaplessAdvance != null &&
+          DateTime.now().difference(_lastGaplessAdvance!) <
+              const Duration(milliseconds: 1500));
   bool _disposed = false;
 
   void _emit(EngineState next) {
@@ -80,28 +119,41 @@ class MediaKitEngine implements PlaybackEngine {
 
   void _onPlaylist(Playlist playlist) {
     final next = _gaplessNext;
-    if (next == null || playlist.index < 1) {
+    final index = _gaplessIndex;
+    if (next == null ||
+        index == null ||
+        playlist.index != index ||
+        index >= playlist.medias.length ||
+        playlist.medias[index] != _gaplessMedia) {
       return;
     }
     // mpv moved on to the appended file without a gap.
     _gaplessNext = null;
+    _gaplessIndex = null;
+    _lastGaplessAdvance = DateTime.now();
     _emit(
       EngineState(path: next, playing: _state.playing, duration: Duration.zero),
     );
     if (!_advanced.isClosed) {
       _advanced.add(next);
     }
-    unawaited(_player.remove(0));
+    // Finished entries stay in mpv's playlist (it is reset by the next
+    // load). Removing them shifted the indices while mpv was still
+    // reporting the old position, which skipped every third song in a row
+    // (found by NEXA AutoTest, FT-06).
   }
 
   Future<void> _dropGaplessNext() async {
-    if (_gaplessNext == null) {
+    final index = _gaplessIndex;
+    if (_gaplessNext == null || index == null) {
       return;
     }
     _gaplessNext = null;
-    final count = _player.state.playlist.medias.length;
-    if (count > 1) {
-      await _player.remove(count - 1);
+    _gaplessIndex = null;
+    final playlist = _player.state.playlist;
+    // Only an entry that has not started yet.
+    if (index < playlist.medias.length && index > playlist.index) {
+      await _player.remove(index);
     }
   }
 
@@ -114,12 +166,19 @@ class MediaKitEngine implements PlaybackEngine {
       return;
     }
     _gaplessNext = path;
-    await _player.add(Media(path));
+    // The playlist only grows while playing, so this index stays valid.
+    _gaplessIndex = _player.state.playlist.medias.length;
+    final media = Media(path);
+    _gaplessMedia = media;
+    await _player.add(media);
   }
 
   @override
   Future<void> load(String path, {bool play = true}) async {
+    _endCheck?.cancel();
+    _lastGaplessAdvance = null;
     _gaplessNext = null;
+    _gaplessIndex = null;
     _emit(
       EngineState(path: path, duration: Duration.zero, position: Duration.zero),
     );
@@ -141,7 +200,10 @@ class MediaKitEngine implements PlaybackEngine {
 
   @override
   Future<void> stop() async {
+    _endCheck?.cancel();
+    _lastGaplessAdvance = null;
     _gaplessNext = null;
+    _gaplessIndex = null;
     await _player.stop();
     _emit(const EngineState());
   }
@@ -167,6 +229,7 @@ class MediaKitEngine implements PlaybackEngine {
       return;
     }
     _disposed = true;
+    _endCheck?.cancel();
     for (final s in _subs) {
       await s.cancel();
     }

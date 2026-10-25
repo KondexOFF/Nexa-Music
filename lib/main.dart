@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +22,11 @@ void main() {
     );
   });
 
+  if (Platform.environment['NEXA_DATA_DIR']?.isNotEmpty ?? false) {
+    // NEXA AutoTest: marks the log so the test knows output is captured.
+    // ignore: avoid_print
+    print('NEXA AutoTest profile active');
+  }
   if (kRunSelfTest) {
     // Phase 0 regression path: audio self-test, then exit.
     runApp(const AudioProbeApp());

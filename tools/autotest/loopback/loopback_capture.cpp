@@ -1,0 +1,379 @@
+// NEXA AutoTest - WASAPI loopback recorder.
+//
+// Records audio output into a mono 32-bit float WAV file, so the AutoTest
+// can measure real audio: which test tone is audible, crossfade overlap,
+// gapless gaps, clipping, silence on pause, volume.
+//
+// Usage: loopback_capture.exe <out.wav> <seconds> [pid]
+//
+// With a process id the recorder uses WASAPI *process* loopback (Windows 10
+// 2004+ / Windows 11): only the audio of that process tree is recorded, so
+// other programs playing at the same time (browser, voice chat, system
+// sounds) cannot disturb the measurement. Without a pid, or if process
+// loopback is unavailable, it records the whole default output device
+// (system loopback) and says so ("mode=system").
+//
+// Packets are placed on a wall-clock timeline (QPC time stamps); stretches
+// without packets become silence, so real gaps stay in the recording.
+//
+// Prints "READY ..." when the capture runs and "DONE ..." when the file is
+// written. Built by tools/autotest/NEXA_AutoTest.ps1; never part of the app.
+
+#include <windows.h>
+
+#include <audioclient.h>
+#include <audioclientactivationparams.h>
+#include <mmdeviceapi.h>
+#include <mmreg.h>
+#include <wrl/implements.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <vector>
+
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "mmdevapi.lib")
+
+namespace {
+
+using Microsoft::WRL::ClassicCom;
+using Microsoft::WRL::FtmBase;
+using Microsoft::WRL::RuntimeClass;
+using Microsoft::WRL::RuntimeClassFlags;
+
+template <typename T>
+void SafeRelease(T** p) {
+  if (*p) {
+    (*p)->Release();
+    *p = nullptr;
+  }
+}
+
+bool WriteWav(const wchar_t* path, const std::vector<float>& samples,
+              DWORD rate) {
+  FILE* f = nullptr;
+  if (_wfopen_s(&f, path, L"wb") != 0 || !f) {
+    return false;
+  }
+  const WORD channels = 1;
+  const DWORD data_bytes = static_cast<DWORD>(samples.size() * sizeof(float));
+  const DWORD fmt_size = 16;
+  const DWORD riff_size = 4 + (8 + fmt_size) + (8 + data_bytes);
+  const WORD format = 3;  // IEEE float
+  const WORD bits = 32;
+  const WORD block = static_cast<WORD>(channels * bits / 8);
+  const DWORD byte_rate = rate * block;
+  fwrite("RIFF", 1, 4, f);
+  fwrite(&riff_size, 4, 1, f);
+  fwrite("WAVEfmt ", 1, 8, f);
+  fwrite(&fmt_size, 4, 1, f);
+  fwrite(&format, 2, 1, f);
+  fwrite(&channels, 2, 1, f);
+  fwrite(&rate, 4, 1, f);
+  fwrite(&byte_rate, 4, 1, f);
+  fwrite(&block, 2, 1, f);
+  fwrite(&bits, 2, 1, f);
+  fwrite("data", 1, 4, f);
+  fwrite(&data_bytes, 4, 1, f);
+  if (!samples.empty()) {
+    fwrite(samples.data(), sizeof(float), samples.size(), f);
+  }
+  fclose(f);
+  return true;
+}
+
+int Fail(const char* step, HRESULT hr) {
+  fprintf(stderr, "ERROR %s hr=0x%08lx\n", step, static_cast<unsigned long>(hr));
+  return 1;
+}
+
+// Completion handler for ActivateAudioInterfaceAsync (must be agile).
+class ActivationHandler
+    : public RuntimeClass<RuntimeClassFlags<ClassicCom>, FtmBase,
+                          IActivateAudioInterfaceCompletionHandler> {
+ public:
+  ActivationHandler() { done_ = CreateEventW(nullptr, TRUE, FALSE, nullptr); }
+  ~ActivationHandler() {
+    if (done_) CloseHandle(done_);
+  }
+
+  STDMETHOD(ActivateCompleted)
+  (IActivateAudioInterfaceAsyncOperation* operation) override {
+    HRESULT activate = E_FAIL;
+    IUnknown* unknown = nullptr;
+    HRESULT hr = operation->GetActivateResult(&activate, &unknown);
+    if (SUCCEEDED(hr) && SUCCEEDED(activate) && unknown) {
+      result_ = unknown->QueryInterface(IID_PPV_ARGS(&client_));
+    } else {
+      result_ = FAILED(hr) ? hr : activate;
+    }
+    SafeRelease(&unknown);
+    SetEvent(done_);
+    return S_OK;
+  }
+
+  HANDLE done_ = nullptr;
+  HRESULT result_ = E_FAIL;
+  IAudioClient* client_ = nullptr;
+};
+
+// IAudioClient that captures only the audio of process [pid] and its
+// children. Null if Windows does not support it.
+IAudioClient* ActivateProcessLoopback(DWORD pid, HRESULT* error) {
+  AUDIOCLIENT_ACTIVATION_PARAMS params = {};
+  params.ActivationType = AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK;
+  params.ProcessLoopbackParams.TargetProcessId = pid;
+  params.ProcessLoopbackParams.ProcessLoopbackMode =
+      PROCESS_LOOPBACK_MODE_INCLUDE_TARGET_PROCESS_TREE;
+  PROPVARIANT variant = {};
+  variant.vt = VT_BLOB;
+  variant.blob.cbSize = sizeof(params);
+  variant.blob.pBlobData = reinterpret_cast<BYTE*>(&params);
+
+  auto handler = Microsoft::WRL::Make<ActivationHandler>();
+  IActivateAudioInterfaceAsyncOperation* operation = nullptr;
+  HRESULT hr = ActivateAudioInterfaceAsync(
+      VIRTUAL_AUDIO_DEVICE_PROCESS_LOOPBACK, __uuidof(IAudioClient), &variant,
+      handler.Get(), &operation);
+  if (FAILED(hr)) {
+    *error = hr;
+    return nullptr;
+  }
+  if (WaitForSingleObject(handler->done_, 5000) != WAIT_OBJECT_0) {
+    SafeRelease(&operation);
+    *error = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
+    return nullptr;
+  }
+  SafeRelease(&operation);
+  if (FAILED(handler->result_) || !handler->client_) {
+    *error = handler->result_;
+    return nullptr;
+  }
+  IAudioClient* client = handler->client_;
+  handler->client_ = nullptr;
+  return client;
+}
+
+LONGLONG Now100ns() {
+  static LARGE_INTEGER freq = {};
+  if (freq.QuadPart == 0) QueryPerformanceFrequency(&freq);
+  LARGE_INTEGER now;
+  QueryPerformanceCounter(&now);
+  return static_cast<LONGLONG>(now.QuadPart * 10000000.0 / freq.QuadPart);
+}
+
+}  // namespace
+
+int wmain(int argc, wchar_t** argv) {
+  if (argc < 3) {
+    fprintf(stderr, "usage: loopback_capture <out.wav> <seconds> [pid]\n");
+    return 2;
+  }
+  const double seconds = _wtof(argv[2]);
+  const DWORD pid = argc >= 4 ? static_cast<DWORD>(_wtoi(argv[3])) : 0;
+  HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+  if (FAILED(hr)) return Fail("CoInitializeEx", hr);
+
+  IMMDeviceEnumerator* enumerator = nullptr;
+  IMMDevice* device = nullptr;
+  IAudioClient* render = nullptr;
+  IAudioRenderClient* render_client = nullptr;
+  IAudioClient* capture = nullptr;
+  IAudioCaptureClient* capture_client = nullptr;
+  WAVEFORMATEX* mix_format = nullptr;
+  WAVEFORMATEX* render_format = nullptr;
+  UINT32 render_frames = 0;
+  HANDLE packet_event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+
+  // Format of the captured data.
+  WORD channels = 2;
+  DWORD rate = 48000;
+  bool is_float = true;
+  WORD bits = 32;
+  const char* mode = "system";
+  HRESULT process_error = S_OK;
+
+  if (pid != 0) {
+    capture = ActivateProcessLoopback(pid, &process_error);
+  }
+  if (capture) {
+    // Process loopback has no mix format of its own: ask for float stereo
+    // and let Windows convert.
+    WAVEFORMATEX wanted = {};
+    wanted.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
+    wanted.nChannels = channels;
+    wanted.nSamplesPerSec = rate;
+    wanted.wBitsPerSample = bits;
+    wanted.nBlockAlign = static_cast<WORD>(channels * bits / 8);
+    wanted.nAvgBytesPerSec = rate * wanted.nBlockAlign;
+    hr = capture->Initialize(
+        AUDCLNT_SHAREMODE_SHARED,
+        AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_EVENTCALLBACK |
+            AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM |
+            AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY,
+        2000000, 0, &wanted, nullptr);
+    if (FAILED(hr)) {
+      process_error = hr;
+      SafeRelease(&capture);
+    } else {
+      mode = "process";
+    }
+  }
+
+  if (!capture) {
+    // System loopback of the default output device. A silent render stream
+    // keeps packets coming while nothing plays.
+    hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+                          IID_PPV_ARGS(&enumerator));
+    if (FAILED(hr)) return Fail("MMDeviceEnumerator", hr);
+    hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
+    if (FAILED(hr)) return Fail("GetDefaultAudioEndpoint", hr);
+    hr = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                          reinterpret_cast<void**>(&render));
+    if (FAILED(hr)) return Fail("Activate render", hr);
+    render->GetMixFormat(&render_format);
+    hr = render->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 2000000, 0,
+                            render_format, nullptr);
+    if (FAILED(hr)) return Fail("Initialize render", hr);
+    hr = render->GetService(IID_PPV_ARGS(&render_client));
+    if (FAILED(hr)) return Fail("GetService render", hr);
+    render->GetBufferSize(&render_frames);
+    BYTE* buffer = nullptr;
+    if (SUCCEEDED(render_client->GetBuffer(render_frames, &buffer))) {
+      render_client->ReleaseBuffer(render_frames, AUDCLNT_BUFFERFLAGS_SILENT);
+    }
+    render->Start();
+
+    hr = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                          reinterpret_cast<void**>(&capture));
+    if (FAILED(hr)) return Fail("Activate capture", hr);
+    hr = capture->GetMixFormat(&mix_format);
+    if (FAILED(hr)) return Fail("GetMixFormat", hr);
+    hr = capture->Initialize(
+        AUDCLNT_SHAREMODE_SHARED,
+        AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+        2000000, 0, mix_format, nullptr);
+    if (FAILED(hr)) return Fail("Initialize loopback", hr);
+    channels = mix_format->nChannels;
+    rate = mix_format->nSamplesPerSec;
+    bits = mix_format->wBitsPerSample;
+    is_float = mix_format->wFormatTag == WAVE_FORMAT_IEEE_FLOAT;
+    if (mix_format->wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+      const auto* ext = reinterpret_cast<WAVEFORMATEXTENSIBLE*>(mix_format);
+      is_float = ext->SubFormat.Data1 == 3;  // KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+    }
+  }
+
+  hr = capture->SetEventHandle(packet_event);
+  if (FAILED(hr)) return Fail("SetEventHandle", hr);
+  hr = capture->GetService(IID_PPV_ARGS(&capture_client));
+  if (FAILED(hr)) return Fail("GetService capture", hr);
+
+  const size_t target = static_cast<size_t>(seconds * rate);
+  std::vector<float> samples;
+  samples.reserve(target + rate);
+  unsigned long discontinuities = 0;
+  unsigned long packets = 0;
+
+  hr = capture->Start();
+  if (FAILED(hr)) return Fail("Start capture", hr);
+  const LONGLONG start = Now100ns();
+  const LONGLONG duration = static_cast<LONGLONG>(seconds * 10000000.0);
+  printf("READY mode=%s rate=%lu channels=%u float=%d bits=%u", mode,
+         static_cast<unsigned long>(rate), channels, is_float ? 1 : 0, bits);
+  if (pid != 0 && FAILED(process_error)) {
+    printf(" process_loopback_error=0x%08lx",
+           static_cast<unsigned long>(process_error));
+  }
+  printf("\n");
+  fflush(stdout);
+
+  // Mono (mean of all channels): matches the analyser's downmix.
+  auto append = [&](const BYTE* data, UINT32 frames, bool silent) {
+    for (UINT32 i = 0; i < frames; i++) {
+      double sum = 0;
+      if (!silent && data) {
+        for (WORD c = 0; c < channels; c++) {
+          const size_t k = static_cast<size_t>(i) * channels + c;
+          if (is_float && bits == 32) {
+            sum += reinterpret_cast<const float*>(data)[k];
+          } else if (bits == 16) {
+            sum += reinterpret_cast<const short*>(data)[k] / 32768.0;
+          } else if (bits == 32) {
+            sum += reinterpret_cast<const int*>(data)[k] / 2147483648.0;
+          }
+        }
+      }
+      samples.push_back(static_cast<float>(sum / channels));
+    }
+  };
+  const size_t max_jump = rate / 50;  // 20 ms
+
+  while (Now100ns() - start < duration) {
+    if (render) {
+      UINT32 padding = 0;
+      if (SUCCEEDED(render->GetCurrentPadding(&padding)) &&
+          padding < render_frames) {
+        const UINT32 free_frames = render_frames - padding;
+        BYTE* buffer = nullptr;
+        if (SUCCEEDED(render_client->GetBuffer(free_frames, &buffer))) {
+          render_client->ReleaseBuffer(free_frames, AUDCLNT_BUFFERFLAGS_SILENT);
+        }
+      }
+    }
+    WaitForSingleObject(packet_event, 20);
+    UINT32 packet = 0;
+    capture_client->GetNextPacketSize(&packet);
+    while (packet > 0) {
+      BYTE* data = nullptr;
+      UINT32 frames = 0;
+      DWORD flags = 0;
+      UINT64 qpc = 0;
+      if (FAILED(capture_client->GetBuffer(&data, &frames, &flags, nullptr,
+                                           &qpc))) {
+        break;
+      }
+      packets++;
+      if (flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY) {
+        discontinuities++;
+      }
+      // Wall-clock place of this packet: a hole of more than 20 ms (no
+      // packets while nothing played) becomes silence.
+      if (qpc != 0 && static_cast<LONGLONG>(qpc) > start) {
+        const size_t expected = static_cast<size_t>(
+            (static_cast<LONGLONG>(qpc) - start) * static_cast<double>(rate) /
+            10000000.0);
+        if (expected > samples.size() + max_jump) {
+          samples.resize(expected, 0.0f);
+        }
+      }
+      append(data, frames, (flags & AUDCLNT_BUFFERFLAGS_SILENT) != 0);
+      capture_client->ReleaseBuffer(frames);
+      capture_client->GetNextPacketSize(&packet);
+    }
+  }
+  capture->Stop();
+  if (render) render->Stop();
+  if (samples.size() < target) {
+    samples.resize(target, 0.0f);  // trailing silence without packets
+  } else if (samples.size() > target) {
+    samples.resize(target);
+  }
+
+  const bool ok = WriteWav(argv[1], samples, rate);
+  printf("DONE mode=%s frames=%zu packets=%lu discontinuities=%lu written=%d\n",
+         mode, samples.size(), packets, discontinuities, ok ? 1 : 0);
+  fflush(stdout);
+
+  CoTaskMemFree(mix_format);
+  CoTaskMemFree(render_format);
+  SafeRelease(&capture_client);
+  SafeRelease(&capture);
+  SafeRelease(&render_client);
+  SafeRelease(&render);
+  SafeRelease(&device);
+  SafeRelease(&enumerator);
+  CloseHandle(packet_event);
+  CoUninitialize();
+  return ok ? 0 : 1;
+}

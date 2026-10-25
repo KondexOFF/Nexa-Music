@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
@@ -96,19 +97,23 @@ TagResult readTags(String path, String artworkDir) {
   }
   AudioMetadata? meta;
   try {
-    meta = readMetadata(file, getImage: true);
+    meta = readAudioMetadata(file, getImage: true);
   } on Object {
     // Unreadable or untagged file: still list it with fallback values.
     meta = null;
   }
   final year = meta?.year?.year;
+  // WAV (RIFF INFO) text is decoded as Latin-1 by the package; most tools
+  // write UTF-8 there (TD-04), so such text is decoded again as UTF-8.
+  final isWav = p.extension(path).toLowerCase() == '.wav';
+  String? text(String? value) => _clean(isWav ? repairUtf8(value) : value);
   return TagResult(
     path: path,
-    title: _clean(meta?.title) ?? fallbackTitle,
-    artist: _clean(meta?.artist) ?? _clean(meta?.albumArtist) ?? unknownArtist,
-    album: _clean(meta?.album) ?? unknownAlbum,
-    albumArtist: _clean(meta?.albumArtist),
-    genre: meta == null || meta.genres.isEmpty ? null : _clean(meta.genres.first),
+    title: text(meta?.title) ?? fallbackTitle,
+    artist: text(meta?.artist) ?? text(meta?.albumArtist) ?? unknownArtist,
+    album: text(meta?.album) ?? unknownAlbum,
+    albumArtist: text(meta?.albumArtist),
+    genre: meta == null || meta.genres.isEmpty ? null : text(meta.genres.first),
     year: (year == null || year <= 0) ? null : year,
     trackNumber: meta?.trackNumber,
     discNumber: meta?.discNumber,
@@ -117,6 +122,24 @@ TagResult readTags(String path, String artworkDir) {
         _saveEmbeddedCover(meta?.pictures ?? const [], artworkDir) ??
         findFolderCover(p.dirname(path)),
   );
+}
+
+/// [value] read as Latin-1 although its bytes are UTF-8 ("ÐÐµÑÐ½Ñ" for
+/// "Песня"): returns the UTF-8 text. Anything else (plain ASCII, real
+/// Latin-1 such as "Café", text with characters above U+00FF, bytes that are
+/// not valid UTF-8) is returned unchanged.
+String? repairUtf8(String? value) {
+  if (value == null || !value.codeUnits.any((u) => u >= 0x80)) {
+    return value;
+  }
+  if (value.codeUnits.any((u) => u > 0xFF)) {
+    return value;
+  }
+  try {
+    return utf8.decode(latin1.encode(value));
+  } on FormatException {
+    return value;
+  }
 }
 
 String? _saveEmbeddedCover(List<Picture> pictures, String artworkDir) {
@@ -162,4 +185,99 @@ String? findFolderCover(String directory) {
     }
   }
   return null;
+}
+
+/// `readMetadata` plus FLAC files that start with an ID3v2 tag (written by
+/// some taggers and by FFmpeg). The package picks its parser from the first
+/// bytes, so such a file went to the MP3 parser: no tags and a wrong length.
+/// For them the FLAC blocks after the ID3 tag are parsed instead.
+AudioMetadata readAudioMetadata(File file, {bool getImage = false}) {
+  if (p.extension(file.path).toLowerCase() == '.flac') {
+    final raf = file.openSync();
+    try {
+      final offset = flacStreamOffset(raf);
+      if (offset != null && offset > 0) {
+        final vorbis = FlacParser(fetchImage: getImage).parse(_OffsetFile(raf, offset));
+        return AudioMetadata(
+            file: file,
+            album: vorbis.album.firstOrNull,
+            albumArtist: vorbis.albumArtist.firstOrNull,
+            artist: vorbis.artist.firstOrNull,
+            bitrate: vorbis.bitrate,
+            discNumber: vorbis.discNumber,
+            duration: vorbis.duration,
+            language: vorbis.language.firstOrNull,
+            lyrics: vorbis.lyric,
+            sampleRate: vorbis.sampleRate,
+            title: vorbis.title.firstOrNull,
+            totalDisc: vorbis.discTotal,
+            trackNumber: vorbis.trackNumber.firstOrNull,
+            trackTotal: vorbis.trackTotal,
+            year: vorbis.date.firstOrNull,
+          )
+          ..genres = vorbis.genres
+          ..pictures = vorbis.pictures;
+      }
+    } finally {
+      raf.closeSync();
+    }
+  }
+  return readMetadata(file, getImage: getImage);
+}
+
+/// Position of the `fLaC` marker after any leading ID3v2 tags, or null.
+int? flacStreamOffset(RandomAccessFile raf) {
+  var pos = 0;
+  final length = raf.lengthSync();
+  while (pos + 10 <= length) {
+    raf.setPositionSync(pos);
+    final head = raf.readSync(10);
+    if (head.length < 10) {
+      return null;
+    }
+    if (head[0] == 0x66 && head[1] == 0x4C && head[2] == 0x61 && head[3] == 0x43) {
+      return pos; // "fLaC"
+    }
+    if (head[0] != 0x49 || head[1] != 0x44 || head[2] != 0x33) {
+      return null; // neither "ID3" nor "fLaC"
+    }
+    final size = (head[6] & 0x7F) << 21 | (head[7] & 0x7F) << 14 | (head[8] & 0x7F) << 7 | (head[9] & 0x7F);
+    final footer = (head[5] & 0x10) != 0 ? 10 : 0;
+    pos += 10 + size + footer;
+  }
+  return null;
+}
+
+/// Read-only view of [_raf] that starts at [_offset] (only the calls the
+/// FLAC parser makes are supported).
+class _OffsetFile implements RandomAccessFile {
+  _OffsetFile(this._raf, this._offset);
+
+  final RandomAccessFile _raf;
+  final int _offset;
+
+  @override
+  RandomAccessFile setPositionSync(int position) {
+    _raf.setPositionSync(position + _offset);
+    return this;
+  }
+
+  @override
+  int positionSync() => _raf.positionSync() - _offset;
+
+  @override
+  int lengthSync() => _raf.lengthSync() - _offset;
+
+  @override
+  Uint8List readSync(int count) => _raf.readSync(count);
+
+  @override
+  int readIntoSync(List<int> buffer, [int start = 0, int? end]) => _raf.readIntoSync(buffer, start, end);
+
+  @override
+  String get path => _raf.path;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnsupportedError('Not supported by the FLAC offset reader');
 }

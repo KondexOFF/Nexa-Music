@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import '../../core/app_paths.dart';
 
 import '../../core/database/app_database.dart';
 import '../../core/models/track.dart';
@@ -24,7 +24,7 @@ final libraryRepositoryProvider = Provider<LibraryRepository>(
 
 /// Folder for cached cover images (inside the app data folder).
 final artworkDirProvider = FutureProvider<String>((ref) async {
-  final support = await getApplicationSupportDirectory();
+  final support = await appDataDirectory();
   return p.join(support.path, 'artwork');
 });
 
