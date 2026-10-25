@@ -1,6 +1,6 @@
 # NEXA Music — FINAL AUTOTEST REPORT
 
-Последний прогон: `20261025_145025` (2026-10-25T14:50:25 … 2026-10-25T14:50:56)  
+Последний прогон: `20261025_154447` (2026-10-25T15:44:47 … 2026-10-25T15:46:42)  
 Версия приложения: 0.9.0+7; код приложения (lib, windows, assets, pubspec) `83346d1e171c` — измерен в начале прогона  
 Среда: Microsoft Windows 11 Pro; Flutter 3.47.7 • channel stable • https://github.com/flutter/flutter.git  
 Запуск: `NEXA_AutoTest.cmd` (папки прогонов `<root>\_autotest_runs\<прогон>`)
@@ -15,15 +15,13 @@
 
 | Сборка | Код приложения | Что это |
 |---|---|---|
-| B1 | `83346d1e171c` | код коммита 07202f8 + незакоммиченные изменения: lib/features/player/player_controller.dart (код последнего прогона) |
+| B1 | `83346d1e171c` | код коммита d691b44 (код последнего прогона) |
 | B2 | `1fd663d5bf2b` | по коммиту 07202f8 (без незакоммиченных изменений) |
 
 | Прогон | Начало | Коммит | Сборка | Код приложения установлен | Группы / этапы | Проверок взято |
 |---|---|---|---|---|---|---|
-| `20261025_145025` | 2026-10-25T14:50:25 | `96d0bea (+ uncommitted changes)` | B1 | измерен в начале прогона | без интеграционных групп; unit | 5 |
-| `20261025_144123` | 2026-10-25T14:41:23 | `96d0bea (+ uncommitted changes)` | B1 | измерен в начале прогона | группы playback; unit, integration | 11 |
-| `20261025_143111` | 2026-10-25T14:31:11 | `96d0bea (+ uncommitted changes)` | B2 | измерен в начале прогона | группы playback,mix; unit, integration | 7 |
-| `20261025_135848` | 2026-10-25T13:58:48 | `07202f8 (+ uncommitted changes)` | B2 | по коммиту 07202f8, по записи в run_notes.json: незакоммиченными были только файлы AutoTest (tools/autotest), код приложения = коммит 07202f8 | без интеграционных групп; unit / integration / exe (по файлам) | 14 |
+| `20261025_154447` | 2026-10-25T15:44:47 | `13c260b (+ uncommitted changes)` | B1 | измерен в начале прогона | без интеграционных групп; unit, exe | 20 |
+| `20261025_153413` | 2026-10-25T15:34:13 | `13c260b` | B1 | измерен в начале прогона | группы playback,mix; unit, integration, exe | 18 |
 | `20261025_134106` | 2026-10-25T13:41:06 | `07202f8` | B2 | по коммиту 07202f8 (без незакоммиченных изменений) | все группы; unit / integration / exe (по файлам) | 22 |
 
 ## Итог
@@ -31,30 +29,30 @@
 | | FAIL | BLOCKED | MANUAL REQUIRED | PASS | NOT RUN |
 |---|---|---|---|---|---|
 | Тесты FT (30) | 0 | 0 | 7 | 23 | 0 |
-| Отдельные проверки (59) | 0 | 0 | 0 | 59 | 0 |
+| Отдельные проверки (60) | 0 | 0 | 0 | 60 | 0 |
 
 ## FT-01 – FT-30: автоматические и ручные проверки
 
 | FT | Сценарий | Статус | Автоматически | Прогон (сборка) | Вручную |
 |---|---|---|---|---|---|
-| FT-01 | Запуск Portable-сборки | **PASS** | SYS-package: PASS<br>EX-01-start: PASS<br>EX-01-version: PASS | `20261025_135848 (B2)` | MAN-01: PASS |
-| FT-02 | Импорт библиотеки MP3 / FLAC / WAV | **MANUAL REQUIRED** | EX-02-library: PASS<br>AT-02-count: PASS<br>AT-02-tags: PASS<br>AT-02-wav-cyrillic: PASS<br>AT-02-durations: PASS<br>AT-02-cover: PASS<br>AT-02-files-unchanged: PASS<br>AT-02-rescan: PASS | `20261025_134106 (B2)`<br>`20261025_135848 (B2)` | MAN-02: MANUAL REQUIRED |
-| FT-03 | Сохранение после перезапуска | **PASS** | EX-03-restart: PASS<br>AT-03-restart: PASS | `20261025_134106 (B2)`<br>`20261025_135848 (B2)` |  |
+| FT-01 | Запуск Portable-сборки | **PASS** | SYS-portable-source: PASS<br>SYS-package: PASS<br>EX-01-start: PASS<br>EX-01-version: PASS | `20261025_154447 (B1)` | MAN-01: PASS |
+| FT-02 | Импорт библиотеки MP3 / FLAC / WAV | **MANUAL REQUIRED** | EX-02-library: PASS<br>AT-02-count: PASS<br>AT-02-tags: PASS<br>AT-02-wav-cyrillic: PASS<br>AT-02-durations: PASS<br>AT-02-cover: PASS<br>AT-02-files-unchanged: PASS<br>AT-02-rescan: PASS | `20261025_134106 (B2)`<br>`20261025_154447 (B1)` | MAN-02: MANUAL REQUIRED |
+| FT-03 | Сохранение после перезапуска | **PASS** | EX-03-restart: PASS<br>AT-03-restart: PASS | `20261025_134106 (B2)`<br>`20261025_154447 (B1)` |  |
 | FT-04 | Пропавший файл и Rescan | **PASS** | AT-04-missing: PASS | `20261025_134106 (B2)` |  |
-| FT-05 | Поиск, кириллица | **PASS** | EX-05-search: PASS<br>AT-05-search: PASS | `20261025_134106 (B2)`<br>`20261025_135848 (B2)` |  |
-| FT-06 | 20–30 треков подряд | **PASS** | AT-06-order: PASS<br>AT-06-audio: PASS<br>AT-06-id3-flac: PASS | `20261025_144123 (B1)` |  |
-| FT-07 | Пауза, перемотка, назад / вперёд | **PASS** | AT-07-transport: PASS<br>AT-07-pause-silence: PASS | `20261025_144123 (B1)` |  |
-| FT-08 | Очередь | **PASS** | AT-08-queue: PASS | `20261025_144123 (B1)` |  |
-| FT-09 | Shuffle и Repeat | **PASS** | AT-09-shuffle: PASS<br>AT-09-repeat: PASS | `20261025_144123 (B1)` |  |
-| FT-10 | Громкость, Mute, устройство вывода | **MANUAL REQUIRED** | AT-10-volume: PASS<br>AT-10-devices: PASS | `20261025_144123 (B1)` | MAN-10: MANUAL REQUIRED |
-| FT-11 | Crossfade 6 с | **PASS** | AT-11-crossfade-6: PASS | `20261025_143111 (B2)` |  |
-| FT-12 | Crossfade 0 с и 12 с | **PASS** | AT-12-crossfade-0: PASS<br>AT-12-crossfade-12: PASS | `20261025_143111 (B2)` |  |
-| FT-13 | Gapless внутри альбома | **PASS** | AT-13-album-gapless: PASS | `20261025_143111 (B2)` |  |
-| FT-14 | Smart Mix | **PASS** | AT-14-smart-mix: PASS | `20261025_143111 (B2)` |  |
-| FT-15 | Crossfade между форматами | **PASS** | AT-15-mp3-flac: PASS<br>AT-15-flac-wav: PASS | `20261025_143111 (B2)` |  |
-| FT-16 | Медиаклавиши и медиапанель Windows | **PASS** | EX-16-session: PASS<br>EX-16-keys: PASS | `20261025_135848 (B2)` |  |
+| FT-05 | Поиск, кириллица | **PASS** | EX-05-search: PASS<br>AT-05-search: PASS | `20261025_134106 (B2)`<br>`20261025_154447 (B1)` |  |
+| FT-06 | 20–30 треков подряд | **PASS** | AT-06-order: PASS<br>AT-06-audio: PASS<br>AT-06-id3-flac: PASS | `20261025_153413 (B1)` |  |
+| FT-07 | Пауза, перемотка, назад / вперёд | **PASS** | AT-07-transport: PASS<br>AT-07-pause-silence: PASS | `20261025_153413 (B1)` |  |
+| FT-08 | Очередь | **PASS** | AT-08-queue: PASS | `20261025_153413 (B1)` |  |
+| FT-09 | Shuffle и Repeat | **PASS** | AT-09-shuffle: PASS<br>AT-09-repeat: PASS | `20261025_153413 (B1)` |  |
+| FT-10 | Громкость, Mute, устройство вывода | **MANUAL REQUIRED** | AT-10-volume: PASS<br>AT-10-devices: PASS | `20261025_153413 (B1)` | MAN-10: MANUAL REQUIRED |
+| FT-11 | Crossfade 6 с | **PASS** | AT-11-crossfade-6: PASS | `20261025_153413 (B1)` |  |
+| FT-12 | Crossfade 0 с и 12 с | **PASS** | AT-12-crossfade-0: PASS<br>AT-12-crossfade-12: PASS | `20261025_153413 (B1)` |  |
+| FT-13 | Gapless внутри альбома | **PASS** | AT-13-album-gapless: PASS | `20261025_153413 (B1)` |  |
+| FT-14 | Smart Mix | **PASS** | AT-14-smart-mix: PASS | `20261025_153413 (B1)` |  |
+| FT-15 | Crossfade между форматами | **PASS** | AT-15-mp3-flac: PASS<br>AT-15-flac-wav: PASS | `20261025_153413 (B1)` |  |
+| FT-16 | Медиаклавиши и медиапанель Windows | **PASS** | EX-16-session: PASS<br>EX-16-keys: PASS | `20261025_154447 (B1)` |  |
 | FT-17 | Медиаклавиши рядом с другим плеером | **MANUAL REQUIRED** |  |  | MAN-17: MANUAL REQUIRED |
-| FT-18 | Горячие клавиши | **PASS** | EX-18-keyboard: PASS | `20261025_135848 (B2)` |  |
+| FT-18 | Горячие клавиши | **PASS** | EX-18-keyboard: PASS | `20261025_154447 (B1)` |  |
 | FT-19 | NEXA DNA | **PASS** | AT-19-dna: PASS | `20261025_134106 (B2)` |  |
 | FT-20 | NEXA Wave | **PASS** | AT-20-wave: PASS | `20261025_134106 (B2)` |  |
 | FT-21 | Дизлайк | **PASS** | AT-21-dislike: PASS | `20261025_134106 (B2)` |  |
@@ -64,9 +62,9 @@
 | FT-25 | Поиск Audius / Jamendo | **PASS** | AT-25-audius: PASS<br>AT-25-jamendo: PASS | `20261025_134106 (B2)` |  |
 | FT-26 | Воспроизведение Audius / Jamendo | **PASS** | AT-26-audius: PASS<br>AT-26-jamendo: PASS<br>AT-26-no-mix: PASS | `20261025_134106 (B2)` |  |
 | FT-27 | Без интернета | **MANUAL REQUIRED** | AT-27-unreachable: PASS | `20261025_134106 (B2)` | MAN-27: MANUAL REQUIRED |
-| FT-28 | Доступность (UI Automation, Диктор) | **MANUAL REQUIRED** | SYS-eventlog: PASS<br>EX-28-a11y: PASS<br>EX-flutter-errors: PASS | `20261025_135848 (B2)`<br>`20261025_145025 (B1)` | MAN-28: MANUAL REQUIRED |
-| FT-29 | Изменение размера окна с клиентом доступности (TD-02) | **MANUAL REQUIRED** | EX-29-resize: PASS<br>EX-29-axtree-log: PASS | `20261025_135848 (B2)` | MAN-29: MANUAL REQUIRED |
-| FT-30 | Минимальный и максимальный размер окна | **MANUAL REQUIRED** | EX-30-minsize: PASS | `20261025_135848 (B2)` | MAN-30: MANUAL REQUIRED |
+| FT-28 | Доступность (UI Automation, Диктор) | **MANUAL REQUIRED** | SYS-eventlog: PASS<br>EX-28-a11y: PASS<br>EX-flutter-errors: PASS | `20261025_154447 (B1)` | MAN-28: MANUAL REQUIRED |
+| FT-29 | Изменение размера окна с клиентом доступности (TD-02) | **MANUAL REQUIRED** | EX-29-resize: PASS<br>EX-29-axtree-log: PASS | `20261025_154447 (B1)` | MAN-29: MANUAL REQUIRED |
+| FT-30 | Минимальный и максимальный размер окна | **MANUAL REQUIRED** | EX-30-minsize: PASS | `20261025_154447 (B1)` | MAN-30: MANUAL REQUIRED |
 
 ## Технический долг TD-01 – TD-18
 
@@ -114,43 +112,44 @@
 
 | ID | FT | Проверка | Уровень | Статус | Прогон | Сборка | Подробности |
 |---|---|---|---|---|---|---|---|
-| SYS-library | - | Test library present and unchanged (SHA-256) | Windows system | PASS | `20261025_145025` | B1 | 36 tracks |
-| SYS-loopback | - | WASAPI loopback recorder built | Windows system | PASS | `20261025_145025` | B1 | exit 0 |
-| SYS-eventlog | FT-28 | Windows Event Log: no crash of nexa_music.exe during the whole run | Windows system | PASS | `20261025_145025` | B1 | 0 crash records |
-| UNIT-analyze | - | flutter analyze | static analysis | PASS | `20261025_145025` | B1 | exit 0 |
-| UNIT-tests | - | Existing unit / widget tests (FakeEngine, in-memory database) | unit / widget tests | PASS | `20261025_145025` | B1 | exit 0; +143: All tests passed! |
-| SYS-audio | - | Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available | Windows system | PASS | `20261025_144123` | B1 | device 'Speakers (Logitech PRO X Gaming Headset)', mute off, volume 52 %, process loopback ok, system loopback ok |
-| AT-06-order | FT-06 | 24 tracks in a row: each started once, in order (engine) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | 24 tracks started; engine errors: none |
-| AT-06-audio | FT-06 | 24 tracks in a row: audible order, full length, never two at once, no gaps (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | heard 24 of 24 tones in the right order; largest overlap 0.000 s, largest gap 0.000 s, shortest song heard 5.96 s of 6.00 s |
-| AT-06-id3-flac | FT-06 | Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | heard 520 Hz -> 2800 Hz -> 740 Hz (expected 520 Hz -> 2800 Hz -> 740 Hz) |
-| AT-07-transport | FT-07 | Pause holds the position, resume, seek, previous (restart / previous track), next | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | pause 1040->1040 ms, resume -> 2260 ms, seek 20 s -> 20439 ms, restart true, next true, previous true |
-| AT-07-pause-silence | FT-07 | Silence while paused (loopback, tone of the paused song) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | 440 Hz level while paused 0.00000 (playing at 100 %: about 0.12); other sound on the PC: peak 0.0000 |
-| AT-08-queue | FT-08 | Play next, Add to queue, Remove, Clear; the engine plays the inserted song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | play next/add true, remove true, engine played inserted true, clear true |
-| AT-09-shuffle | FT-09 | Shuffle plays each song once; switching it off restores the order | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | 10 different files played; order restored true |
-| AT-09-repeat | FT-09 | Repeat this song replays it; Repeat all wraps to the first song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | repeat one true, repeat all wrap true |
-| AT-10-volume | FT-10 | Volume and mute change the real output level (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | 440 Hz level at 100 %: 0.1059, 50 %: 0.0132, mute: 0.00000; recorder mode=process rate=48000 channels=2 float=1 bits=32 device="Speakers (Logitech PRO X Gaming Headset)" endpoint_mute=0 endpoint_volume=0.520 session=1 session_mute=0 session_volume=1.000 |
-| AT-10-devices | FT-10 | Output devices are listed; "System default" can be selected | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_144123` | B1 | 5 devices reported by the engine |
-| AT-11-crossfade-6 | FT-11 | Crossfade 6 s (WAV -> FLAC): smooth overlap, no dip, no clipping | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_143111` | B2 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.72 s, gap 0.000 s, peak 0.150, level during overlap 0.96-1.03 x; player moved on: true |
-| AT-12-crossfade-0 | FT-12 | Crossfade 0 s: no overlap, no gap | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_143111` | B2 | planned gapless 0.0 s ("Crossfade off: no overlap"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true |
-| AT-12-crossfade-12 | FT-12 | Crossfade 12 s: long smooth overlap | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_143111` | B2 | planned crossfade 12.0 s ("Crossfade"); measured overlap 11.48 s, gap 0.000 s, peak 0.148, level during overlap 0.96-1.03 x; player moved on: true |
-| AT-13-album-gapless | FT-13 | Same album with Crossfade on: gapless, no overlap (FLAC) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_143111` | B2 | planned gapless 0.0 s ("Same album: gapless"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true |
-| AT-14-smart-mix | FT-14 | Smart Mix shortens the overlap for short tracks and says why | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_143111` | B2 | planned crossfade 3.0 s ("Smart Mix: shorter for a short track"); measured overlap 2.78 s, gap 0.000 s, peak 0.139, level during overlap 0.99-1.01 x; player moved on: true |
-| AT-15-mp3-flac | FT-15 | Crossfade 6 s MP3 -> FLAC | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_143111` | B2 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.68 s, gap 0.000 s, peak 0.146, level during overlap 0.98-1.07 x; player moved on: true |
-| AT-15-flac-wav | FT-15 | Crossfade 6 s FLAC -> WAV | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_143111` | B2 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.74 s, gap 0.000 s, peak 0.142, level during overlap 0.99-1.01 x; player moved on: true |
-| SYS-package | FT-01 | Release build copied to a Portable folder with every required file | Windows system | PASS | `20261025_135848` | B2 | 49 MB |
-| EX-01-start | FT-01 | Portable exe starts with an isolated test profile; its accessibility tree is visible | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | window 'NEXA Music', 114 named elements via MSAA; exe_app.log start: MSAA nodes 166, UI Automation elements 1 |
-| EX-01-version | FT-01 | Settings - About shows version 0.9.0 | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo. Version 0.9.0 - pre-release build (Phase 7), final testing pending. |
-| EX-02-library | FT-02 | Release exe shows the imported test library from its database | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | 'Seq 01' visible in Library - Songs |
-| EX-16-session | FT-16 | Windows media overlay shows NEXA with song, artist and Playing | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | 'Seq 01' / 'AutoTest Band' Playing (current session) |
-| EX-16-keys | FT-16 | Media keys with NEXA minimised: Play/Pause, Next, Previous, Stop | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | play/pause -> Paused -> Playing; next -> 'Seq 04'; previous -> 'Seq 01'; stop -> Paused |
-| EX-18-keyboard | FT-18 | Space toggles playback, Ctrl+Right plays the next song (Release exe) | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 04' |
-| EX-28-a11y | FT-28 | With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True |
-| EX-29-resize | FT-29 | Resize / maximise with a UI Automation client: no crash, tree still updates | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True |
-| EX-30-minsize | FT-30 | Window cannot be made smaller than 1024 x 640 | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | smallest window 1024x640 (dpi 96) |
-| EX-05-search | FT-05 | Release exe: the search field finds the Cyrillic song (typed in Cyrillic) | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08' |
-| EX-03-restart | FT-03 | Release exe restarted: library and playlist still there | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | restarted True, test song visible True, playlist visible True |
-| EX-29-axtree-log | FT-29 | No "Failed to update ui::AXTree" messages after resizing (TD-02) | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | 0 messages in the app output |
-| EX-flutter-errors | FT-28 | No Flutter exceptions in the Release exe output | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_135848` | B2 | 0 error blocks |
+| SYS-library | - | Test library present and unchanged (SHA-256) | Windows system | PASS | `20261025_154447` | B1 | 36 tracks |
+| SYS-loopback | - | WASAPI loopback recorder built | Windows system | PASS | `20261025_154447` | B1 | exit 0 |
+| SYS-portable-source | FT-01 | The tested Portable folder was built from the same app code as this run | Windows system | PASS | `20261025_154447` | B1 | folder NEXA_Music_0.9.0_Windows_x64_13c260b; built from commit 13c260ba8898c031b7bfd5d1051b889c34137050, app code 83346d1e171c; this run: app code 83346d1e171c |
+| SYS-package | FT-01 | Portable folder with every required file (NEXA_Music_0.9.0_Windows_x64_13c260b) | Windows system | PASS | `20261025_154447` | B1 | 49 MB |
+| SYS-eventlog | FT-28 | Windows Event Log: no crash of nexa_music.exe during the whole run | Windows system | PASS | `20261025_154447` | B1 | 0 crash records |
+| UNIT-analyze | - | flutter analyze | static analysis | PASS | `20261025_154447` | B1 | exit 0 |
+| UNIT-tests | - | Existing unit / widget tests (FakeEngine, in-memory database) | unit / widget tests | PASS | `20261025_154447` | B1 | exit 0; +143: All tests passed! |
+| EX-01-start | FT-01 | Portable exe starts with an isolated test profile; its accessibility tree is visible | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | window 'NEXA Music', 113 named elements via MSAA; exe_app.log start: MSAA nodes 165, UI Automation elements 1 |
+| EX-01-version | FT-01 | Settings - About shows version 0.9.0 | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo. Version 0.9.0 - pre-release build (Phase 7), final testing pending. |
+| EX-02-library | FT-02 | Release exe shows the imported test library from its database | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | 'Seq 01' visible in Library - Songs |
+| EX-16-session | FT-16 | Windows media overlay shows NEXA with song, artist and Playing | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | 'Seq 01' / 'AutoTest Band' Playing (current session) |
+| EX-16-keys | FT-16 | Media keys with NEXA minimised: Play/Pause, Next, Previous, Stop | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | play/pause -> Paused -> Playing; next -> 'Seq 04'; previous -> 'Seq 01'; stop -> Paused |
+| EX-18-keyboard | FT-18 | Space toggles playback, Ctrl+Right plays the next song (Release exe) | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 04' |
+| EX-28-a11y | FT-28 | With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True |
+| EX-29-resize | FT-29 | Resize / maximise with a UI Automation client: no crash, tree still updates | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True |
+| EX-30-minsize | FT-30 | Window cannot be made smaller than 1024 x 640 | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | smallest window 1024x640 (dpi 96) |
+| EX-05-search | FT-05 | Release exe: the search field finds the Cyrillic song (typed in Cyrillic) | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08' |
+| EX-03-restart | FT-03 | Release exe restarted: library (and playlist, if the profile has one) still there | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | restarted True, test song visible True, playlist before / after restart False / False |
+| EX-29-axtree-log | FT-29 | No "Failed to update ui::AXTree" messages after resizing (TD-02) | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | 0 messages in the app output |
+| EX-flutter-errors | FT-28 | No Flutter exceptions in the Release exe output | Windows Release exe (Portable build, UI Automation) | PASS | `20261025_154447` | B1 | 0 error blocks |
+| SYS-audio | - | Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available | Windows system | PASS | `20261025_153413` | B1 | device 'Speakers (Logitech PRO X Gaming Headset)', mute off, volume 52 %, process loopback ok, system loopback ok |
+| AT-06-order | FT-06 | 24 tracks in a row: each started once, in order (engine) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | 24 tracks started; engine errors: none |
+| AT-06-audio | FT-06 | 24 tracks in a row: audible order, full length, never two at once, no gaps (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | heard 24 of 24 tones in the right order; largest overlap 0.000 s, largest gap 0.000 s, shortest song heard 5.96 s of 6.00 s |
+| AT-06-id3-flac | FT-06 | Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | heard 520 Hz -> 2800 Hz -> 740 Hz (expected 520 Hz -> 2800 Hz -> 740 Hz) |
+| AT-07-transport | FT-07 | Pause holds the position, resume, seek, previous (restart / previous track), next | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | pause 1040->1040 ms, resume -> 2260 ms, seek 20 s -> 20487 ms, restart true, next true, previous true |
+| AT-07-pause-silence | FT-07 | Silence while paused (loopback, tone of the paused song) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | 440 Hz level while paused 0.00000 (playing at 100 %: about 0.12); other sound on the PC: peak 0.0000 |
+| AT-08-queue | FT-08 | Play next, Add to queue, Remove, Clear; the engine plays the inserted song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | play next/add true, remove true, engine played inserted true, clear true |
+| AT-09-shuffle | FT-09 | Shuffle plays each song once; switching it off restores the order | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | 10 different files played; order restored true |
+| AT-09-repeat | FT-09 | Repeat this song replays it; Repeat all wraps to the first song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | repeat one true, repeat all wrap true |
+| AT-10-volume | FT-10 | Volume and mute change the real output level (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | 440 Hz level at 100 %: 0.1059, 50 %: 0.0132, mute: 0.00000; recorder mode=process rate=48000 channels=2 float=1 bits=32 device="Speakers (Logitech PRO X Gaming Headset)" endpoint_mute=0 endpoint_volume=0.520 session=1 session_mute=0 session_volume=1.000 |
+| AT-10-devices | FT-10 | Output devices are listed; "System default" can be selected | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | 5 devices reported by the engine |
+| AT-11-crossfade-6 | FT-11 | Crossfade 6 s (WAV -> FLAC): smooth overlap, no dip, no clipping | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.70 s, gap 0.000 s, peak 0.147, level during overlap 0.96-1.03 x; player moved on: true |
+| AT-12-crossfade-0 | FT-12 | Crossfade 0 s: no overlap, no gap | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | planned gapless 0.0 s ("Crossfade off: no overlap"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true |
+| AT-12-crossfade-12 | FT-12 | Crossfade 12 s: long smooth overlap | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | planned crossfade 12.0 s ("Crossfade"); measured overlap 11.50 s, gap 0.000 s, peak 0.148, level during overlap 0.96-1.03 x; player moved on: true |
+| AT-13-album-gapless | FT-13 | Same album with Crossfade on: gapless, no overlap (FLAC) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | planned gapless 0.0 s ("Same album: gapless"); measured overlap 0.02 s, gap 0.000 s, peak 0.106, level during overlap 1.00-1.00 x; player moved on: true |
+| AT-14-smart-mix | FT-14 | Smart Mix shortens the overlap for short tracks and says why | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | planned crossfade 3.0 s ("Smart Mix: shorter for a short track"); measured overlap 2.78 s, gap 0.000 s, peak 0.139, level during overlap 0.99-1.01 x; player moved on: true |
+| AT-15-mp3-flac | FT-15 | Crossfade 6 s MP3 -> FLAC | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.66 s, gap 0.000 s, peak 0.146, level during overlap 0.98-1.07 x; player moved on: true |
+| AT-15-flac-wav | FT-15 | Crossfade 6 s FLAC -> WAV | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_153413` | B1 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.74 s, gap 0.000 s, peak 0.142, level during overlap 0.99-1.01 x; player moved on: true |
 | AT-02-count | FT-02 | Import: every test file is in the library once | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_134106` | B2 | library 36 / expected 36; problems: [] |
 | AT-02-tags | FT-02 | Import: titles, artists, albums incl. Cyrillic MP3 / FLAC | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_134106` | B2 | all tags as written |
 | AT-02-wav-cyrillic | FT-02 | Import: Cyrillic RIFF INFO tags in WAV (known issue TD-04) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261025_134106` | B2 | read correctly |

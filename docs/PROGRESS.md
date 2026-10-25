@@ -15,7 +15,7 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | 5 — NEXA DNA and NEXA Wave v1 | Implemented 2026-10-19 (automated checks PASS; real listening check in final stage) | `dev/v1` `9dc3116` |
 | 6 — Allowed online catalogues (Audius, Jamendo) | Implemented 2026-10-19 (automated checks PASS; live Audius and Jamendo checks PASS) | `dev/v1` `52b76c6`, pushed to GitHub 2026-10-20 (owner's request) |
 | 7 — Polish, performance, Windows build | Implemented 2026-10-20: Release build 0.9.0 + portable folder, started without the Flutter tool (automated checks PASS); manual testing in the final stage | `dev/v1` |
-| Final stage — full Windows testing and fixes | NEXA AutoTest on the owner's PC: 23 of 30 FT PASS automatically, 7 need a short manual check (`reports/FINAL_AUTOTEST_REPORT.md`, every result with its run and build); defects found and fixed: TD-20, TD-22, TD-19, TD-04; FT-01 confirmed by the owner. Owner acceptance and manual checks pending; 1.0 not declared | `dev/v1` |
+| Final stage — full Windows testing and fixes | Build for manual acceptance 2026-10-25: Portable folder `NEXA_Music_0.9.0_Windows_x64_13c260b` (commit 13c260b, app code 83346d1e171c, `reports/MANUAL_ACCEPTANCE_BUILD.md`). NEXA AutoTest: 23 of 30 FT PASS automatically, 60 / 60 checks, 7 need a short manual check; defects found and fixed: TD-20, TD-22, TD-19, TD-04; FT-01 confirmed by the owner. Owner's manual checks pending; 1.0 not declared | `dev/v1` |
 | E1 — NEXA Wave across catalogs (D-017) | Approved, after the final stage | |
 | E2 — YouTube official embedded player (CR-001) | Approved, after E1; feasibility gate first | |
 | E3 — SoundCloud official widget (CR-002) | Approved, after E2 | |
@@ -51,6 +51,8 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
 
 ## Log
+
+- 2026-10-25 — **Build for manual acceptance**: from clean commit 13c260b (analyze 0 issues, 143/143 tests, Release build) into the new Portable folder `NEXA_Music_0.9.0_Windows_x64_13c260b` with BUILD_INFO.txt and SHA256SUMS.txt (the previous folder untouched); all DLLs, fonts, assets and the audio engine present; the real exe started with an isolated profile, 0 Windows crash records. Re-tested on this app code: playback + mix with sound (24-song gapless chain, last song of the queue, Crossfade 0 / 6 / 12 s, volume) and the exe stage on this very folder - all PASS.
 
 - 2026-10-25 — **AutoTest follow-up** (owner request): sound check before every run (output device, Windows mute and volume, WASAPI loopback) and mute / volume watched during every recording (device and NEXA's own Volume-mixer slider) - no sound gives BLOCKED with the reason, never FAIL; `NEXA_AutoTest.cmd -Groups playback,mix` runs only those groups; the report combines runs only with their run and build named (app-code fingerprint), each run's own results kept in `reports/autotest/runs/`; manual checks MAN-02..30 rewritten with steps, expected result and what is already automated. Re-run playback + mix with sound: TD-20 confirmed on the whole 24-song chain; TD-22 found and fixed.
 

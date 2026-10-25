@@ -554,14 +554,20 @@ if (-not $started) {
         ($null -ne $song) ("search 'тестовая': $(if ($song) { "found '$((Label $song) -replace "`n", ' / ')'" } else { 'not found' })")
 
     # ------------------------------------------------- 6. restart
+    # What the profile shows before the restart must still be there after
+    # it (the test playlist exists only when the library group ran).
+    $null = Click-Text 'Library'
+    $null = Click-Text 'Songs'
+    $playlistBefore = $null -ne (Find-El 'AutoTest playlist' -Contains -TimeoutSec 3)
     Stop-Nexa
     $restarted = Start-Nexa 'exe_app_restart.log'
     $null = Click-Text 'Library'
     $null = Click-Text 'Songs'
     $still = $null -ne (Find-El 'Seq 01' -Contains -TimeoutSec 10)
     $playlist = $null -ne (Find-El 'AutoTest playlist' -Contains -TimeoutSec 3)
-    Check 'EX-03-restart' 'FT-03' 'Release exe restarted: library and playlist still there' ($restarted -and $still -and $playlist) `
-        "restarted $restarted, test song visible $still, playlist visible $playlist"
+    Check 'EX-03-restart' 'FT-03' 'Release exe restarted: library (and playlist, if the profile has one) still there' `
+        ($restarted -and $still -and ($playlist -or -not $playlistBefore)) `
+        "restarted $restarted, test song visible $still, playlist before / after restart $playlistBefore / $playlist"
     Stop-Nexa
 }
 

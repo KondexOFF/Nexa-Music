@@ -1,0 +1,180 @@
+{
+ "run": {
+  "run": "20261025_154447",
+  "startedAt": "2026-10-25T15:44:47",
+  "commit": "13c260b",
+  "uncommitted": true,
+  "appVersion": "0.9.0+7",
+  "appCode": "83346d1e171c",
+  "build": "B1",
+  "appCodeKnown": "измерен в начале прогона",
+  "groups": "",
+  "stages": {
+   "unit": true,
+   "integration": false,
+   "exe": true
+  }
+ },
+ "checks": [
+  {
+   "id": "SYS-library",
+   "ft": "-",
+   "title": "Test library present and unchanged (SHA-256)",
+   "status": "PASS",
+   "detail": "36 tracks",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-loopback",
+   "ft": "-",
+   "title": "WASAPI loopback recorder built",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-portable-source",
+   "ft": "FT-01",
+   "title": "The tested Portable folder was built from the same app code as this run",
+   "status": "PASS",
+   "detail": "folder NEXA_Music_0.9.0_Windows_x64_13c260b; built from commit 13c260ba8898c031b7bfd5d1051b889c34137050, app code 83346d1e171c; this run: app code 83346d1e171c",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-package",
+   "ft": "FT-01",
+   "title": "Portable folder with every required file (NEXA_Music_0.9.0_Windows_x64_13c260b)",
+   "status": "PASS",
+   "detail": "49 MB",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-eventlog",
+   "ft": "FT-28",
+   "title": "Windows Event Log: no crash of nexa_music.exe during the whole run",
+   "status": "PASS",
+   "detail": "0 crash records",
+   "level": "Windows system"
+  },
+  {
+   "id": "UNIT-analyze",
+   "ft": "-",
+   "title": "flutter analyze",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "static analysis"
+  },
+  {
+   "id": "UNIT-tests",
+   "ft": "-",
+   "title": "Existing unit / widget tests (FakeEngine, in-memory database)",
+   "status": "PASS",
+   "detail": "exit 0; +143: All tests passed!",
+   "level": "unit / widget tests"
+  },
+  {
+   "id": "EX-01-start",
+   "ft": "FT-01",
+   "title": "Portable exe starts with an isolated test profile; its accessibility tree is visible",
+   "status": "PASS",
+   "detail": "window 'NEXA Music', 113 named elements via MSAA; exe_app.log start: MSAA nodes 165, UI Automation elements 1",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-01-version",
+   "ft": "FT-01",
+   "title": "Settings - About shows version 0.9.0",
+   "status": "PASS",
+   "detail": "NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo.\nVersion 0.9.0 - pre-release build (Phase 7), final testing pending.",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-02-library",
+   "ft": "FT-02",
+   "title": "Release exe shows the imported test library from its database",
+   "status": "PASS",
+   "detail": "'Seq 01' visible in Library - Songs",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-16-session",
+   "ft": "FT-16",
+   "title": "Windows media overlay shows NEXA with song, artist and Playing",
+   "status": "PASS",
+   "detail": "'Seq 01' / 'AutoTest Band' Playing (current session)",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-16-keys",
+   "ft": "FT-16",
+   "title": "Media keys with NEXA minimised: Play/Pause, Next, Previous, Stop",
+   "status": "PASS",
+   "detail": "play/pause -> Paused -> Playing; next -> 'Seq 04'; previous -> 'Seq 01'; stop -> Paused",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-18-keyboard",
+   "ft": "FT-18",
+   "title": "Space toggles playback, Ctrl+Right plays the next song (Release exe)",
+   "status": "PASS",
+   "detail": "space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 04'",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-28-a11y",
+   "ft": "FT-28",
+   "title": "With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash",
+   "status": "PASS",
+   "detail": "pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-29-resize",
+   "ft": "FT-29",
+   "title": "Resize / maximise with a UI Automation client: no crash, tree still updates",
+   "status": "PASS",
+   "detail": "sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-30-minsize",
+   "ft": "FT-30",
+   "title": "Window cannot be made smaller than 1024 x 640",
+   "status": "PASS",
+   "detail": "smallest window 1024x640 (dpi 96)",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-05-search",
+   "ft": "FT-05",
+   "title": "Release exe: the search field finds the Cyrillic song (typed in Cyrillic)",
+   "status": "PASS",
+   "detail": "search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08'",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-03-restart",
+   "ft": "FT-03",
+   "title": "Release exe restarted: library (and playlist, if the profile has one) still there",
+   "status": "PASS",
+   "detail": "restarted True, test song visible True, playlist before / after restart False / False",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-29-axtree-log",
+   "ft": "FT-29",
+   "title": "No \"Failed to update ui::AXTree\" messages after resizing (TD-02)",
+   "status": "PASS",
+   "detail": "0 messages in the app output",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-flutter-errors",
+   "ft": "FT-28",
+   "title": "No Flutter exceptions in the Release exe output",
+   "status": "PASS",
+   "detail": "0 error blocks",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  }
+ ]
+}
