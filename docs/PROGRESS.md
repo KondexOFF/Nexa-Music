@@ -17,8 +17,8 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | 7 — Polish, performance, Windows build | Accepted in the final acceptance (2026-10-25) | `dev/v1` |
 | Final stage — full Windows testing and fixes | **Accepted by the owner 2026-10-25**: 30 / 30 FT PASS (MAN-01..MAN-30 PASS, NEXA AutoTest 60 / 60) on the acceptance build `NEXA_Music_0.9.0_Windows_x64_13c260b` (commit 13c260b, app code 83346d1e171c). Defects found and fixed: TD-20, TD-22, TD-19, TD-04. Then version 1.0.0 prepared (D-020, `reports/RELEASE_1.0.0_READINESS.md`); publishing awaits the owner's permission | `dev/v1` |
 | Release v1.0.0 | **Published 2026-10-25** as a private GitHub release (tag `v1.0.0` on `0dcf12c`, `NEXA_Music_1.0.0_Windows_x64.zip`) | `dev/v1` |
-| E1 — NEXA Wave across catalogs (D-017, D-021) | In progress since 2026-10-25 (owner order) | `feature/e1-wave-catalogs` (local) |
-| E2 — YouTube official embedded player (CR-001) | Approved, after E1; feasibility gate first | |
+| E1 — NEXA Wave across catalogs (D-017, D-021) | **Accepted by the owner 2026-10-26** (manual E1-01..E1-05: 5 / 5 PASS; automatic checks in `reports/E1_REPORT.md`). Not merged into `dev/v1`, not pushed | `feature/e1-wave-catalogs` (local) |
+| E2 — YouTube official embedded player (CR-001) | Feasibility gate in progress (2026-10-26, owner order): `docs/E2_FEASIBILITY.md`; no YouTube code in the app until the owner decides | |
 | E3 — SoundCloud official widget (CR-002) | Approved, after E2 | |
 | E4 — Ports: macOS, Linux, Android, iOS/iPadOS, Web (CR-003) | Approved, after the Windows version | |
 
@@ -52,6 +52,8 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
 
 ## Log
+
+- 2026-10-26 — **E1 accepted** by the owner: manual checks E1-01..E1-05 PASS (5 / 5) on the Portable build of `417c51c`. Branch `feature/e1-wave-catalogs` checked (clean); release v1.0.0 on GitHub unchanged (tag `v1.0.0` -> `0dcf12c`, ZIP SHA-256 unchanged). No push, no merge. Known limits of E1: Wave needs at least one library song; Jamendo needs the owner's client id; Audius may require a key in future; genre matching uses the Audius genre list / Jamendo tags; catalog songs cannot be liked, saved or kept in the history, "Not for me" lasts until NEXA closes; AutoTest playback / mix groups were not repeated on the E1 build.
 
 - 2026-10-25 — **E1 started** on the local branch `feature/e1-wave-catalogs` (owner order after the private release v1.0.0): terms review of Audius and Jamendo, plan in `docs/E1_PLAN.md`, decision D-021. Online Wave picks behind an opt-in switch; see `reports/E1_REPORT.md` for results.
 
