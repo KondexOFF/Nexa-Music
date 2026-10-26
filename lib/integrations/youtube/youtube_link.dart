@@ -1,4 +1,4 @@
-/// E2.0 prototype: YouTube links pasted by the user (no Data API key).
+/// YouTube links pasted by the user (E2.2; works without a Data API key).
 ///
 /// Accepts the usual forms of a single public video link and returns its
 /// 11-character video id, or null when the text is not such a link.

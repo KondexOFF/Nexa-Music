@@ -10,7 +10,7 @@ import '../../core/audio/playback_engine.dart';
 import '../discover/catalog_settings.dart';
 import '../nexa_dna/privacy_controls.dart';
 import '../player/player_controller.dart';
-import '../youtube_prototype/youtube_prototype_page.dart';
+import '../youtube/youtube_settings.dart';
 import '../../ui/nexa_widgets.dart';
 
 /// Settings: output device, media keys, planned settings and the Phase 0
@@ -30,12 +30,6 @@ class SettingsPage extends StatelessWidget {
           captureKey: GlobalKey(),
         ),
       ),
-    );
-  }
-
-  void _openYouTubePrototype(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const YouTubePrototypePage()),
     );
   }
 
@@ -94,6 +88,12 @@ class SettingsPage extends StatelessWidget {
             action: CatalogSettingsControls(),
           ),
           const _SettingsCard(
+            icon: Icons.smart_display_outlined,
+            title: S.ytSettingsTitle,
+            body: S.ytSettingsBody,
+            action: YouTubeSettingsControls(),
+          ),
+          const _SettingsCard(
             icon: Icons.graphic_eq_rounded,
             title: S.settingsMix,
             body: S.settingsMixBody,
@@ -108,19 +108,6 @@ class SettingsPage extends StatelessWidget {
               variant: PillVariant.secondary,
               height: 42,
               onPressed: () => _openAudioTest(context),
-            ),
-          ),
-          _SettingsCard(
-            icon: Icons.smart_display_outlined,
-            title: S.ytPrototype,
-            body: S.ytPrototypeInfo,
-            action: NexaPillButton(
-              key: const ValueKey('open-youtube-prototype'),
-              label: S.ytOpenPrototype,
-              icon: Icons.open_in_new_rounded,
-              variant: PillVariant.secondary,
-              height: 42,
-              onPressed: () => _openYouTubePrototype(context),
             ),
           ),
         ],

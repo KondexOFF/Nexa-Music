@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -11,7 +10,6 @@ import 'app/app.dart';
 import 'app/capture/capture_harness.dart';
 import 'app/config.dart';
 import 'audio_probe/probe_app.dart';
-import 'features/youtube_prototype/youtube_selftest.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,17 +35,6 @@ void main() {
   if (kCaptureDir.isNotEmpty) {
     // Phase 1 evidence: render fixed window sizes to PNG, then exit.
     runApp(const CaptureHarness(outDir: kCaptureDir));
-    return;
-  }
-  final youtubeTest = youtubeSelfTestDir();
-  if (youtubeTest.isNotEmpty) {
-    // E2.0 YouTube prototype test (tools/e2_0): the normal app plus a
-    // command-driven test of the prototype page.
-    final container = ProviderContainer();
-    runApp(
-      UncontrolledProviderScope(container: container, child: const NexaApp()),
-    );
-    unawaited(YouTubeSelfTest(container, youtubeTest).run());
     return;
   }
   runApp(const ProviderScope(child: NexaApp()));

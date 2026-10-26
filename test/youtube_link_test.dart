@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nexa_music/features/youtube_prototype/youtube_link.dart';
+import 'package:nexa_music/integrations/youtube/youtube_link.dart';
 
-/// E2.0: the prototype plays a pasted YouTube link (no Data API key).
+/// E2.2: a pasted YouTube link plays without a Data API key.
 void main() {
   test('the usual forms of one video link give its id', () {
     const id = 'M7lc1UVf-VE';

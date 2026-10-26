@@ -7,10 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/strings.dart';
 import 'package:nexa_music/core/database/app_database.dart';
 import 'package:nexa_music/core/models/track.dart';
+import 'package:nexa_music/features/discover/catalog_providers.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
+import 'package:nexa_music/features/player/playback_arbiter.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
-import 'package:nexa_music/features/youtube_prototype/youtube_embed.dart';
-import 'package:nexa_music/features/youtube_prototype/youtube_prototype_controller.dart';
+import 'package:nexa_music/features/youtube/youtube_player_controller.dart';
+import 'package:nexa_music/integrations/youtube/youtube_embed.dart';
 import 'package:path/path.dart' as p;
 
 import 'helpers/fake_engine.dart';
@@ -24,7 +26,7 @@ class FakeEmbed implements YouTubeEmbed {
   final _events = StreamController<Map<String, Object?>>.broadcast(sync: true);
   final _fullScreen = StreamController<bool>.broadcast(sync: true);
   final List<Map<String, Object?>> sent = [];
-  final List<bool> pages = [];
+  int pages = 0;
   bool initialized = false;
   bool disposed = false;
 
@@ -45,7 +47,7 @@ class FakeEmbed implements YouTubeEmbed {
   }
 
   @override
-  Future<void> openPage({bool identified = true}) async => pages.add(identified);
+  Future<void> openPage() async => pages++;
   @override
   Future<void> send(Map<String, Object?> command) async => sent.add(command);
   @override
@@ -71,17 +73,26 @@ void main() {
   late FakeEmbed embed;
   late ProviderContainer container;
   late Directory temp;
+  late List<String> opened;
+  (String, String)? lookup;
 
   setUp(() async {
-    temp = Directory.systemTemp.createTempSync('nexa_yt_proto');
+    temp = Directory.systemTemp.createTempSync('nexa_yt');
     db = memoryDatabase();
     engine = FakeEngine();
     embed = FakeEmbed();
+    opened = [];
+    lookup = null;
     container = ProviderContainer(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         ...testOverrides(engine: engine).skip(1),
         youtubeEmbedFactoryProvider.overrideWithValue(() async => embed),
+        youtubeTitleLookupProvider.overrideWithValue((id) async => lookup),
+        linkOpenerProvider.overrideWithValue((url) async {
+          opened.add(url);
+          return true;
+        }),
       ],
     );
     container.read(playerProvider);
@@ -99,10 +110,10 @@ void main() {
     }
   });
 
-  YouTubePrototypeController yt() =>
-      container.read(youtubePrototypeProvider.notifier);
-  YtStatus status() => container.read(youtubePrototypeProvider);
+  YouTubePlayerController yt() => container.read(youtubePlayerProvider.notifier);
+  YtStatus status() => container.read(youtubePlayerProvider);
   PlayerController player() => container.read(playerProvider.notifier);
+  MediaOverlay? overlay() => container.read(mediaOverlayOverrideProvider);
 
   Future<void> playLocal() async {
     final path = p.join(temp.path, 'song.mp3');
@@ -122,13 +133,12 @@ void main() {
     await pumpEventQueue();
   }
 
-  test('open: the page is loaded from the application host; media keys are '
-      'routed through the prototype', () async {
+  test('open: the page comes from the application host; media keys go '
+      'through the arbiter', () async {
     await yt().open();
     expect(embed.initialized, isTrue);
-    expect(embed.pages, [true], reason: 'identified (virtual host) page');
+    expect(embed.pages, 1);
     expect(status().open, isTrue);
-    expect(status().runtimeVersion, '140.0.0.0');
     expect(container.read(mediaKeyRedirectProvider), isNotNull);
     expect(youtubePlayerUrl, 'https://com.kondexoff.nexamusic/player.html');
   });
@@ -145,27 +155,28 @@ void main() {
     expect(embed.sent, isEmpty);
   });
 
-  test('YouTube and NEXA never play together', () async {
+  test('PlaybackArbiter: YouTube and NEXA never play together', () async {
     await yt().open();
     await playLocal();
     expect(container.read(playerProvider).playing, isTrue);
 
-    // Starting a video pauses NEXA first.
+    // Watch: NEXA pauses first, then the video loads.
     await yt().load('M7lc1UVf-VE');
     expect(container.read(playerProvider).playing, isFalse);
     expect(embed.sent.last, containsPair('cmd', 'load'));
     expect(embed.sent.last, containsPair('play', true));
     embed.emit({'type': 'state', 'state': YtState.playing});
     expect(status().active, isTrue);
+    expect(container.read(playbackArbiterProvider), PlaybackOwner.external);
 
-    // NEXA starts again -> YouTube is paused.
+    // NEXA starts again -> YouTube pauses.
     await player().togglePlay();
     await pumpEventQueue();
     expect(container.read(playerProvider).playing, isTrue);
     expect(embed.commands.last, 'pause');
+    expect(container.read(playbackArbiterProvider), PlaybackOwner.nexa);
 
-    // YouTube reports playing (e.g. the user pressed play inside the
-    // YouTube player) -> NEXA is paused.
+    // The user presses play inside YouTube's player -> NEXA pauses.
     embed.emit({'type': 'state', 'state': YtState.playing});
     await pumpEventQueue();
     expect(container.read(playerProvider).playing, isFalse);
@@ -181,7 +192,6 @@ void main() {
     expect(embed.commands.last, 'load', reason: 'inactive: still visible');
     binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
     expect(embed.commands.last, 'pause');
-    expect(embed.sent.last['reason'], isNull);
     binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
     binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
   });
@@ -195,38 +205,23 @@ void main() {
     expect(embed.disposed, isTrue);
     expect(status().open, isFalse);
     expect(container.read(mediaKeyRedirectProvider), isNull);
+    expect(overlay(), isNull);
   });
 
-  test('media keys go to YouTube only while it is what the user played last',
+  test('media keys and the Windows overlay follow the player started last',
       () async {
     await yt().open();
     final redirect = container.read(mediaKeyRedirectProvider)!;
     expect(await redirect('playPause'), isFalse, reason: 'NEXA handles it');
-
-    await yt().load('M7lc1UVf-VE');
-    embed.emit({'type': 'state', 'state': YtState.playing});
-    expect(await redirect('playPause'), isTrue);
-    expect(embed.commands.last, 'pause');
-    embed.emit({'type': 'state', 'state': YtState.paused});
-    expect(await redirect('playPause'), isTrue);
-    expect(embed.commands.last, 'play');
-    expect(await redirect('next'), isTrue, reason: 'no YouTube queue');
-
-    await playLocal(); // NEXA played last again.
-    expect(await redirect('playPause'), isFalse);
-  });
-
-  test('the Windows media overlay shows YouTube while YouTube was played '
-      'last, so Windows sends Pause / Play for the right player', () async {
-    MediaOverlay? overlay() => container.read(mediaOverlayOverrideProvider);
-    await yt().open();
     expect(overlay(), isNull, reason: 'NEXA owns the overlay');
-    final redirect = container.read(mediaKeyRedirectProvider)!;
 
+    lookup = ('Demo video', 'Google for Developers');
     await yt().load('M7lc1UVf-VE');
+    await pumpEventQueue();
     embed.emit({'type': 'state', 'state': YtState.playing});
     expect(overlay()?.playing, isTrue);
-    expect(overlay()?.title, S.ytOverlayTitle);
+    expect(overlay()?.title, 'Demo video');
+    expect(overlay()?.artist, 'Google for Developers');
     // Windows sends "Pause" for a playing overlay: YouTube pauses.
     expect(await redirect('pause'), isTrue);
     expect(embed.commands.last, 'pause');
@@ -234,13 +229,46 @@ void main() {
     expect(overlay()?.playing, isFalse);
     expect(await redirect('play'), isTrue);
     expect(embed.commands.last, 'play');
+    embed.emit({'type': 'state', 'state': YtState.playing});
+    expect(await redirect('playPause'), isTrue);
+    expect(embed.commands.last, 'pause');
+    expect(await redirect('next'), isTrue, reason: 'no YouTube queue');
 
     await playLocal();
     expect(overlay(), isNull, reason: 'NEXA played last again');
-    await yt().play();
-    expect(overlay(), isNotNull);
-    await yt().close();
-    expect(overlay(), isNull);
+    expect(await redirect('playPause'), isFalse);
+  });
+
+  test('a title from search is kept; a pasted link gets oEmbed title or the '
+      'plain "YouTube video"', () async {
+    await yt().open();
+    await yt().load('aaaaaaaaaaa', title: 'From search', channel: 'C');
+    expect(status().title, 'From search');
+    await yt().load('bbbbbbbbbbb');
+    await pumpEventQueue();
+    expect(status().title, isNull);
+    expect(yt().overlay.title, S.ytOverlayTitle);
+  });
+
+  test('links in the player open in the system browser; the page comes back '
+      'with the same video, paused', () async {
+    await yt().open();
+    await yt().load('M7lc1UVf-VE');
+    embed.emit({'type': 'api'});
+    embed.emit({
+      'type': 'external',
+      'url': 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+    });
+    await pumpEventQueue();
+    expect(opened, ['https://www.youtube.com/watch?v=M7lc1UVf-VE']);
+    embed.emit({'type': 'external', 'url': 'file:///C:/x'});
+    await pumpEventQueue();
+    expect(opened, hasLength(1), reason: 'only web pages');
+    embed.emit({'type': 'api'}); // the player page reloaded
+    expect(embed.sent.last, containsPair('cmd', 'load'));
+    expect(embed.sent.last, containsPair('play', false));
+    expect(isExternalPage(youtubePlayerUrl), isFalse);
+    expect(isExternalPage('https://www.youtube.com/'), isTrue);
   });
 
   test('player errors become plain messages', () async {
@@ -260,6 +288,8 @@ void main() {
     expect(status().apiLoadFailed, isTrue);
     embed.emit({'type': 'autoplayBlocked'});
     expect(status().autoplayBlocked, isTrue);
+    embed.emit({'type': 'state', 'state': YtState.playing});
+    expect(status().autoplayBlocked, isFalse);
     embed.emit({'type': 'page', 'origin': 'https://com.kondexoff.nexamusic'});
     expect(status().pageOrigin, 'https://com.kondexoff.nexamusic');
   });
@@ -270,5 +300,17 @@ void main() {
     expect(status().fullScreen, isTrue);
     embed.setFullScreen(false);
     expect(status().fullScreen, isFalse);
+  });
+
+  test('watching YouTube writes nothing: no history, no queue', () async {
+    await yt().open();
+    await yt().load('M7lc1UVf-VE');
+    embed.emit({'type': 'state', 'state': YtState.playing});
+    embed.emit({'type': 'state', 'state': YtState.ended});
+    await yt().close();
+    await pumpEventQueue();
+    expect(await db.select(db.listeningEvents).get(), isEmpty);
+    expect(container.read(playerProvider).queue, isEmpty);
+    expect(engine.loads, isEmpty, reason: 'YouTube never uses the engine');
   });
 }

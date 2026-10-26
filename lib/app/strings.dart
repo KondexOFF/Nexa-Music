@@ -367,23 +367,22 @@ abstract final class S {
       'Skipped "$title": the stream is not available';
   static const String noPlayableStream = 'No playable song in the queue';
 
-  // E2.0 YouTube prototype (developer tool, not a product feature yet)
-  static const String ytPrototype = 'YouTube prototype (E2.0)';
-  static const String ytPrototypeInfo =
-      'Technical test of the official YouTube player inside NEXA (WebView2). '
-      'Paste a YouTube link; the video plays in YouTube\'s own visible '
-      'player with its controls and ads. It pauses when the window is '
-      'minimised or this page is closed, and never plays together with '
-      'NEXA. Not saved, not in the history or NEXA Wave.';
-  static const String ytOpenPrototype = 'Open YouTube prototype';
+  // E2 YouTube (official embedded player, CR-001 / D-022)
+  static const String ytSection = 'YouTube';
+  static const String ytPageTitle = 'YouTube video';
+  static const String discoverCatalogs = 'Music catalogs';
   static const String ytLinkHint = 'Paste a YouTube link';
-  static const String ytLoad = 'Play';
-  static const String ytBadLink = 'This is not a link to one YouTube video.';
+  static const String ytWatch = 'Watch';
+  static const String ytWatchInNexa = 'Watch in NEXA';
+  static const String ytBadLink =
+      'This is not a link to one YouTube video (watch, youtu.be, Shorts or '
+      'an 11-character video id).';
   static const String ytOpenOnYouTube = 'Open on YouTube';
   static const String ytBack = 'Back';
+  static const String ytLive = 'Live';
   static const String ytStarting = 'Starting the YouTube player...';
   static String ytUnavailable(String why) =>
-      'The YouTube player cannot run here: $why';
+      'The YouTube player cannot run here: $why Use "Open on YouTube".';
   static const String ytApiLoadFailed =
       'Cannot reach YouTube. Check the internet connection - your library '
       'keeps working.';
@@ -397,16 +396,82 @@ abstract final class S {
   static const String ytErrorNotEmbeddable =
       'This video cannot be played in other apps: its owner does not allow '
       'it, or it is no longer available.';
-  static const String ytOverlayTitle = 'YouTube video';
-  static const String ytOverlayArtist = 'YouTube';
   static const String ytError153 =
       'YouTube did not accept NEXA\'s app identification (error 153).';
   static String ytErrorOther(int code) => 'YouTube player error $code.';
+  static const String ytOverlayTitle = 'YouTube video';
+  static const String ytOverlayArtist = 'YouTube';
   static const String ytLimits =
-      'Prototype: no background playback, no queue, no crossfade, nothing '
-      'saved. YouTube Terms of Service apply.';
+      'YouTube\'s own player with its controls and ads. It pauses when NEXA '
+      'is minimised and stops when you leave this page; it never plays '
+      'together with NEXA. Nothing you watch is saved: not in the history, '
+      'NEXA Wave, NEXA DNA or playlists. YouTube Terms of Service apply.';
   static const String ytTerms = 'YouTube Terms of Service';
   static const String ytGooglePrivacy = 'Google Privacy Policy';
+  static const String ytDiscoverOff =
+      'YouTube is off. Turn it on in Settings to watch YouTube videos in '
+      'NEXA in YouTube\'s own player.';
+  static const String ytDiscoverInfo =
+      'Videos play in YouTube\'s own player inside NEXA. Pasting a link '
+      'needs no key; searching uses your own YouTube Data API key.';
+  static const String ytNoKey =
+      'To search YouTube, add your own YouTube Data API key in Settings. '
+      'Pasting a link works without it.';
+  static const String ytSearchHint = 'Search YouTube videos';
+  static const String ytQuotaNote =
+      'Each search uses 100 of your key\'s 10,000 daily quota units (about '
+      '99 searches a day). NEXA searches only when you press Search.';
+  static const String ytApiBadKey =
+      'YouTube did not accept the API key. Check it in Settings.';
+  static const String ytApiDisabled =
+      'YouTube Data API v3 is not enabled for this key\'s Google Cloud '
+      'project.';
+  static const String ytApiQuota =
+      'The key\'s daily YouTube quota is used up. Searching works again '
+      'after midnight Pacific Time; pasting links still works.';
+  static const String ytApiRateLimited =
+      'YouTube asks to search less often. Try again in a minute.';
+  static const String ytApiOffline =
+      'Cannot reach YouTube. Check the internet connection.';
+  static const String ytApiProvider = 'YouTube could not answer the search.';
+  static const String ytSettingsTitle = 'YouTube';
+  static const String ytSettingsBody =
+      'Watch YouTube videos inside NEXA in YouTube\'s official player. Off '
+      'until you turn it on.';
+  static const String ytUse = 'Use YouTube';
+  static const String ytUseInfo =
+      'Shows the YouTube section in Discover. Turning it on shows what is '
+      'shared with YouTube and Google first.';
+  static const String ytApiKey = 'YouTube Data API key (optional)';
+  static const String ytApiKeyInfo =
+      'Only for searching. Create it in your own Google Cloud project and '
+      'restrict it to "YouTube Data API v3". Stored only in NEXA\'s database '
+      'on this PC - like any key in a desktop app it cannot be perfectly '
+      'protected, so do not reuse it elsewhere.';
+  static const String ytKeyCheck = 'Check key';
+  static const String ytKeyDelete = 'Delete key';
+  static const String ytKeyChecking = 'Checking the key...';
+  static const String ytKeyOk = 'YouTube accepted the key.';
+  static const String ytKeySaved = 'A key is saved.';
+  static const String ytKeyNone = 'No key saved.';
+  static const String ytKeyHelp = 'How to get a key';
+  static const String ytConsentTitle = 'Turn on YouTube?';
+  static const List<String> ytConsentPoints = [
+    'Videos play in YouTube\'s own player inside NEXA, with YouTube\'s '
+        'controls, branding and ads. The YouTube Terms of Service apply.',
+    'YouTube (Google) receives what any YouTube player receives: the videos '
+        'you open, your IP address and its own cookies in NEXA\'s built-in '
+        'web view. The Google Privacy Policy applies.',
+    'Searching sends your search words to Google with your own YouTube Data '
+        'API key. The key stays in NEXA\'s database on this PC; you can '
+        'change or delete it at any time.',
+    'NEXA records nothing about what you watch: YouTube is never in your '
+        'history, NEXA Wave, NEXA DNA or playlists, and NEXA has no viewing '
+        'statistics or tracking - also for videos made for kids.',
+    'No background play: a video pauses when NEXA is minimised and stops '
+        'when you leave the YouTube page. It never plays together with NEXA.',
+  ];
+  static const String ytConsentAgree = 'I agree, turn on YouTube';
 
   // Privacy settings (Phase 5)
   static const String historyConsent = 'Keep listening history';

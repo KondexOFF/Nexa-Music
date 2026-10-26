@@ -7,36 +7,68 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
+import '../../integrations/youtube/youtube_link.dart';
 import '../../ui/nexa_widgets.dart';
 import '../discover/catalog_providers.dart';
-import 'youtube_link.dart';
-import 'youtube_prototype_controller.dart';
+import 'youtube_player_controller.dart';
+import 'youtube_settings.dart';
 
 /// Smallest player NEXA shows: YouTube's recommended 16:9 minimum (the
 /// required minimum is 200 x 200).
 const Size youtubeMinPlayer = Size(480, 270);
 
-/// E2.0 prototype page (developer tool in Settings): paste a link, watch it
-/// in YouTube's own visible player. Nothing is drawn over the player.
-class YouTubePrototypePage extends ConsumerStatefulWidget {
-  const YouTubePrototypePage({super.key});
+/// Opens the YouTube page for [videoId] (Watch in NEXA).
+Future<void> openYouTubeWatch(
+  BuildContext context, {
+  required String videoId,
+  String? title,
+  String? channel,
+}) => Navigator.of(context).push(
+  MaterialPageRoute<void>(
+    builder: (_) =>
+        YouTubeWatchPage(videoId: videoId, title: title, channel: channel),
+  ),
+);
+
+/// The YouTube page (E2.1): YouTube's own visible player with its controls,
+/// branding and ads; nothing is drawn over it. The video stops when the page
+/// is left and pauses when the window is minimised.
+class YouTubeWatchPage extends ConsumerStatefulWidget {
+  const YouTubeWatchPage({
+    super.key,
+    required this.videoId,
+    this.title,
+    this.channel,
+  });
+
+  final String videoId;
+  final String? title;
+  final String? channel;
 
   @override
-  ConsumerState<YouTubePrototypePage> createState() =>
-      _YouTubePrototypePageState();
+  ConsumerState<YouTubeWatchPage> createState() => _YouTubeWatchPageState();
 }
 
-class _YouTubePrototypePageState extends ConsumerState<YouTubePrototypePage> {
+class _YouTubeWatchPageState extends ConsumerState<YouTubeWatchPage> {
   final TextEditingController _link = TextEditingController();
-  late final YouTubePrototypeController _controller;
+  late final YouTubePlayerController _controller;
   String? _linkProblem;
 
   @override
   void initState() {
     super.initState();
-    _controller = ref.read(youtubePrototypeProvider.notifier);
+    _controller = ref.read(youtubePlayerProvider.notifier);
     // Providers must not change while widgets build: open right after.
-    unawaited(Future.microtask(_controller.open));
+    unawaited(
+      Future.microtask(() async {
+        await _controller.open();
+        await _controller.load(
+          widget.videoId,
+          title: widget.title,
+          channel: widget.channel,
+        );
+      }),
+    );
   }
 
   @override
@@ -47,21 +79,23 @@ class _YouTubePrototypePageState extends ConsumerState<YouTubePrototypePage> {
     super.dispose();
   }
 
-  Future<void> _play() async {
+  Future<void> _watchLink() async {
     final id = youtubeVideoId(_link.text);
     setState(() => _linkProblem = id == null ? S.ytBadLink : null);
     if (id != null) {
+      _link.clear();
       await _controller.load(id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final status = ref.watch(youtubePrototypeProvider);
+    final status = ref.watch(youtubePlayerProvider);
     final open = ref.read(linkOpenerProvider);
     final player = _PlayerArea(status: status);
     if (status.fullScreen) {
-      // YouTube's own full-screen button: the player takes the whole page.
+      // YouTube's own full-screen button: the player takes the whole page;
+      // Esc (handled by YouTube) returns.
       return Scaffold(backgroundColor: Colors.black, body: player);
     }
     final error = status.errorCode;
@@ -74,7 +108,9 @@ class _YouTubePrototypePageState extends ConsumerState<YouTubePrototypePage> {
         : status.autoplayBlocked
         ? S.ytAutoplayBlocked
         : null;
-    final videoId = status.videoId;
+    final videoId = status.videoId ?? widget.videoId;
+    final title = status.title ?? '';
+    final channel = status.channel ?? '';
     return Scaffold(
       backgroundColor: NexaColors.background,
       body: SingleChildScrollView(
@@ -90,37 +126,26 @@ class _YouTubePrototypePageState extends ConsumerState<YouTubePrototypePage> {
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
                 const SizedBox(width: 12),
-                const Text(S.ytPrototype, style: NexaText.h2),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 760),
-              child: const Text(S.ytPrototypeInfo, style: NexaText.bodySecondary),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
+                const StatusBadge(label: 'YouTube', color: NexaColors.coral),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: TextField(
-                    key: const ValueKey('yt-link'),
-                    controller: _link,
-                    decoration: InputDecoration(
-                      hintText: S.ytLinkHint,
-                      errorText: _linkProblem,
-                    ),
-                    onSubmitted: (_) => _play(),
+                  child: Text(
+                    title.isEmpty ? S.ytPageTitle : title,
+                    key: const ValueKey('yt-title'),
+                    style: NexaText.h2,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 12),
-                NexaPillButton(
-                  label: S.ytLoad,
-                  icon: Icons.play_arrow_rounded,
-                  onPressed: status.unavailable == null ? _play : null,
-                  disabledReason: status.unavailable,
-                ),
               ],
             ),
+            if (channel.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 56),
+                child: Text(channel, style: NexaText.bodySecondary),
+              ),
+            ],
             const SizedBox(height: 16),
             player,
             const SizedBox(height: 12),
@@ -138,34 +163,50 @@ class _YouTubePrototypePageState extends ConsumerState<YouTubePrototypePage> {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const StatusBadge(label: 'YouTube', color: NexaColors.coral),
-                if (videoId != null)
-                  NexaTextLink(
-                    label: S.ytOpenOnYouTube,
-                    onTap: () => open(youtubeWatchUrl(videoId)),
-                  ),
+                NexaTextLink(
+                  key: const ValueKey('yt-open-on-youtube'),
+                  label: S.ytOpenOnYouTube,
+                  onTap: () => open(youtubeWatchUrl(videoId)),
+                ),
                 NexaTextLink(
                   label: S.ytTerms,
                   showArrow: false,
-                  onTap: () => open('https://www.youtube.com/t/terms'),
+                  onTap: () => open(youtubeTermsUrl),
                 ),
                 NexaTextLink(
                   label: S.ytGooglePrivacy,
                   showArrow: false,
-                  onTap: () => open('https://policies.google.com/privacy'),
+                  onTap: () => open(googlePrivacyUrl),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            const Text(S.ytLimits, style: NexaText.caption),
-            const SizedBox(height: 4),
-            Text(
-              'WebView2 ${status.runtimeVersion ?? '-'} - page '
-              '${status.pageOrigin ?? '-'} - state ${status.state} - '
-              'quality ${status.quality ?? '-'}',
-              key: const ValueKey('yt-diagnostics'),
-              style: NexaText.caption,
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const ValueKey('yt-page-link'),
+                    controller: _link,
+                    decoration: InputDecoration(
+                      hintText: S.ytLinkHint,
+                      errorText: _linkProblem,
+                      prefixIcon: const Icon(Icons.link_rounded),
+                    ),
+                    onSubmitted: (_) => _watchLink(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                NexaPillButton(
+                  label: S.ytWatch,
+                  icon: Icons.play_arrow_rounded,
+                  variant: PillVariant.secondary,
+                  onPressed: status.unavailable == null ? _watchLink : null,
+                  disabledReason: status.unavailable,
+                ),
+              ],
             ),
+            const SizedBox(height: 10),
+            const Text(S.ytLimits, style: NexaText.caption),
           ],
         ),
       ),
@@ -182,7 +223,7 @@ class _PlayerArea extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final embed = ref.read(youtubePrototypeProvider.notifier).embed;
+    final embed = ref.read(youtubePlayerProvider.notifier).embed;
     final ready = embed != null && status.unavailable == null;
     if (status.fullScreen && ready) {
       return SizedBox.expand(child: embed.view());

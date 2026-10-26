@@ -11,6 +11,7 @@ import '../../integrations/music_source.dart';
 import '../../ui/nexa_widgets.dart';
 import '../library/track_art.dart';
 import '../player/player_controller.dart';
+import '../youtube/youtube_discover.dart';
 import 'catalog_providers.dart';
 import 'discover_controller.dart';
 import 'source_attribution.dart';
@@ -33,6 +34,10 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     _query.dispose();
     super.dispose();
   }
+
+  /// YouTube is a section of its own (E2.3), never mixed into the
+  /// Audius / Jamendo results.
+  bool _youtube = false;
 
   void _search() => ref.read(discoverProvider.notifier).search(_query.text);
 
@@ -59,7 +64,28 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                   style: NexaText.bodySecondary,
                 ),
               ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _FilterChip(
+                    key: const ValueKey('discover-catalogs'),
+                    label: S.discoverCatalogs,
+                    selected: !_youtube,
+                    onTap: () => setState(() => _youtube = false),
+                  ),
+                  _FilterChip(
+                    key: const ValueKey('discover-youtube'),
+                    label: 'YouTube',
+                    selected: _youtube,
+                    onTap: () => setState(() => _youtube = true),
+                  ),
+                ],
+              ),
               const SizedBox(height: 18),
+              if (_youtube) const YouTubeDiscoverSection(),
+              if (!_youtube) ...[
               Row(
                 children: [
                   Expanded(
@@ -109,11 +135,13 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
               const SizedBox(height: 20),
               if (state.query.isEmpty)
                 const Text(S.discoverEmpty, style: NexaText.bodySecondary),
+              ],
             ],
           ),
         ),
         for (final s in sources)
-          if (state.query.isNotEmpty &&
+          if (!_youtube &&
+              state.query.isNotEmpty &&
               (state.filter == null || state.filter == s))
             ..._sourceSection(
               s,
@@ -188,6 +216,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
+    super.key,
     required this.label,
     required this.selected,
     required this.onTap,

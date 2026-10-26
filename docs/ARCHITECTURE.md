@@ -61,6 +61,8 @@ Rules:
 
 Gate result (2026-10-26): `E2_FEASIBILITY.md` - feasible with conditions; prototype E2.0 first (Referer / error 153, WebView2 texture rendering, media keys, pause on hide, package build).
 
+E2.0 accepted (2026-10-26); implementation E2.1-E2.5 (D-022): `PlaybackArbiter` (`lib/features/player/playback_arbiter.dart`) keeps NEXA's `PlaybackEngine` and the external YouTube player apart; YouTube code in `lib/integrations/youtube/` and `lib/features/youtube/`. User and update notes: `E2_YOUTUBE.md`.
+
 References: https://developers.google.com/youtube/iframe_api_reference, https://developers.google.com/youtube/terms/required-minimum-functionality, https://developers.google.com/youtube/terms/developer-policies
 
 ## Privacy and offline guarantees

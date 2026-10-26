@@ -53,4 +53,6 @@ abstract final class SettingKeys {
   static const String waveOnline = 'wave.online';
   static const String audiusEnabled = 'catalog.audius.enabled';
   static const String jamendoClientId = 'catalog.jamendo.clientId';
+  static const String youtubeEnabled = 'youtube.enabled';
+  static const String youtubeApiKey = 'youtube.apiKey';
 }

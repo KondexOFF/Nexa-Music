@@ -18,7 +18,7 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | Final stage — full Windows testing and fixes | **Accepted by the owner 2026-10-25**: 30 / 30 FT PASS (MAN-01..MAN-30 PASS, NEXA AutoTest 60 / 60) on the acceptance build `NEXA_Music_0.9.0_Windows_x64_13c260b` (commit 13c260b, app code 83346d1e171c). Defects found and fixed: TD-20, TD-22, TD-19, TD-04. Then version 1.0.0 prepared (D-020, `reports/RELEASE_1.0.0_READINESS.md`); publishing awaits the owner's permission | `dev/v1` |
 | Release v1.0.0 | **Published 2026-10-25** as a private GitHub release (tag `v1.0.0` on `0dcf12c`, `NEXA_Music_1.0.0_Windows_x64.zip`) | `dev/v1` |
 | E1 — NEXA Wave across catalogs (D-017, D-021) | **Accepted by the owner 2026-10-26** (manual E1-01..E1-05: 5 / 5 PASS; automatic checks in `reports/E1_REPORT.md`). Not merged into `dev/v1`, not pushed | `feature/e1-wave-catalogs` (local) |
-| E2 — YouTube official embedded player (CR-001) | Gate done (`docs/E2_FEASIBILITY.md`). **Prototype E2.0** (2026-10-26, owner order): R1–R5 PASS on Windows, recommendation GO with conditions, owner's manual check pending — `reports/E2_0_PROTOTYPE_REPORT.md`. E2.1–E2.5 not started; E2 not complete | `feature/e2-0-youtube-prototype` (local) |
+| E2 — YouTube official embedded player (CR-001) | Gate done; prototype E2.0 **accepted 2026-10-26** (R1–R5 PASS, manual M1–M4 PASS). **E2.1–E2.5 implemented** (D-022): awaiting the owner's manual acceptance — `reports/DEVELOPMENT_REPORT_E2.md`. E2 not complete until then | `feature/e2-youtube` (local) |
 | E3 — SoundCloud official widget (CR-002) | Approved, after E2 | |
 | E4 — Ports: macOS, Linux, Android, iOS/iPadOS, Web (CR-003) | Approved, after the Windows version | |
 
