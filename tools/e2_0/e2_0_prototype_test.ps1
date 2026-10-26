@@ -40,9 +40,12 @@ public static class E20Win {
   [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
   [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
   [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L, T, R, B; }
   [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
   [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
+  // A short Alt press lets this script bring NEXA to the front.
+  public static void AltTap() { keybd_event(0x12, 0, 0, UIntPtr.Zero); keybd_event(0x12, 0, 2, UIntPtr.Zero); }
   public static void MediaPlayPause() { keybd_event(0xB3, 0x22, 1, UIntPtr.Zero); keybd_event(0xB3, 0x22, 3, UIntPtr.Zero); }
 }
 '@
@@ -97,14 +100,17 @@ function Wait-YtState([int]$from, [int[]]$states, [int]$seconds) {
 # ---- Windows helpers ----
 $script:hwnd = [IntPtr]::Zero
 function Window { return $script:hwnd }
-function Front { [void][E20Win]::ShowWindow((Window), 9); [void][E20Win]::SetForegroundWindow((Window)); Start-Sleep -Milliseconds 400 }
+function Front { [void][E20Win]::ShowWindow((Window), 9); [E20Win]::AltTap(); [void][E20Win]::SetForegroundWindow((Window)); Start-Sleep -Milliseconds 400 }
 function Place([int]$w, [int]$h) { [void][E20Win]::ShowWindow((Window), 9); [void][E20Win]::SetWindowPos((Window), [IntPtr]::Zero, 40, 40, $w, $h, 0x0040); Start-Sleep -Milliseconds 600 }
-function Maximize { [void][E20Win]::ShowWindow((Window), 3); [void][E20Win]::SetForegroundWindow((Window)); Start-Sleep -Milliseconds 800 }
+function Maximize { [void][E20Win]::ShowWindow((Window), 3); [E20Win]::AltTap(); [void][E20Win]::SetForegroundWindow((Window)); Start-Sleep -Milliseconds 800 }
 function Shot([string]$name) {
     try {
         $r = New-Object E20Win+RECT; [void][E20Win]::GetWindowRect((Window), [ref]$r)
         $w = $r.R - $r.L; $h = $r.B - $r.T
         if ($w -le 0 -or $h -le 0) { return }
+        # Privacy: a screen copy is taken only while NEXA is the front window,
+        # never of another window that happens to cover it.
+        if ([E20Win]::GetForegroundWindow() -ne (Window)) { Say "  screenshot $name skipped: NEXA is not the front window"; return }
         $bmp = New-Object System.Drawing.Bitmap $w, $h
         $g = [System.Drawing.Graphics]::FromImage($bmp)
         $g.CopyFromScreen($r.L, $r.T, 0, 0, $bmp.Size)
