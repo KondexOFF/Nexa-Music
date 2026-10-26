@@ -147,6 +147,7 @@ class YouTubePrototypeController extends Notifier<YtStatus> {
       _emit('nexa', {'playing': playing});
       if (playing) {
         _youtubeLast = false;
+        _syncOverlay();
         if (state.active) {
           unawaited(_command({'cmd': 'pause'}, reason: 'nexa-started'));
         }
@@ -157,6 +158,27 @@ class YouTubePrototypeController extends Notifier<YtStatus> {
       unawaited(_log.close());
     });
     return const YtStatus();
+  }
+
+  /// While YouTube is what the user played last, the Windows media overlay
+  /// shows YouTube's state: Windows turns the Play/Pause key into "Play" or
+  /// "Pause" from the overlay, so a NEXA overlay saying "paused" while
+  /// YouTube plays would turn the key into a useless "Play".
+  void _syncOverlay() {
+    if (!ref.mounted) {
+      return;
+    }
+    ref
+        .read(mediaOverlayOverrideProvider.notifier)
+        .set(
+          _youtubeLast && _embed != null
+              ? (
+                  playing: state.active,
+                  title: S.ytOverlayTitle,
+                  artist: S.ytOverlayArtist,
+                )
+              : null,
+        );
   }
 
   void _emit(String type, [Map<String, Object?> data = const {}]) {
@@ -258,6 +280,7 @@ class YouTubePrototypeController extends Notifier<YtStatus> {
     _subs.clear();
     _embed = null;
     _youtubeLast = false;
+    _syncOverlay();
     await embed.dispose();
     _emit('closed');
     if (ref.mounted) {
@@ -276,6 +299,7 @@ class YouTubePrototypeController extends Notifier<YtStatus> {
     if (play) {
       await _pauseNexa('youtube-load');
       _youtubeLast = true;
+      _syncOverlay();
     }
     await _command({
       'cmd': 'load',
@@ -289,6 +313,7 @@ class YouTubePrototypeController extends Notifier<YtStatus> {
   Future<void> play() async {
     await _pauseNexa('youtube-play');
     _youtubeLast = true;
+    _syncOverlay();
     await _command({'cmd': 'play'}, reason: 'play');
   }
 
@@ -356,6 +381,7 @@ class YouTubePrototypeController extends Notifier<YtStatus> {
             unawaited(ref.read(playerProvider.notifier).pause());
           }
         }
+        _syncOverlay();
     }
   }
 

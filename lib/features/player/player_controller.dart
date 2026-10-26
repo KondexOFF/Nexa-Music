@@ -661,6 +661,29 @@ final mediaKeyRedirectProvider =
       MediaKeyRedirectController.new,
     );
 
+/// What the Windows media overlay shows.
+typedef MediaOverlay = ({bool playing, String title, String artist});
+
+/// Set while another visible player owns the media keys, so the Windows
+/// overlay shows that player's state. Windows turns the Play/Pause key into
+/// "Play" or "Pause" from the overlay's state, so the overlay must describe
+/// the player the key is meant for.
+class MediaOverlayOverrideController extends Notifier<MediaOverlay?> {
+  @override
+  MediaOverlay? build() => null;
+
+  void set(MediaOverlay? overlay) {
+    if (overlay != state) {
+      state = overlay;
+    }
+  }
+}
+
+final mediaOverlayOverrideProvider =
+    NotifierProvider<MediaOverlayOverrideController, MediaOverlay?>(
+      MediaOverlayOverrideController.new,
+    );
+
 /// Connects the Windows media keys and the Windows media overlay (System
 /// Media Transport Controls, see windows/runner/media_session.cpp) to the
 /// player: button presses come in, playing state and song go out (TD-06).
@@ -676,21 +699,33 @@ void bindMediaKeys(WidgetRef ref) {
   if (!Platform.isWindows || Platform.environment['FLUTTER_TEST'] == 'true') {
     return; // The media controls live in the Windows runner only.
   }
-  ref.listenManual(
-    playerProvider.select(
-      (p) => (p.playing, p.current?.title ?? '', p.current?.artist ?? ''),
-    ),
-    (previous, next) async {
-      try {
-        await channel.invokeMethod<bool>('update', {
-          'playing': next.$1,
-          'title': next.$2,
-          'artist': next.$3,
-        });
-      } on Object {
-        // The overlay is a convenience; playback never depends on it.
-      }
-    },
-    fireImmediately: true,
-  );
+  Future<void> push() async {
+    final p = ref.read(playerProvider);
+    final o =
+        ref.read(mediaOverlayOverrideProvider) ??
+        (
+          playing: p.playing,
+          title: p.current?.title ?? '',
+          artist: p.current?.artist ?? '',
+        );
+    try {
+      await channel.invokeMethod<bool>('update', {
+        'playing': o.playing,
+        'title': o.title,
+        'artist': o.artist,
+      });
+    } on Object {
+      // The overlay is a convenience; playback never depends on it.
+    }
+  }
+
+  ref
+    ..listenManual(
+      playerProvider.select(
+        (p) => (p.playing, p.current?.title ?? '', p.current?.artist ?? ''),
+      ),
+      (_, _) => push(),
+      fireImmediately: true,
+    )
+    ..listenManual(mediaOverlayOverrideProvider, (_, _) => push());
 }

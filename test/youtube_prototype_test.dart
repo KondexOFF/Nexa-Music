@@ -216,6 +216,33 @@ void main() {
     expect(await redirect('playPause'), isFalse);
   });
 
+  test('the Windows media overlay shows YouTube while YouTube was played '
+      'last, so Windows sends Pause / Play for the right player', () async {
+    MediaOverlay? overlay() => container.read(mediaOverlayOverrideProvider);
+    await yt().open();
+    expect(overlay(), isNull, reason: 'NEXA owns the overlay');
+    final redirect = container.read(mediaKeyRedirectProvider)!;
+
+    await yt().load('M7lc1UVf-VE');
+    embed.emit({'type': 'state', 'state': YtState.playing});
+    expect(overlay()?.playing, isTrue);
+    expect(overlay()?.title, S.ytOverlayTitle);
+    // Windows sends "Pause" for a playing overlay: YouTube pauses.
+    expect(await redirect('pause'), isTrue);
+    expect(embed.commands.last, 'pause');
+    embed.emit({'type': 'state', 'state': YtState.paused});
+    expect(overlay()?.playing, isFalse);
+    expect(await redirect('play'), isTrue);
+    expect(embed.commands.last, 'play');
+
+    await playLocal();
+    expect(overlay(), isNull, reason: 'NEXA played last again');
+    await yt().play();
+    expect(overlay(), isNotNull);
+    await yt().close();
+    expect(overlay(), isNull);
+  });
+
   test('player errors become plain messages', () async {
     await yt().open();
     embed.emit({'type': 'error', 'code': 153});

@@ -123,7 +123,9 @@ class YouTubeSelfTest {
           ),
         );
         await _waitFor(
-          () => _yt.embed != null || status().unavailable != null,
+          () =>
+              (_yt.embed != null && status().runtimeVersion != null) ||
+              status().unavailable != null,
           const Duration(seconds: 20),
         );
         _write('opened', {

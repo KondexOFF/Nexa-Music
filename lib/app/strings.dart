@@ -395,7 +395,10 @@ abstract final class S {
   static const String ytError100 =
       'The video was not found - it was removed or is private.';
   static const String ytErrorNotEmbeddable =
-      'The owner of this video does not allow it to be played in other apps.';
+      'This video cannot be played in other apps: its owner does not allow '
+      'it, or it is no longer available.';
+  static const String ytOverlayTitle = 'YouTube video';
+  static const String ytOverlayArtist = 'YouTube';
   static const String ytError153 =
       'YouTube did not accept NEXA\'s app identification (error 153).';
   static String ytErrorOther(int code) => 'YouTube player error $code.';
