@@ -1,0 +1,143 @@
+<!doctype html>
+<!--
+  NEXA Music - E2.0 prototype: the official YouTube IFrame Player API inside
+  WebView2. Served by WebView2 from the virtual host
+  https://com.kondexoff.nexamusic/ so that YouTube receives the application
+  identity in the HTTP Referer (YouTube API Services, Required Minimum
+  Functionality, "API Client Identity and Credentials").
+
+  Nothing is drawn over or around the player; the player, its controls,
+  branding and ads are YouTube's own. The player script is always loaded
+  from YouTube (never bundled), so it is the current version.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXA YouTube player</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  #player { position: absolute; inset: 0; width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div id="player"></div>
+<script>
+(function () {
+  'use strict';
+  var host = window.chrome && window.chrome.webview;
+  function send(type, data) {
+    var message = { type: type };
+    if (data) { for (var k in data) { message[k] = data[k]; } }
+    if (host) { host.postMessage(message); }
+  }
+
+  var player = null;
+  var pending = null;
+  var apiReady = false;
+  var ticker = null;
+
+  function info() {
+    if (!player || !player.getPlayerState) { return {}; }
+    try {
+      return {
+        state: player.getPlayerState(),
+        time: player.getCurrentTime(),
+        duration: player.getDuration(),
+        loaded: player.getVideoLoadedFraction(),
+        quality: player.getPlaybackQuality ? player.getPlaybackQuality() : null,
+        muted: player.isMuted(),
+        url: player.getVideoUrl()
+      };
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function startTicker() {
+    if (ticker) { return; }
+    ticker = setInterval(function () { send('tick', info()); }, 1000);
+  }
+
+  function create(cmd) {
+    var vars = { enablejsapi: 1, playsinline: 1, autoplay: 0 };
+    // The origin parameter only where the page has a real origin (the
+    // virtual host); a page loaded from a string has none.
+    if (location.protocol === 'https:') {
+      vars.origin = location.origin;
+      vars.widget_referrer = location.origin + '/';
+    }
+    player = new YT.Player('player', {
+      width: '100%',
+      height: '100%',
+      videoId: cmd.videoId,
+      playerVars: vars,
+      events: {
+        onReady: function () {
+          send('ready', info());
+          if (cmd.mute) { player.mute(); }
+          if (cmd.play) { player.playVideo(); }
+          startTicker();
+        },
+        onStateChange: function (e) {
+          var data = info();
+          data.state = e.data;
+          send('state', data);
+        },
+        onError: function (e) { send('error', { code: e.data }); },
+        onAutoplayBlocked: function () { send('autoplayBlocked'); },
+        onPlaybackQualityChange: function (e) {
+          send('quality', { quality: e.data });
+        }
+      }
+    });
+  }
+
+  function load(cmd) {
+    if (!apiReady) { pending = cmd; return; }
+    if (!player) { create(cmd); return; }
+    if (cmd.mute) { player.mute(); } else if (cmd.unmute) { player.unMute(); }
+    if (cmd.play) {
+      player.loadVideoById(cmd.videoId);
+    } else {
+      player.cueVideoById(cmd.videoId);
+    }
+  }
+
+  window.onYouTubeIframeAPIReady = function () {
+    apiReady = true;
+    send('api');
+    if (pending) { var cmd = pending; pending = null; create(cmd); }
+  };
+
+  if (host) {
+    host.addEventListener('message', function (event) {
+      var cmd = event.data || {};
+      switch (cmd.cmd) {
+        case 'load': load(cmd); break;
+        case 'play': if (player) { player.playVideo(); } break;
+        case 'pause': if (player) { player.pauseVideo(); } break;
+        case 'stop': if (player) { player.stopVideo(); } break;
+        case 'mute': if (player) { player.mute(); } break;
+        case 'unmute': if (player) { player.unMute(); } break;
+        case 'info': send('info', info()); break;
+      }
+    });
+  }
+
+  send('page', {
+    origin: location.origin,
+    href: location.href,
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    userAgent: navigator.userAgent
+  });
+
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  tag.onerror = function () { send('apiLoadError'); };
+  document.head.appendChild(tag);
+})();
+</script>
+</body>
+</html>

@@ -644,12 +644,33 @@ final playerProvider = NotifierProvider<PlayerController, PlayerState>(
   PlayerController.new,
 );
 
+/// Handles a Windows media key before NEXA's own player does; returns true
+/// when it took the key. Set only while another visible player owns the
+/// keys (E2.0 prototype: the YouTube page).
+typedef MediaKeyRedirect = Future<bool> Function(String key);
+
+class MediaKeyRedirectController extends Notifier<MediaKeyRedirect?> {
+  @override
+  MediaKeyRedirect? build() => null;
+
+  void set(MediaKeyRedirect? redirect) => state = redirect;
+}
+
+final mediaKeyRedirectProvider =
+    NotifierProvider<MediaKeyRedirectController, MediaKeyRedirect?>(
+      MediaKeyRedirectController.new,
+    );
+
 /// Connects the Windows media keys and the Windows media overlay (System
 /// Media Transport Controls, see windows/runner/media_session.cpp) to the
 /// player: button presses come in, playing state and song go out (TD-06).
 void bindMediaKeys(WidgetRef ref) {
   const channel = MethodChannel('nexa/media_keys');
   channel.setMethodCallHandler((call) async {
+    final redirect = ref.read(mediaKeyRedirectProvider);
+    if (redirect != null && await redirect(call.method)) {
+      return;
+    }
     await ref.read(playerProvider.notifier).handleMediaKey(call.method);
   });
   if (!Platform.isWindows || Platform.environment['FLUTTER_TEST'] == 'true') {

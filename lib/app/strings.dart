@@ -367,6 +367,44 @@ abstract final class S {
       'Skipped "$title": the stream is not available';
   static const String noPlayableStream = 'No playable song in the queue';
 
+  // E2.0 YouTube prototype (developer tool, not a product feature yet)
+  static const String ytPrototype = 'YouTube prototype (E2.0)';
+  static const String ytPrototypeInfo =
+      'Technical test of the official YouTube player inside NEXA (WebView2). '
+      'Paste a YouTube link; the video plays in YouTube\'s own visible '
+      'player with its controls and ads. It pauses when the window is '
+      'minimised or this page is closed, and never plays together with '
+      'NEXA. Not saved, not in the history or NEXA Wave.';
+  static const String ytOpenPrototype = 'Open YouTube prototype';
+  static const String ytLinkHint = 'Paste a YouTube link';
+  static const String ytLoad = 'Play';
+  static const String ytBadLink = 'This is not a link to one YouTube video.';
+  static const String ytOpenOnYouTube = 'Open on YouTube';
+  static const String ytBack = 'Back';
+  static const String ytStarting = 'Starting the YouTube player...';
+  static String ytUnavailable(String why) =>
+      'The YouTube player cannot run here: $why';
+  static const String ytApiLoadFailed =
+      'Cannot reach YouTube. Check the internet connection - your library '
+      'keeps working.';
+  static const String ytAutoplayBlocked =
+      'Press play in the YouTube player to start the video.';
+  static const String ytError2 = 'The link has an invalid video id.';
+  static const String ytError5 =
+      'This video cannot be played in the embedded player.';
+  static const String ytError100 =
+      'The video was not found - it was removed or is private.';
+  static const String ytErrorNotEmbeddable =
+      'The owner of this video does not allow it to be played in other apps.';
+  static const String ytError153 =
+      'YouTube did not accept NEXA\'s app identification (error 153).';
+  static String ytErrorOther(int code) => 'YouTube player error $code.';
+  static const String ytLimits =
+      'Prototype: no background playback, no queue, no crossfade, nothing '
+      'saved. YouTube Terms of Service apply.';
+  static const String ytTerms = 'YouTube Terms of Service';
+  static const String ytGooglePrivacy = 'Google Privacy Policy';
+
   // Privacy settings (Phase 5)
   static const String historyConsent = 'Keep listening history';
   static const String historyConsentInfo =
