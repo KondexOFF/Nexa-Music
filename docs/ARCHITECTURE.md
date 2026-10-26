@@ -59,6 +59,8 @@ Rules:
 4. Search only with the owner's own YouTube Data API key and quota; otherwise pasted links.
 5. Never `yt-dlp`, unofficial endpoints, audio extraction, download or a hidden player. If the gate fails: browser fallback only, and the owner is told.
 
+Gate result (2026-10-26): `E2_FEASIBILITY.md` - feasible with conditions; prototype E2.0 first (Referer / error 153, WebView2 texture rendering, media keys, pause on hide, package build).
+
 References: https://developers.google.com/youtube/iframe_api_reference, https://developers.google.com/youtube/terms/required-minimum-functionality, https://developers.google.com/youtube/terms/developer-policies
 
 ## Privacy and offline guarantees

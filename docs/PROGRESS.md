@@ -53,6 +53,8 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 
 ## Log
 
+- 2026-10-26 — **E2 feasibility gate** (YouTube, owner order): research of the YouTube API Services Developer Policies and Required Minimum Functionality (2026-10-15), the IFrame Player API (error 153 since July 2025: client identity via HTTP Referer), Data API quota (100 search calls per day by default) and Flutter / WebView2 options. Result in `docs/E2_FEASIBILITY.md`: feasible with conditions; a throwaway prototype E2.0 for five technical risks is proposed before any integration. No YouTube code in the app; local branch `feature/e2-youtube-gate`.
+
 - 2026-10-26 — **E1 accepted** by the owner: manual checks E1-01..E1-05 PASS (5 / 5) on the Portable build of `417c51c`. Branch `feature/e1-wave-catalogs` checked (clean); release v1.0.0 on GitHub unchanged (tag `v1.0.0` -> `0dcf12c`, ZIP SHA-256 unchanged). No push, no merge. Known limits of E1: Wave needs at least one library song; Jamendo needs the owner's client id; Audius may require a key in future; genre matching uses the Audius genre list / Jamendo tags; catalog songs cannot be liked, saved or kept in the history, "Not for me" lasts until NEXA closes; AutoTest playback / mix groups were not repeated on the E1 build.
 
 - 2026-10-25 — **E1 started** on the local branch `feature/e1-wave-catalogs` (owner order after the private release v1.0.0): terms review of Audius and Jamendo, plan in `docs/E1_PLAN.md`, decision D-021. Online Wave picks behind an opt-in switch; see `reports/E1_REPORT.md` for results.
