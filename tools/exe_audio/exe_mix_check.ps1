@@ -179,9 +179,11 @@ INSERT OR REPLACE INTO app_settings (key, value) VALUES ('mix.mode', '$($sc.mode
             if (-not $pl) { $detail = 'playlist "Mix Check" not found in the window' }
             else {
                 [MixUi]::Click($pl); Start-Sleep -Seconds 2
-                # The song row on the playlist page (not the sidebar entry).
-                $row = [MixUi]::All($view) | Where-Object { $_.W -gt 0 -and $_.Label -like "*$($sc.a)*" } |
+                # The song row on the playlist page: one row high (not the whole
+                # list, whose label contains every song), widest such node.
+                $row = [MixUi]::All($view) | Where-Object { $_.W -gt 200 -and $_.H -gt 20 -and $_.H -lt 120 -and $_.Label -like "*$($sc.a)*" -and $_.Label -notlike "*$($sc.b)*" } |
                     Sort-Object W -Descending | Select-Object -First 1
+                if ($row) { Add-Content -Path (Join-Path $out 'clicked.txt') -Value "clicked: '$($row.Label)' at $($row.X),$($row.Y) size $($row.W)x$($row.H)" -Encoding UTF8 }
                 if (-not $row) { $detail = "song '$($sc.a)' not found on the playlist page" }
                 else {
                     $wav = Join-Path $out 'recording.wav'
@@ -200,7 +202,7 @@ INSERT OR REPLACE INTO app_settings (key, value) VALUES ('mix.mode', '$($sc.mode
                         else {
                             $m = $line | ConvertFrom-Json
                             $status = if ($m.ok) { 'PASS' } else { 'FAIL' }
-                            $detail = "overlap $([math]::Round($m.overlap, 2)) s, gap $([math]::Round($m.gap, 3)) s, peak $([math]::Round($m.peak, 3)), level $([math]::Round($m.minLevelRatio, 2))-$([math]::Round($m.maxLevelRatio, 2)), A last $([math]::Round($m.lastA, 2)) s, B first $([math]::Round($m.firstB, 2)) s, both heard $($m.found)"
+                            $detail = "overlap $([math]::Round($m.overlapSeconds, 2)) s, gap $([math]::Round($m.gapSeconds, 3)) s, peak $([math]::Round($m.peak, 3)), level $([math]::Round($m.minLevelRatio, 2))-$([math]::Round($m.maxLevelRatio, 2)), A last $([math]::Round($m.lastA, 2)) s, B first $([math]::Round($m.firstB, 2)) s, both heard $($m.found)"
                             $build[$name] = [ordered]@{ status = $status; detail = $detail; measure = $m; recorder = ((Get-Content $rlog -ErrorAction SilentlyContinue) -join ' ') }
                         }
                     }
