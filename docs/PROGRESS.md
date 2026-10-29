@@ -18,9 +18,14 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 | Final stage — full Windows testing and fixes | **Accepted by the owner 2026-10-25**: 30 / 30 FT PASS (MAN-01..MAN-30 PASS, NEXA AutoTest 60 / 60) on the acceptance build `NEXA_Music_0.9.0_Windows_x64_13c260b` (commit 13c260b, app code 83346d1e171c). Defects found and fixed: TD-20, TD-22, TD-19, TD-04. Then version 1.0.0 prepared (D-020, `reports/RELEASE_1.0.0_READINESS.md`); publishing awaits the owner's permission | `dev/v1` |
 | Release v1.0.0 | **Published 2026-10-25** as a private GitHub release (tag `v1.0.0` on `0dcf12c`, `NEXA_Music_1.0.0_Windows_x64.zip`) | `dev/v1` |
 | E1 — NEXA Wave across catalogs (D-017, D-021) | **Accepted by the owner 2026-10-26** (manual E1-01..E1-05: 5 / 5 PASS; automatic checks in `reports/E1_REPORT.md`). Not merged into `dev/v1`, not pushed | `feature/e1-wave-catalogs` (local) |
-| E2 — YouTube official embedded player (CR-001) | Gate done; prototype E2.0 **accepted 2026-10-26** (R1–R5 PASS, manual M1–M4 PASS). **E2.1–E2.5 implemented** (D-022): awaiting the owner's manual acceptance — `reports/DEVELOPMENT_REPORT_E2.md`. E2 not complete until then | `feature/e2-youtube` (local) |
-| E3 — SoundCloud official widget (CR-002) | Approved, after E2 | |
-| E4 — Ports: macOS, Linux, Android, iOS/iPadOS, Web (CR-003) | Approved, after the Windows version | |
+| E2 — YouTube official embedded player (CR-001) | Gate done; prototype E2.0 accepted 2026-10-26. E2.1–E2.5 implemented (D-022), automatic checks PASS — **awaiting the owner's manual acceptance E2-01…E2-07** (E2-06 without an own key = SKIPPED). E2 not complete until then. Next stages: Master Plan section 10 (D-023, approved 2026-10-29), not started before E2 acceptance | `feature/e2-youtube` (local) |
+| E2.6 — YouTube mini-player (D-023) | Planned; after the owner's E2 acceptance (Master Plan section 10) | |
+| E2.7a / E2.7b — favorites, playlists, bookmarks; history, Recently Played, Continue Listening (D-023) | Planned | |
+| E2.8 — one queue for all sources (D-023) | Planned; after E2.6, E2.7a | |
+| X1 — experiment: uBlock Origin Lite in WebView2 (D-023; violates YouTube API terms, not an official integration) | Planned; separate experimental branch, off by default, not merged without the owner's decision | |
+| E3 — SoundCloud official widget (CR-002) | Approved; after E2.6 and E2.8 (mini-player and queue reused) | |
+| E5 — final visual polish of all sections; E6 — full regression and stable Windows release 1.1.0 (D-023) | Planned | |
+| E4 — Ports: macOS, Linux, Android, iOS/iPadOS, Web (CR-003) | Approved; **after the Windows 1.1.0 release** (D-023), never blocks it | |
 
 Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITECTURE.md`.
 
@@ -53,6 +58,7 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 
 ## Log
 
+- 2026-10-29 — **Master Plan extension D-023 approved** (owner, after corrections): complete everyday player — E2.6 mini-player, E2.7a favorites / playlists / bookmarks with safe migration, E2.7b history, E2.8 one queue, X1 uBlock Origin Lite experiment (separate branch, off by default; violates YouTube API terms, not an official integration), E3 SoundCloud, E5 polish, E6 stable Windows 1.1.0, then E4 ports. Master Plan section 10, D-023. No implementation before the owner's E2 acceptance.
 - 2026-10-26 — **E2.0 YouTube prototype** (owner order): official IFrame Player in WebView2 (`webview_flutter_windows` 1.3.0, virtual host `https://com.kondexoff.nexamusic` as client identity) on a separate Settings page. Automated Windows runs on Portable builds `404d8a9` and `e3e1ec1`: R1 (3 videos, no error 153; negative control without identity gives 153), R2 (300 s, hd1080, 0 stalls, CPU ~1.4 %), R4 (pause on minimise / page leave, never both playing) and R5 (Release build, plugin DLLs, clean profile, 0 crashes) PASS; R3 failed in the first run (the Windows overlay showed NEXA as paused, so the Play/Pause key became "Play") and passes after the fix (overlay follows YouTube while it was played last). analyze 0, 190 / 190 tests. Report `reports/E2_0_PROTOTYPE_REPORT.md`; not pushed, not merged.
 - 2026-10-26 — **E2 feasibility gate** (YouTube, owner order): research of the YouTube API Services Developer Policies and Required Minimum Functionality (2026-10-15), the IFrame Player API (error 153 since July 2025: client identity via HTTP Referer), Data API quota (100 search calls per day by default) and Flutter / WebView2 options. Result in `docs/E2_FEASIBILITY.md`: feasible with conditions; a throwaway prototype E2.0 for five technical risks is proposed before any integration. No YouTube code in the app; local branch `feature/e2-youtube-gate`.
 
