@@ -106,8 +106,11 @@ class FakeEngine implements PlaybackEngine {
   @override
   Future<void> setDevice(OutputDevice d) async => device = d;
 
+  bool disposed = false;
+
   @override
   Future<void> dispose() async {
+    disposed = true;
     await _states.close();
     await _completed.close();
     await _errors.close();

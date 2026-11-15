@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui' show AppExitResponse;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +16,7 @@ import '../../features/discover/discover_page.dart';
 import '../../features/pages/settings_page.dart';
 import '../../features/player/now_playing_page.dart';
 import '../../features/player/up_next_card.dart';
+import '../../features/youtube/youtube_player_controller.dart';
 import '../navigation.dart';
 import '../theme/tokens.dart';
 import 'bottom_player.dart';
@@ -33,6 +37,38 @@ class AppShell extends ConsumerStatefulWidget {
 
 class _AppShellState extends ConsumerState<AppShell> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  AppLifecycleListener? _exit;
+
+  /// Closing the window: stop and release the audio players (libmpv) and
+  /// the YouTube web view before the Flutter engine shuts down. Without this
+  /// libmpv threads could still deliver events into the stopped engine and
+  /// crash the process on exit (access violation seen 2026-10-29 when NEXA
+  /// was closed while a song played).
+  Future<AppExitResponse> _beforeExit() async {
+    try {
+      await ref
+          .read(youtubePlayerProvider.notifier)
+          .close()
+          .timeout(const Duration(seconds: 2));
+    } on Object {
+      // Nothing open, or WebView2 already gone.
+    }
+    try {
+      await ref
+          .read(playbackEngineProvider)
+          .dispose()
+          .timeout(const Duration(seconds: 3));
+    } on Object {
+      // Exit anyway; the operating system frees what is left.
+    }
+    return AppExitResponse.exit;
+  }
+
+  @override
+  void dispose() {
+    _exit?.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -44,6 +80,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       }
     });
     bindMediaKeys(ref);
+    _exit = AppLifecycleListener(onExitRequested: _beforeExit);
   }
 
   @override
