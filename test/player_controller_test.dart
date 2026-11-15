@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/core/models/track.dart';
+import 'package:nexa_music/core/database/app_database.dart';
+import 'package:nexa_music/core/settings/settings_provider.dart';
+import 'package:nexa_music/core/settings/settings_repository.dart';
+import 'package:nexa_music/features/library/library_providers.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
 import 'package:nexa_music/features/youtube/youtube_track.dart';
 import 'package:path/path.dart' as p;
@@ -197,25 +201,201 @@ void main() {
     expect(state().current!.title, 'Song 1');
   });
 
-  test('YouTube entries open in YouTube\'s player, never in the queue (E2.7)',
-      () async {
-    final opened = <String>[];
-    container
-        .read(externalTrackLauncherProvider.notifier)
-        .set((t) async => opened.add(t.sourceTrackId));
-    final local = makeTracks(2);
-    final video = youtubeTrack(videoId: 'dQw4w9WgXcQ', title: 'Video');
-    final mixed = [local[0], video, local[1]];
+  group('one queue for all sources (E2.8)', () {
+    late _FakeExternal yt;
 
-    await player().playTracks(mixed, start: 1);
-    expect(opened, ['dQw4w9WgXcQ']);
-    expect(engine.loads, isEmpty);
+    setUp(() {
+      yt = _FakeExternal();
+      container.read(externalQueuePlayerProvider.notifier).set(yt);
+    });
 
-    await player().playTracks(mixed, start: 2);
-    expect(state().queue.map((e) => e.track.title), ['Song 1', 'Song 2']);
-    expect(state().current!.title, 'Song 2');
-    player().addToQueue([video]);
-    player().playNext([video]);
-    expect(state().queue, hasLength(2));
+    Track video(String id) => youtubeTrack(videoId: id, title: 'Video $id');
+
+    test('Local -> YouTube -> Local plays in order, one sound at a time',
+        () async {
+      final local = makeTracks(2);
+      final v = video('dQw4w9WgXcQ');
+      await player().playTracks([local[0], v, local[1]]);
+      expect(engine.loads, [local[0].path]);
+
+      engine.finishCurrent();
+      await flush();
+      expect(yt.started, ['dQw4w9WgXcQ']);
+      expect(state().current!.title, 'Video dQw4w9WgXcQ');
+      expect(engine.activeFiles, 0, reason: 'NEXA stopped for YouTube');
+      expect(state().upNext.single.track.title, 'Song 2');
+
+      // YouTube plays; the transport and the queue follow it.
+      yt.active = true;
+      player().externalStatus('dQw4w9WgXcQ', active: true);
+      expect(state().sounding, isTrue);
+      await player().togglePlay();
+      expect(yt.pauses, 1);
+
+      // The video ends: the queue goes on with NEXA's engine.
+      await player().externalEnded('dQw4w9WgXcQ');
+      await flush();
+      expect(engine.loads, [local[0].path, local[1].path]);
+      expect(state().current!.title, 'Song 2');
+    });
+
+    test('a video watched on its own never moves the queue', () async {
+      final local = makeTracks(1);
+      final v = video('dQw4w9WgXcQ');
+      await player().playTracks([v, local[0]]);
+      expect(yt.started, ['dQw4w9WgXcQ']);
+      // The user watches something else in the YouTube player.
+      player().externalStatus('M7lc1UVf-VE', active: true);
+      await player().externalEnded('M7lc1UVf-VE');
+      await player().externalEnded('dQw4w9WgXcQ');
+      expect(state().current!.title, 'Video dQw4w9WgXcQ');
+      expect(engine.loads, isEmpty);
+      // Play starts the queue's video again.
+      await player().togglePlay();
+      expect(yt.started, ['dQw4w9WgXcQ', 'dQw4w9WgXcQ']);
+    });
+
+    test('autoplay blocked: the queue waits for Continue', () async {
+      final local = makeTracks(1);
+      await player().playTracks([video('dQw4w9WgXcQ'), local[0]]);
+      player().externalStatus('dQw4w9WgXcQ', active: false, blocked: true);
+      expect(state().waitingForUser, isTrue);
+      expect(state().current!.title, 'Video dQw4w9WgXcQ');
+      await player().togglePlay();
+      expect(yt.resumes, 1);
+      expect(state().waitingForUser, isFalse);
+      expect(engine.loads, isEmpty, reason: 'nothing skipped');
+    });
+
+    test('an unplayable video is skipped with its reason, never silently',
+        () async {
+      final local = makeTracks(1);
+      await player().playTracks([video('dQw4w9WgXcQ'), local[0]]);
+      final uid = state().currentEntry!.uid;
+      await player().externalFailed('dQw4w9WgXcQ', 'removed by the owner');
+      await flush();
+      expect(state().skipped[uid], 'removed by the owner');
+      expect(state().notice, contains('removed by the owner'));
+      expect(state().current!.title, 'Song 1');
+      expect(engine.loads, [local[0].path]);
+    });
+
+    test('no YouTube player: marked and skipped', () async {
+      container.read(externalQueuePlayerProvider.notifier).set(null);
+      final local = makeTracks(1);
+      await player().playTracks([video('dQw4w9WgXcQ'), local[0]]);
+      expect(state().current!.title, 'Song 1');
+      expect(state().skipped.values.single, isNotEmpty);
+    });
+
+    test('next entry YouTube: no crossfade into it', () async {
+      final local = makeTracks(1);
+      await player().playTracks([local[0], video('dQw4w9WgXcQ')]);
+      await flush();
+      expect(engine.preparedPath, isNull);
+    });
+
+    test('the queue comes back after a restart (not playing)', () async {
+      final local = makeTracks(2);
+      await player().playTracks([local[0], video('dQw4w9WgXcQ'), local[1]]);
+      engine.finishCurrent();
+      for (var i = 0; i < 5; i++) {
+        await flush();
+      }
+      final saved = await container
+          .read(settingsRepositoryProvider)
+          .getString(SettingKeys.queue);
+      expect(saved, isNotNull);
+
+      // A new start with the same database.
+      final db = memoryDatabase();
+      addTearDown(db.close);
+      for (final t in local) {
+        await db
+            .into(db.tracks)
+            .insert(
+              TracksCompanion.insert(
+                pathKey: t.path.toLowerCase(),
+                path: t.path,
+                title: t.title,
+                artist: t.artist,
+                album: t.album,
+                fileSize: 1,
+                fileModified: DateTime(2026),
+                searchText: t.title.toLowerCase(),
+                addedAt: DateTime(2026),
+              ),
+            );
+      }
+      // Library ids 1 and 2 are the same songs in the new database.
+      await SettingsRepository(db).setString(SettingKeys.queue, saved!);
+      final engine2 = FakeEngine();
+      final c2 = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          ...testOverrides(engine: engine2).skip(1),
+        ],
+      );
+      addTearDown(c2.dispose);
+      c2.read(playerProvider);
+      for (var i = 0; i < 5; i++) {
+        await flush();
+      }
+      final restored = c2.read(playerProvider);
+      expect(restored.queue.map((e) => e.track.title), [
+        'Song 1',
+        'Video dQw4w9WgXcQ',
+        'Song 2',
+      ]);
+      expect(restored.cursor, 1);
+      expect(restored.playing, isFalse);
+      expect(engine2.loads, isEmpty);
+    });
+
+    test('queue actions accept every source; repeat and shuffle keep them',
+        () async {
+      final local = makeTracks(3);
+      await player().playTracks(local);
+      player().addToQueue([video('aaaaaaaaaaa')]);
+      player().playNext([video('bbbbbbbbbbb')]);
+      expect(state().queue.map((e) => e.track.title), [
+        'Song 1',
+        'Video bbbbbbbbbbb',
+        'Song 2',
+        'Song 3',
+        'Video aaaaaaaaaaa',
+      ]);
+      await player().toggleShuffle();
+      expect(state().queue, hasLength(5));
+      await player().toggleShuffle();
+      expect(state().queue.map((e) => e.track.title).toList()[1],
+          'Video bbbbbbbbbbb');
+    });
   });
+}
+
+class _FakeExternal implements QueueExternalPlayer {
+  final List<String> started = [];
+  int pauses = 0;
+  int resumes = 0;
+  @override
+  bool active = false;
+
+  @override
+  Future<String?> start(Track track) async {
+    started.add(track.sourceTrackId);
+    return null;
+  }
+
+  @override
+  Future<void> pause() async {
+    pauses++;
+    active = false;
+  }
+
+  @override
+  Future<void> resume() async {
+    resumes++;
+    active = true;
+  }
 }

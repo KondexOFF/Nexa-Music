@@ -17,6 +17,8 @@ import '../../core/settings/settings_repository.dart';
 import '../mix_engine/mix_settings.dart';
 import '../nexa_dna/dna_providers.dart';
 import '../mix_engine/transition_planner.dart';
+import '../library/library_providers.dart';
+import 'queue_store.dart';
 
 enum PlayerRepeat { off, all, one }
 
@@ -42,6 +44,9 @@ class PlayerState {
     this.context = PlayContext.library,
     this.notice,
     this.noticeId = 0,
+    this.skipped = const {},
+    this.externalActive = false,
+    this.waitingForUser = false,
   });
 
   /// Queue in play order (shuffled when [shuffle] is on).
@@ -61,6 +66,21 @@ class PlayerState {
   /// Last message for the user (e.g. a skipped missing file).
   final String? notice;
   final int noticeId;
+
+  /// Entries that could not be played, with the reason (shown in the
+  /// queue; E2.8: never skipped silently).
+  final Map<int, String> skipped;
+
+  /// The current entry plays in a visible external player (YouTube) and
+  /// makes sound.
+  final bool externalActive;
+
+  /// The external player could not start the current entry by itself
+  /// (autoplay blocked): the queue waits for "Continue".
+  final bool waitingForUser;
+
+  /// Playing, by NEXA's engine or the visible external player.
+  bool get sounding => playing || externalActive;
 
   QueueEntry? get currentEntry =>
       cursor >= 0 && cursor < queue.length ? queue[cursor] : null;
@@ -95,6 +115,9 @@ class PlayerState {
     PlayContext? context,
     String? notice,
     int? noticeId,
+    Map<int, String>? skipped,
+    bool? externalActive,
+    bool? waitingForUser,
   }) => PlayerState(
     queue: queue ?? this.queue,
     cursor: cursor ?? this.cursor,
@@ -106,6 +129,9 @@ class PlayerState {
     context: context ?? this.context,
     notice: notice ?? this.notice,
     noticeId: noticeId ?? this.noticeId,
+    skipped: skipped ?? this.skipped,
+    externalActive: externalActive ?? this.externalActive,
+    waitingForUser: waitingForUser ?? this.waitingForUser,
   );
 }
 
@@ -151,6 +177,10 @@ class PlayerController extends Notifier<PlayerState> {
   /// soon as a song really plays.
   int _failedStreams = 0;
 
+  /// The queue entry handed to the external player (E2.8); null when the
+  /// external player shows something else (or nothing).
+  int? _externalUid;
+
   @override
   PlayerState build() {
     _engine = ref.watch(playbackEngineProvider);
@@ -190,6 +220,12 @@ class PlayerController extends Notifier<PlayerState> {
           previous.repeat != next.repeat) {
         unawaited(_prepareNext());
       }
+      if (_queueRestored &&
+          (previous == null ||
+              !identical(previous.queue, next.queue) ||
+              previous.cursor != next.cursor)) {
+        unawaited(_saveQueue(next));
+      }
     });
     unawaited(_restoreSettings());
     return const PlayerState();
@@ -217,8 +253,47 @@ class PlayerController extends Notifier<PlayerState> {
       if (device != null && device != 'auto') {
         await _engine.setDevice(OutputDevice(device, ''));
       }
+      await _restoreQueue();
     } on Object {
       // Settings are a convenience; defaults are fine.
+    }
+    _queueRestored = true;
+    if (ref.mounted && state.queue.isNotEmpty) {
+      unawaited(_saveQueue(state)); // Started before the restore finished.
+    }
+  }
+
+  bool _queueRestored = false;
+
+  /// E2.8: the queue of the last session comes back (not playing).
+  Future<void> _restoreQueue() async {
+    final snapshot = await QueueSnapshot.decode(
+      await _settings.getString(SettingKeys.queue),
+      ref.read(libraryRepositoryProvider).getTrack,
+    );
+    if (!ref.mounted || snapshot == null || snapshot.tracks.isEmpty) {
+      return;
+    }
+    if (state.queue.isNotEmpty) {
+      return; // Something was started meanwhile.
+    }
+    final entries = _entries(snapshot.tracks);
+    _original = entries;
+    state = state.copyWith(queue: entries, cursor: snapshot.cursor);
+  }
+
+  Future<void> _saveQueue(PlayerState s) async {
+    try {
+      await _settings.setString(
+        SettingKeys.queue,
+        QueueSnapshot(
+          tracks: [for (final e in s.queue) e.track],
+          cursor: s.cursor,
+          savedAt: DateTime.now(),
+        ).encode(),
+      );
+    } on Object {
+      // Closing, or no database (tests): the queue is a convenience.
     }
   }
 
@@ -229,7 +304,7 @@ class PlayerController extends Notifier<PlayerState> {
       return; // Prepared again after the current file is loaded.
     }
     final next = state.nextEntry?.track;
-    if (next == null || !_playable(next)) {
+    if (next == null || !next.rights.play || !_playable(next)) {
       await _engine.prepareNext(null, TransitionPlan.cut);
       return;
     }
@@ -250,8 +325,11 @@ class PlayerController extends Notifier<PlayerState> {
     _beginListening();
   }
 
-  /// Local files must exist; catalog streams are checked by the engine.
-  static bool _playable(Track t) => t.isOnline || File(t.path).existsSync();
+  /// Local files must exist; catalog streams are checked by the engine;
+  /// YouTube needs its visible player.
+  bool _playable(Track t) => t.source.isExternal
+      ? ref.read(externalQueuePlayerProvider) != null
+      : t.isOnline || File(t.path).existsSync();
 
   // ---- listening history (NEXA DNA, recorded only with consent) ----
 
@@ -321,18 +399,6 @@ class PlayerController extends Notifier<PlayerState> {
     if (tracks.isEmpty) {
       return;
     }
-    // YouTube entries play only in YouTube's own visible player (E2.7);
-    // NEXA's engine queue takes the files and streams.
-    final picked = tracks[start.clamp(0, tracks.length - 1)];
-    if (picked.source.isExternal) {
-      await ref.read(externalTrackLauncherProvider)?.call(picked);
-      return;
-    }
-    if (tracks.any((t) => !t.rights.play)) {
-      final playable = [for (final t in tracks) if (t.rights.play) t];
-      start = playable.indexOf(picked);
-      tracks = playable;
-    }
     _endListening(EndReason.skipped);
     final entries = _entries(tracks);
     _original = entries;
@@ -349,7 +415,6 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// Plays [tracks] in random order.
   Future<void> shuffleTracks(List<Track> tracks) async {
-    tracks = [for (final t in tracks) if (t.rights.play) t];
     if (tracks.isEmpty) {
       return;
     }
@@ -364,7 +429,7 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// Inserts [tracks] right after the current song.
   void playNext(List<Track> tracks) {
-    final entries = _entries([for (final t in tracks) if (t.rights.play) t]);
+    final entries = _entries(tracks);
     final at = state.cursor + 1;
     final queue = [...state.queue]..insertAll(at, entries);
     final currentUid = state.currentEntry?.uid;
@@ -380,7 +445,7 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// Appends [tracks] to the end of the queue.
   void addToQueue(List<Track> tracks) {
-    final entries = _entries([for (final t in tracks) if (t.rights.play) t]);
+    final entries = _entries(tracks);
     _original = [..._original, ...entries];
     state = state.copyWith(queue: [...state.queue, ...entries]);
     if (state.cursor < 0) {
@@ -430,6 +495,21 @@ class PlayerController extends Notifier<PlayerState> {
       }
       return;
     }
+    if (state.current!.source.isExternal) {
+      final ext = ref.read(externalQueuePlayerProvider);
+      if (ext == null) {
+        return;
+      }
+      if (_externalUid != state.currentEntry!.uid) {
+        await _loadCurrent(play: true); // e.g. after a restart
+      } else if (ext.active) {
+        await ext.pause();
+      } else {
+        state = state.copyWith(waitingForUser: false);
+        await ext.resume();
+      }
+      return;
+    }
     if (_engine.state.path == null) {
       // Stopped at the end of the queue: start the current song again.
       await _loadCurrent(play: true);
@@ -440,13 +520,27 @@ class PlayerController extends Notifier<PlayerState> {
     }
   }
 
-  Future<void> pause() => _engine.pause();
+  Future<void> pause() async {
+    if (_currentIsExternal) {
+      await ref.read(externalQueuePlayerProvider)?.pause();
+      return;
+    }
+    await _engine.pause();
+  }
 
   Future<void> stop() async {
+    if (_currentIsExternal) {
+      await ref.read(externalQueuePlayerProvider)?.pause();
+    }
     _endListening(EndReason.stopped);
     await _engine.stop();
     state = state.copyWith(playing: false);
   }
+
+  /// The current entry is in the external player (not NEXA's engine).
+  bool get _currentIsExternal =>
+      state.current?.source.isExternal == true &&
+      _externalUid == state.currentEntry?.uid;
 
   Future<void> seek(Duration position) => _engine.seek(position);
 
@@ -456,7 +550,8 @@ class PlayerController extends Notifier<PlayerState> {
     if (state.current == null) {
       return;
     }
-    if (_engine.state.position > const Duration(seconds: 3)) {
+    if (!state.current!.source.isExternal &&
+        _engine.state.position > const Duration(seconds: 3)) {
       await _engine.seek(Duration.zero);
       return;
     }
@@ -516,14 +611,22 @@ class PlayerController extends Notifier<PlayerState> {
     var skipped = 0;
     while (state.current != null) {
       final track = state.current!;
-      if (_playable(track)) {
+      if (track.source.isExternal && _playable(track)) {
+        if (await _startExternal(play: play)) {
+          return;
+        }
+        // Not playable there: the reason is in the queue; on to the next.
+      } else if (_playable(track)) {
         _beginListening();
         await _engine.load(track.path, play: play);
         await _applyVolume();
         await _prepareNext();
         return;
+      } else if (track.source.isExternal) {
+        _markSkipped(state.currentEntry!, S.queueNoExternalPlayer);
+      } else {
+        _notice('Skipped "${track.title}": file not found');
       }
-      _notice('Skipped "${track.title}": file not found');
       skipped++;
       if (skipped >= state.queue.length) {
         await _engine.stop();
@@ -588,6 +691,106 @@ class PlayerController extends Notifier<PlayerState> {
       return;
     }
     _notice(S.skippedStream(entry.track.title));
+    await _advance(auto: false);
+  }
+
+  // ---- entries in the visible external player (E2.8) ----
+
+  /// Hands the current (YouTube) entry to the visible external player.
+  /// NEXA's engine is stopped first: never two sounds. False when the
+  /// player cannot show it (the reason is marked in the queue).
+  Future<bool> _startExternal({required bool play}) async {
+    final entry = state.currentEntry!;
+    final ext = ref.read(externalQueuePlayerProvider)!;
+    _endListening(EndReason.skipped);
+    if (_engine.state.path != null) {
+      await _engine.stop();
+    }
+    _externalUid = entry.uid;
+    state = state.copyWith(
+      playing: false,
+      externalActive: false,
+      waitingForUser: false,
+    );
+    if (!play) {
+      return true;
+    }
+    final problem = await ext.start(entry.track);
+    if (problem == null) {
+      return true;
+    }
+    _markSkipped(entry, problem);
+    return false;
+  }
+
+  void _markSkipped(QueueEntry entry, String reason) {
+    state = state.copyWith(skipped: {...state.skipped, entry.uid: reason});
+    _notice(S.skippedEntry(entry.track.title, reason));
+  }
+
+  bool _isQueueVideo(String? videoId) {
+    final entry = state.currentEntry;
+    return entry != null &&
+        entry.uid == _externalUid &&
+        entry.track.source.isExternal &&
+        entry.track.sourceTrackId == videoId;
+  }
+
+  /// The external player changed: [videoId] plays ([active]) or not, or
+  /// waits for the user ([blocked]: autoplay blocked).
+  void externalStatus(String? videoId, {required bool active, bool blocked = false}) {
+    if (_isQueueVideo(videoId)) {
+      if (active) {
+        _failedStreams = 0;
+      }
+      state = state.copyWith(
+        externalActive: active,
+        waitingForUser: blocked && !active,
+      );
+    } else if (_externalUid != null && videoId != null) {
+      // The user watches something else there: the queue's video is gone
+      // from the player; Play starts it again.
+      _externalUid = null;
+      state = state.copyWith(externalActive: false, waitingForUser: false);
+    }
+  }
+
+  /// The external player was closed: the queue's video stopped with it
+  /// (Play opens it again).
+  void externalClosed() {
+    if (_externalUid == null) {
+      return;
+    }
+    _externalUid = null;
+    state = state.copyWith(externalActive: false, waitingForUser: false);
+  }
+
+  /// The external player finished [videoId]: the queue goes on.
+  Future<void> externalEnded(String? videoId) async {
+    if (!_isQueueVideo(videoId)) {
+      return;
+    }
+    state = state.copyWith(externalActive: false);
+    await _advance(auto: true);
+  }
+
+  /// [videoId] cannot be played there (removed, not embeddable, offline):
+  /// marked with [reason] and skipped - never silently.
+  Future<void> externalFailed(String? videoId, String reason) async {
+    if (!_isQueueVideo(videoId)) {
+      return;
+    }
+    final entry = state.currentEntry!;
+    state = state.copyWith(externalActive: false, waitingForUser: false);
+    _markSkipped(entry, reason);
+    _failedStreams++;
+    final hasNext =
+        state.cursor + 1 < state.queue.length ||
+        (state.repeat == PlayerRepeat.all && state.queue.length > 1);
+    if (!hasNext || _failedStreams >= state.queue.length) {
+      _failedStreams = 0;
+      return;
+    }
     await _advance(auto: false);
   }
 
@@ -662,18 +865,29 @@ final playerProvider = NotifierProvider<PlayerController, PlayerState>(
 /// keys (E2.0 prototype: the YouTube page).
 typedef MediaKeyRedirect = Future<bool> Function(String key);
 
-/// Opens a track that NEXA's engine never plays (a YouTube entry) in its
-/// own visible player; set by the app shell.
-class ExternalTrackLauncher extends Notifier<Future<void> Function(Track)?> {
-  @override
-  Future<void> Function(Track)? build() => null;
+/// A visible player for queue entries NEXA's engine never plays (E2.8:
+/// YouTube's own player). Set by the app shell.
+abstract interface class QueueExternalPlayer {
+  /// Shows and starts [track]; returns why it cannot, or null.
+  Future<String?> start(Track track);
 
-  void set(Future<void> Function(Track)? launch) => state = launch;
+  Future<void> resume();
+
+  Future<void> pause();
+
+  bool get active;
 }
 
-final externalTrackLauncherProvider =
-    NotifierProvider<ExternalTrackLauncher, Future<void> Function(Track)?>(
-      ExternalTrackLauncher.new,
+class ExternalQueuePlayerHolder extends Notifier<QueueExternalPlayer?> {
+  @override
+  QueueExternalPlayer? build() => null;
+
+  void set(QueueExternalPlayer? player) => state = player;
+}
+
+final externalQueuePlayerProvider =
+    NotifierProvider<ExternalQueuePlayerHolder, QueueExternalPlayer?>(
+      ExternalQueuePlayerHolder.new,
     );
 
 class MediaKeyRedirectController extends Notifier<MediaKeyRedirect?> {

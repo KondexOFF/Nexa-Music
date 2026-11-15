@@ -64,7 +64,7 @@ class TransportControls extends ConsumerWidget {
         SizedBox(width: gap + 2),
         PlayRingButton(
           size: ringSize,
-          playing: player.playing,
+          playing: player.sounding,
           onPressed: hasTrack || player.queue.isNotEmpty
               ? controller.togglePlay
               : null,
@@ -110,6 +110,21 @@ class _SeekBarState extends ConsumerState<SeekBar> {
 
   @override
   Widget build(BuildContext context) {
+    final external = ref.watch(
+      playerProvider.select((p) => p.current?.source.isExternal ?? false),
+    );
+    if (external) {
+      // A YouTube entry: its own player has the position and seek bar.
+      return Center(
+        child: Text(
+          S.queueInYouTube,
+          key: const ValueKey('seek-external'),
+          style: NexaText.caption,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      );
+    }
     final engine = ref.watch(engineStateProvider).value;
     final hasTrack = ref.watch(playerProvider.select((p) => p.current != null));
     final duration = engine?.duration ?? Duration.zero;

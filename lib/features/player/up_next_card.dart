@@ -6,6 +6,7 @@ import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../demo/demo_data.dart' show formatClock;
 import '../../ui/nexa_widgets.dart';
+import '../discover/source_attribution.dart' show SourceBadge;
 import '../library/track_art.dart';
 import 'player_controller.dart';
 
@@ -41,6 +42,26 @@ class UpNextCard extends ConsumerWidget {
           ),
           const SizedBox(height: NexaSpace.sm),
         ],
+        if (player.waitingForUser) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(S.queueWaiting, style: NexaText.caption),
+                ),
+                const SizedBox(width: 8),
+                NexaPillButton(
+                  key: const ValueKey('queue-continue'),
+                  label: S.queueContinue,
+                  icon: Icons.play_arrow_rounded,
+                  height: 36,
+                  onPressed: controller.togglePlay,
+                ),
+              ],
+            ),
+          ),
+        ],
         if (items.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -51,6 +72,7 @@ class UpNextCard extends ConsumerWidget {
             index: i + 1,
             entry: items[i],
             highlighted: i == 0,
+            skipped: player.skipped[items[i].uid],
             onPlay: () => controller.jumpTo(firstIndex + i),
             onRemove: () => controller.removeFromQueue(items[i].uid),
           ),
@@ -82,6 +104,7 @@ class UpNextRow extends StatelessWidget {
     required this.onPlay,
     required this.onRemove,
     this.highlighted = false,
+    this.skipped,
   });
 
   final int index;
@@ -89,6 +112,9 @@ class UpNextRow extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onRemove;
   final bool highlighted;
+
+  /// Why this entry was skipped (E2.8: never silently).
+  final String? skipped;
 
   @override
   Widget build(BuildContext context) {
@@ -144,14 +170,22 @@ class UpNextRow extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            track.artist,
-                            style: NexaText.caption,
+                            skipped == null
+                                ? track.artist
+                                : '${S.skipped}: $skipped',
+                            style: NexaText.caption.copyWith(
+                              color: skipped == null ? null : NexaColors.coral,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
+                    if (track.isOnline) ...[
+                      const SizedBox(width: 8),
+                      SourceBadge(source: track.source),
+                    ],
                     const SizedBox(width: 8),
                     Text(
                       duration == null ? '' : formatClock(duration),

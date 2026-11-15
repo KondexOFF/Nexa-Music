@@ -13,6 +13,7 @@ import '../../integrations/youtube/youtube_link.dart';
 import '../../ui/nexa_widgets.dart';
 import '../discover/catalog_providers.dart';
 import '../library/track_list.dart' show addTracksToPlaylist;
+import '../player/player_controller.dart';
 import '../player/player_controls.dart' show FavoriteButton;
 import 'youtube_settings.dart';
 import 'youtube_track.dart';
@@ -376,6 +377,22 @@ class YouTubeResultRow extends ConsumerWidget {
                 label: '${S.addToPlaylist}...',
                 color: NexaColors.textSecondary,
                 onPressed: () => addTracksToPlaylist(context, ref, [track]),
+              ),
+              NexaIconButton(
+                key: ValueKey('yt-queue-${video.id}'),
+                icon: Icons.queue_music_rounded,
+                label: S.addToQueue,
+                color: NexaColors.textSecondary,
+                onPressed: () {
+                  ref.read(playerProvider.notifier).addToQueue([track]);
+                  ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                    const SnackBar(
+                      content: Text(S.addedToQueue),
+                      behavior: SnackBarBehavior.floating,
+                      width: 420,
+                    ),
+                  );
+                },
               ),
               NexaIconButton(
                 icon: Icons.smart_display_outlined,

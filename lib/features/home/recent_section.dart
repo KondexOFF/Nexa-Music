@@ -67,8 +67,8 @@ class RecentlyPlayedSection extends ConsumerWidget {
         );
         return;
       }
-      // Songs of the list play on from the chosen one; videos are left out
-      // of NEXA's queue.
+      // The list plays on from the chosen song (videos in their turn in
+      // YouTube's player, E2.8).
       unawaited(
         ref
             .read(playerProvider.notifier)

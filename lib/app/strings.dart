@@ -620,4 +620,16 @@ abstract final class S {
   static const String ytHistoryClearBody =
       'Removes the watched YouTube videos from the history. Your songs, '
       'favourites and playlists stay.';
+
+  // E2.8: one queue for all sources
+  static String skippedEntry(String title, String why) =>
+      'Skipped "$title": $why';
+  static const String queueNoExternalPlayer =
+      'the YouTube player is not available here';
+  static const String queueContinue = 'Continue';
+  static const String skipped = 'Skipped';
+  static const String queueWaiting =
+      'YouTube did not start the next video by itself. Press Continue.';
+  static const String queueInYouTube = 'Playing in the YouTube player';
+  static const String addedToQueue = 'Added to the queue';
 }

@@ -192,6 +192,18 @@ class _DockBar extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (status.autoplayBlocked && !status.active) ...[
+              // YouTube did not start by itself (autoplay blocked): the
+              // queue waits - never skipped, never stuck (E2.8).
+              NexaPillButton(
+                key: const ValueKey('yt-continue'),
+                label: S.queueContinue,
+                icon: Icons.play_arrow_rounded,
+                height: 30,
+                onPressed: () => ref.read(youtubePlayerProvider.notifier).play(),
+              ),
+              const SizedBox(width: 4),
+            ],
             if (miniWindow)
               NexaIconButton(
                 key: const ValueKey('yt-mini-restore'),

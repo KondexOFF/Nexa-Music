@@ -106,7 +106,11 @@ class PlaybackArbiter extends Notifier<PlaybackOwner> {
       case 'pause' || 'stop':
         await e.pause();
       default:
-        break; // No queue for the external player.
+        // Next / Previous: NEXA's queue when the video is one of its
+        // entries (E2.8); otherwise nothing (a video watched on its own).
+        final queueVideo =
+            ref.read(playerProvider).current?.source.isExternal ?? false;
+        return !queueVideo; // false: NEXA's queue handles the key.
     }
     return true;
   }

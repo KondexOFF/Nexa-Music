@@ -13,6 +13,8 @@ import '../discover/catalog_providers.dart';
 import '../player/playback_arbiter.dart';
 import '../player/player_controller.dart';
 import '../../core/models/listening.dart';
+import '../../core/models/track.dart';
+import '../library/library_repository.dart' show youtubeUnnamed;
 import 'youtube_history.dart';
 
 /// IFrame API player states (`onStateChange`).
@@ -150,7 +152,7 @@ final youtubeTitleLookupProvider =
 /// NEXA Wave / DNA; a local history only when the user switched it on and
 /// the video is not made for kids ([YouTubeHistoryRecorder], E2.7b).
 class YouTubePlayerController extends Notifier<YtStatus>
-    implements ExternalPlayer {
+    implements ExternalPlayer, QueueExternalPlayer {
   YouTubeEmbed? _embed;
   final List<StreamSubscription<Object?>> _subs = [];
   AppLifecycleListener? _lifecycle;
@@ -248,6 +250,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
     await embed.dispose();
     if (ref.mounted) {
       state = const YtStatus();
+      _queue.externalClosed();
     }
   }
 
@@ -317,6 +320,23 @@ class YouTubePlayerController extends Notifier<YtStatus>
     }
   }
 
+  /// E2.8: a YouTube entry of NEXA's queue, shown in the one visible
+  /// player (the compact player when the YouTube page is not open).
+  @override
+  Future<String?> start(Track track) async {
+    final title = track.title == youtubeUnnamed ? null : track.title;
+    await watch(
+      track.sourceTrackId,
+      title: title,
+      channel: track.artist.isEmpty ? null : track.artist,
+    );
+    final why = state.unavailable;
+    return why == null ? null : S.ytUnavailable(why);
+  }
+
+  @override
+  Future<void> resume() => play();
+
   @override
   Future<void> play() async {
     if (state.videoId == null) {
@@ -361,11 +381,16 @@ class YouTubePlayerController extends Notifier<YtStatus>
         }
       case 'apiLoadError':
         state = state.copyWith(apiLoadFailed: true);
+        unawaited(_queue.externalFailed(state.videoId, S.ytApiLoadFailed));
       case 'error':
         final code = e['code'];
         state = state.copyWith(errorCode: code is num ? code.toInt() : -1);
+        unawaited(
+          _queue.externalFailed(state.videoId, youtubeErrorText(state.errorCode!)),
+        );
       case 'autoplayBlocked':
         state = state.copyWith(autoplayBlocked: true);
+        _queue.externalStatus(state.videoId, active: false, blocked: true);
       case 'external':
         final url = '${e['url']}';
         if (isExternalPage(url)) {
@@ -387,6 +412,14 @@ class YouTubePlayerController extends Notifier<YtStatus>
           unawaited(_arbiter.externalStarting());
         } else {
           _arbiter.sync();
+        }
+        _queue.externalStatus(
+          state.videoId,
+          active: state.active,
+          blocked: state.autoplayBlocked,
+        );
+        if (e['type'] == 'state' && newState == YtState.ended) {
+          unawaited(_queue.externalEnded(state.videoId));
         }
     }
   }
@@ -455,6 +488,8 @@ class YouTubePlayerController extends Notifier<YtStatus>
           ),
     );
   }
+
+  PlayerController get _queue => ref.read(playerProvider.notifier);
 
   void _onLifecycle(AppLifecycleState s) {
     if ((s == AppLifecycleState.hidden ||

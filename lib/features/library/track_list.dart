@@ -321,19 +321,17 @@ class TrackRow extends ConsumerWidget {
             color: NexaColors.panelRaised,
             onSelected: (a) => _onAction(context, ref, a),
             itemBuilder: (context) => [
-              // YouTube entries play only in YouTube's player (E2.8 adds
-              // them to the one queue).
-              if (track.rights.play) ...[
-                const PopupMenuItem(
-                  value: _RowAction.playNext,
-                  child: Text(S.playNext),
-                ),
-                const PopupMenuItem(
-                  value: _RowAction.addToQueue,
-                  child: Text(S.addToQueue),
-                ),
-                const PopupMenuDivider(),
-              ],
+              // One queue for every source (E2.8): YouTube entries play
+              // in YouTube's visible player in their turn.
+              const PopupMenuItem(
+                value: _RowAction.playNext,
+                child: Text(S.playNext),
+              ),
+              const PopupMenuItem(
+                value: _RowAction.addToQueue,
+                child: Text(S.addToQueue),
+              ),
+              const PopupMenuDivider(),
               const PopupMenuItem(
                 value: _RowAction.addToPlaylist,
                 child: Text('${S.addToPlaylist}...'),
