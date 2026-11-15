@@ -10,7 +10,9 @@ import 'package:nexa_music/app/navigation.dart';
 import 'package:nexa_music/app/strings.dart';
 import 'package:nexa_music/core/settings/settings_repository.dart';
 import 'package:nexa_music/features/discover/catalog_providers.dart';
+import 'package:nexa_music/features/library/library_page.dart';
 import 'package:nexa_music/features/youtube/youtube_discover.dart';
+import 'package:nexa_music/features/youtube/youtube_dock.dart';
 import 'package:nexa_music/features/youtube/youtube_player_controller.dart';
 import 'package:nexa_music/features/youtube/youtube_settings.dart';
 import 'package:nexa_music/features/youtube/youtube_watch_page.dart';
@@ -179,9 +181,9 @@ void main() {
   });
 
   for (final size in [size1024, size1920]) {
-    testWidgets('${size.width.round()}: a pasted link opens the YouTube page '
-        'without a key; player 16:9 >= 480 x 270 with nothing over it; '
-        'errors explained; leaving stops it', (tester) async {
+    testWidgets('${size.width.round()}: a pasted link opens the YouTube '
+        'section without a key; player 16:9 >= 480 x 270 exactly at its '
+        'place, nothing over it; errors explained; full screen', (tester) async {
       final c = await start(tester, enabled: true, size: size);
       await discoverYouTube(tester, c);
       expect(find.byKey(const ValueKey('yt-discover')), findsOneWidget);
@@ -191,7 +193,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('yt-link-watch')));
       await settle(tester);
       expect(find.text(S.ytBadLink), findsOneWidget);
-      expect(find.byType(YouTubeWatchPage), findsNothing);
+      expect(find.byType(YouTubePage), findsNothing);
 
       await tester.enterText(
         find.byKey(const ValueKey('yt-link')),
@@ -199,28 +201,22 @@ void main() {
       );
       await tester.tap(find.byKey(const ValueKey('yt-link-watch')));
       await settle(tester);
-      expect(find.byType(YouTubeWatchPage), findsOneWidget);
+      expect(c.read(navigationProvider).current, NexaDestination.youtube);
+      expect(find.byType(YouTubePage), findsOneWidget);
       expect(embed.pages, 1);
       expect(embed.sent.last['videoId'], 'M7lc1UVf-VE');
       expect(embed.sent.last['play'], isTrue);
 
-      final area = find.byKey(const ValueKey('yt-player'));
-      final box = tester.getSize(area);
+      final slot = find.byKey(const ValueKey('yt-player'));
+      final view = find.byKey(const ValueKey('fake-youtube-view'));
+      final box = tester.getSize(slot);
       expect(box.width, greaterThanOrEqualTo(youtubeMinPlayer.width));
       expect(box.height, greaterThanOrEqualTo(youtubeMinPlayer.height));
       expect(box.width / box.height, closeTo(16 / 9, 0.01));
-      expect(
-        find.descendant(
-          of: area,
-          matching: find.byKey(const ValueKey('fake-youtube-view')),
-        ),
-        findsOneWidget,
-      );
-      expect(find.descendant(of: area, matching: find.byType(Text)), findsNothing);
-      expect(
-        find.descendant(of: area, matching: find.byType(Tooltip)),
-        findsNothing,
-      );
+      // The shell's one player sits exactly on the page's player place.
+      expect(view, findsOneWidget);
+      expect(tester.getRect(view), tester.getRect(slot));
+      expect(find.descendant(of: view, matching: find.byType(Text)), findsNothing);
 
       embed.emit({'type': 'error', 'code': 150});
       await settle(tester);
@@ -234,19 +230,83 @@ void main() {
 
       embed.setFullScreen(true);
       await settle(tester);
-      expect(find.byKey(const ValueKey('yt-title')), findsNothing);
+      expect(tester.getSize(view), size, reason: 'full screen: whole window');
       embed.setFullScreen(false);
       await settle(tester);
-
-      await tester.ensureVisible(find.byTooltip(S.ytBack));
-      await settle(tester);
-      await tester.tap(find.byTooltip(S.ytBack));
-      await settle(tester);
-      expect(find.byType(YouTubeWatchPage), findsNothing);
-      expect(embed.disposed, isTrue);
+      expect(embed.disposed, isFalse);
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('E2.6: other sections keep the video in the compact player - '
+      'no reload, same position; expand, mini window and close', (tester) async {
+    final c = await start(tester, enabled: true, size: size1280);
+    await discoverYouTube(tester, c);
+    await tester.enterText(
+      find.byKey(const ValueKey('yt-link')),
+      'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+    );
+    await tester.tap(find.byKey(const ValueKey('yt-link-watch')));
+    await settle(tester);
+    embed.emit({'type': 'state', 'state': YtState.playing});
+    await settle(tester);
+    final loads = embed.sent.where((m) => m['cmd'] == 'load').length;
+    final view = find.byKey(const ValueKey('fake-youtube-view'));
+
+    for (final section in [
+      NexaDestination.library,
+      NexaDestination.home,
+      NexaDestination.discover,
+    ]) {
+      c.read(navigationProvider.notifier).go(section);
+      await settle(tester);
+      expect(find.byKey(const ValueKey('yt-compact')), findsOneWidget);
+      expect(tester.getSize(view), youtubeCompactPlayer);
+      expect(youtubeCompactPlayer.height, greaterThanOrEqualTo(200));
+      expect(youtubeCompactPlayer.width, greaterThanOrEqualTo(200));
+      expect(embed.disposed, isFalse);
+      expect(embed.pages, 1, reason: 'the page is never reloaded');
+      expect(
+        embed.sent.where((m) => m['cmd'] == 'load').length,
+        loads,
+        reason: 'the video is never reloaded',
+      );
+      expect(c.read(youtubePlayerProvider).active, isTrue);
+    }
+    // The compact player stays clear of NEXA's player bar.
+    final compact = tester.getRect(find.byKey(const ValueKey('yt-compact')));
+    expect(compact.bottom, lessThanOrEqualTo(size1280.height - 88));
+
+    await tester.tap(find.byKey(const ValueKey('yt-dock-expand')));
+    await settle(tester);
+    expect(c.read(navigationProvider).current, NexaDestination.youtube);
+    expect(find.byKey(const ValueKey('yt-compact')), findsNothing);
+    expect(
+      tester.getRect(view),
+      tester.getRect(find.byKey(const ValueKey('yt-player'))),
+    );
+
+    c.read(navigationProvider.notifier).go(NexaDestination.library);
+    await settle(tester);
+    await tester.tap(find.byKey(const ValueKey('yt-mini-window')));
+    await settle(tester);
+    expect(c.read(miniWindowProvider), isTrue);
+    expect(find.byType(LibraryPage), findsNothing, reason: 'only the player');
+    expect(tester.getSize(view).width, size1280.width);
+    await tester.tap(find.byKey(const ValueKey('yt-mini-restore')));
+    await settle(tester);
+    expect(c.read(miniWindowProvider), isFalse);
+    expect(find.byKey(const ValueKey('yt-compact')), findsOneWidget);
+    expect(embed.pages, 1);
+
+    await tester.tap(find.byKey(const ValueKey('yt-dock-close')));
+    await settle(tester);
+    expect(embed.disposed, isTrue);
+    expect(embed.commands, contains('pause'));
+    expect(find.byKey(const ValueKey('yt-compact')), findsNothing);
+    expect(view, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('with a key: search only on request, results marked YouTube '
       'with title, channel and length; Watch in NEXA / Open on YouTube',
@@ -288,12 +348,13 @@ void main() {
       find.descendant(of: row, matching: find.byTooltip(S.ytWatchInNexa)),
     );
     await settle(tester);
-    expect(find.byType(YouTubeWatchPage), findsOneWidget);
+    expect(find.byType(YouTubePage), findsOneWidget);
     expect(find.text('Night drive mix'), findsOneWidget);
     expect(find.text('Channel A'), findsOneWidget);
     expect(c.read(youtubeSearchProvider).results, hasLength(1));
-    await tester.tap(find.byTooltip(S.ytBack));
+    await tester.tap(find.byKey(const ValueKey('yt-close-player')));
     await settle(tester);
+    expect(embed.disposed, isTrue);
     expect(tester.takeException(), isNull);
   });
 

@@ -42,6 +42,16 @@ class FlutterWindow : public Win32Window {
   MediaSession media_session_;
   bool media_session_attached_ = false;
   void SendMediaKey(const char* method);
+
+  // "nexa/window": setMini {on, width, height} - NEXA's window shrunk to the
+  // YouTube player at the bottom right of the screen, on top of other apps
+  // (E2.6), or back to where it was.
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
+      window_channel_;
+  WINDOWPLACEMENT normal_placement_{};
+  void HandleWindowCall(
+      const flutter::MethodCall<flutter::EncodableValue>& call,
+      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
   void HandleMediaCall(
       const flutter::MethodCall<flutter::EncodableValue>& call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);

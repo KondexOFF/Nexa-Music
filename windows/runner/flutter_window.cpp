@@ -12,6 +12,26 @@ namespace {
 constexpr const char* kMediaMethods[4] = {"playPause", "next", "previous",
                                           "stop"};
 
+int IntArg(const flutter::EncodableMap& map, const char* key, int fallback) {
+  auto it = map.find(flutter::EncodableValue(key));
+  if (it != map.end()) {
+    if (const auto* value = std::get_if<int32_t>(&it->second)) {
+      return *value;
+    }
+  }
+  return fallback;
+}
+
+bool BoolArg(const flutter::EncodableMap& map, const char* key) {
+  auto it = map.find(flutter::EncodableValue(key));
+  if (it != map.end()) {
+    if (const auto* value = std::get_if<bool>(&it->second)) {
+      return *value;
+    }
+  }
+  return false;
+}
+
 std::string StringArg(const flutter::EncodableMap& map, const char* key) {
   auto it = map.find(flutter::EncodableValue(key));
   if (it != map.end()) {
@@ -54,6 +74,14 @@ bool FlutterWindow::OnCreate() {
         HandleMediaCall(call, std::move(result));
       });
   media_session_attached_ = media_session_.Attach(GetHandle());
+  window_channel_ =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          flutter_controller_->engine()->messenger(), "nexa/window",
+          &flutter::StandardMethodCodec::GetInstance());
+  window_channel_->SetMethodCallHandler(
+      [this](const auto& call, auto result) {
+        HandleWindowCall(call, std::move(result));
+      });
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -90,6 +118,48 @@ void FlutterWindow::HandleMediaCall(
   result->NotImplemented();
 }
 
+void FlutterWindow::HandleWindowCall(
+    const flutter::MethodCall<flutter::EncodableValue>& call,
+    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+  const auto* args = std::get_if<flutter::EncodableMap>(call.arguments());
+  HWND hwnd = GetHandle();
+  if (call.method_name() != "setMini" || !args || !hwnd) {
+    result->NotImplemented();
+    return;
+  }
+  if (BoolArg(*args, "on")) {
+    if (!mini_mode_) {
+      normal_placement_.length = sizeof(WINDOWPLACEMENT);
+      GetWindowPlacement(hwnd, &normal_placement_);
+      mini_mode_ = true;
+    }
+    if (IsZoomed(hwnd) || IsIconic(hwnd)) {
+      ShowWindow(hwnd, SW_RESTORE);
+    }
+    const UINT dpi = FlutterDesktopGetDpiForHWnd(hwnd);
+    const double scale = dpi / 96.0;
+    RECT want{0, 0, static_cast<LONG>(IntArg(*args, "width", 420) * scale),
+              static_cast<LONG>(IntArg(*args, "height", 276) * scale)};
+    AdjustWindowRectExForDpi(&want, GetWindowLong(hwnd, GWL_STYLE), FALSE,
+                             GetWindowLong(hwnd, GWL_EXSTYLE), dpi);
+    const int width = want.right - want.left;
+    const int height = want.bottom - want.top;
+    MONITORINFO monitor{sizeof(MONITORINFO)};
+    GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST),
+                   &monitor);
+    const int margin = static_cast<int>(16 * scale);
+    SetWindowPos(hwnd, HWND_TOPMOST, monitor.rcWork.right - width - margin,
+                 monitor.rcWork.bottom - height - margin, width, height,
+                 SWP_SHOWWINDOW);
+  } else if (mini_mode_) {
+    mini_mode_ = false;
+    SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    SetWindowPlacement(hwnd, &normal_placement_);
+  }
+  result->Success(flutter::EncodableValue(true));
+}
+
 void FlutterWindow::SendMediaKey(const char* method) {
   if (media_keys_channel_) {
     media_keys_channel_->InvokeMethod(method, nullptr);
@@ -100,6 +170,7 @@ void FlutterWindow::OnDestroy() {
   media_session_.Detach();
   media_session_attached_ = false;
   media_keys_channel_ = nullptr;
+  window_channel_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }

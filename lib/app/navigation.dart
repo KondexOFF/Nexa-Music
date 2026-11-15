@@ -12,6 +12,9 @@ enum NexaDestination {
 
   /// A user playlist ([NavigationState.playlistId]).
   playlist,
+
+  /// The YouTube section (E2.1 / E2.6).
+  youtube,
 }
 
 /// A place in the app: a screen plus, for playlists, which one.

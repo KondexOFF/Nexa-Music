@@ -213,6 +213,9 @@ class YouTubePlayerController extends Notifier<YtStatus>
   Future<void> close() async {
     final embed = _embed;
     if (embed == null) {
+      if (ref.mounted && state.open) {
+        state = const YtStatus(); // e.g. after "WebView2 unavailable"
+      }
       return;
     }
     // After the provider is disposed its state is gone: pause anyway.
@@ -234,6 +237,21 @@ class YouTubePlayerController extends Notifier<YtStatus>
     if (ref.mounted) {
       state = const YtStatus();
     }
+  }
+
+  /// Watch [videoId] (Watch / Watch in NEXA): opens the one player of the
+  /// app if needed and loads the video. The player stays open while the
+  /// user moves between sections (E2.6 mini-player) until it is closed.
+  Future<void> watch(String videoId, {String? title, String? channel}) async {
+    if (_embed == null) {
+      await open();
+    }
+    if (state.unavailable != null) {
+      // Keep the id for "Open on YouTube".
+      state = state.copyWith(videoId: videoId, title: title, channel: channel);
+      return;
+    }
+    await load(videoId, title: title, channel: channel);
   }
 
   /// Loads [videoId]. [play]: start at once (the user pressed Watch);

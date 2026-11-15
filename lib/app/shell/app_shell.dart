@@ -16,7 +16,9 @@ import '../../features/discover/discover_page.dart';
 import '../../features/pages/settings_page.dart';
 import '../../features/player/now_playing_page.dart';
 import '../../features/player/up_next_card.dart';
+import '../../features/youtube/youtube_dock.dart';
 import '../../features/youtube/youtube_player_controller.dart';
+import '../../features/youtube/youtube_watch_page.dart';
 import '../navigation.dart';
 import '../theme/tokens.dart';
 import 'bottom_player.dart';
@@ -104,6 +106,14 @@ class _AppShellState extends ConsumerState<AppShell> {
       }
     });
 
+    if (ref.watch(miniWindowProvider)) {
+      // Mini window: NEXA's window shrunk to the YouTube player, on top.
+      return const Scaffold(
+        backgroundColor: NexaColors.background,
+        body: Stack(children: [YouTubeDock(fillWindow: true)]),
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -142,7 +152,9 @@ class _AppShellState extends ConsumerState<AppShell> {
               ),
             ),
           ),
-          body: Column(
+          body: Stack(
+            children: [
+              Column(
             children: [
               Expanded(
                 child: Row(
@@ -189,6 +201,13 @@ class _AppShellState extends ConsumerState<AppShell> {
               BottomPlayer(onToggleQueue: toggleQueue),
             ],
           ),
+              // The one YouTube player above the pages (E2.6).
+              YouTubeDock(
+                bottomInset: NexaSizes.bottomPlayer,
+                rightInset: showPanel ? panelWidth : 0,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -218,6 +237,7 @@ class _PageArea extends StatelessWidget {
       playlistId: location.playlistId ?? -1,
     ),
     NexaDestination.settings => const SettingsPage(),
+    NexaDestination.youtube => const YouTubePage(),
   };
 
   @override

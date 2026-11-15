@@ -124,7 +124,7 @@ class _YouTubeDiscoverSectionState
     final id = youtubeVideoId(_link.text);
     setState(() => _linkProblem = id == null ? S.ytBadLink : null);
     if (id != null) {
-      unawaited(openYouTubeWatch(context, videoId: id));
+      unawaited(openYouTubeWatch(ref, videoId: id));
     }
   }
 
@@ -299,7 +299,7 @@ class YouTubeResultRow extends ConsumerWidget {
     ].where((s) => s.isNotEmpty).join('  ·  ');
     void watch() => unawaited(
       openYouTubeWatch(
-        context,
+        ref,
         videoId: video.id,
         title: video.title,
         channel: video.channel,

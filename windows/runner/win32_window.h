@@ -71,6 +71,10 @@ class Win32Window {
   // Called when Destroy is called.
   virtual void OnDestroy();
 
+  // NEXA "mini window" (YouTube player on top of other apps): the window
+  // may be smaller than the normal minimum.
+  bool mini_mode_ = false;
+
  private:
   friend class WindowClassRegistrar;
 

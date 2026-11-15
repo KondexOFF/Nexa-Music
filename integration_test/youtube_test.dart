@@ -199,7 +199,7 @@ void main() {
         isTrue,
         reason: 'player page and IFrame API loaded; ${yt().unavailable}',
       );
-      expect(find.byType(YouTubeWatchPage), findsOneWidget);
+      expect(find.byType(YouTubePage), findsOneWidget);
       expect(yt().pageOrigin, 'https://$youtubeAppHost');
       expect(find.text('YouTube Developers Live'), findsOneWidget);
       // Watch with sound is started from NEXA's button, outside the page:
@@ -282,15 +282,25 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('yt-open-on-youtube')));
       expect(opened.last, 'https://www.youtube.com/watch?v=aaaaaaaaaaa');
 
-      // Leaving the page stops YouTube and releases WebView2.
+      // E2.6: other sections keep the same video playing in the compact
+      // player (same WebView2, no reload); closing it releases WebView2.
       await tester.runAsync(() => player().load(demoVideo, mute: true));
       expect(await waitFor(() => yt().state == YtState.playing), isTrue);
-      await tester.ensureVisible(find.byTooltip(S.ytBack));
-      await tester.pump();
-      await tester.tap(find.byTooltip(S.ytBack));
+      final embedBefore = player().embed;
+      container.read(navigationProvider.notifier).go(NexaDestination.library);
+      expect(
+        await waitFor(
+          () => find.byKey(const ValueKey('yt-compact')).evaluate().isNotEmpty,
+        ),
+        isTrue,
+      );
+      await waitFor(() => false, timeout: const Duration(seconds: 3));
+      expect(identical(player().embed, embedBefore), isTrue);
+      expect(yt().state, YtState.playing, reason: 'still playing, not reloaded');
+      await tester.tap(find.byKey(const ValueKey('yt-dock-close')));
       expect(await waitFor(() => player().embed == null), isTrue);
       expect(container.read(mediaKeyRedirectProvider), isNull);
-      expect(find.byType(YouTubeWatchPage), findsNothing);
+      expect(find.byKey(const ValueKey('yt-compact')), findsNothing);
 
       // Nothing about YouTube was recorded.
       final history = await tester.runAsync(

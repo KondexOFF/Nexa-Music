@@ -379,6 +379,12 @@ abstract final class S {
       'an 11-character video id).';
   static const String ytOpenOnYouTube = 'Open on YouTube';
   static const String ytBack = 'Back';
+  static const String ytClosePlayer = 'Close YouTube player';
+  static const String ytNothingPlaying =
+      'No YouTube video. Paste a link below or search in Discover -> YouTube.';
+  static const String ytDockExpand = 'Open the YouTube page';
+  static const String ytMiniWindow = 'Mini window on top of other apps';
+  static const String ytMiniRestore = 'Back to the full NEXA window';
   static const String ytLive = 'Live';
   static const String ytStarting = 'Starting the YouTube player...';
   static String ytUnavailable(String why) =>
@@ -403,9 +409,10 @@ abstract final class S {
   static const String ytOverlayArtist = 'YouTube';
   static const String ytLimits =
       'YouTube\'s own player with its controls and ads. It pauses when NEXA '
-      'is minimised and stops when you leave this page; it never plays '
-      'together with NEXA. Nothing you watch is saved: not in the history, '
-      'NEXA Wave, NEXA DNA or playlists. YouTube Terms of Service apply.';
+      'is minimised; in other sections of NEXA it stays in the compact '
+      'player until you close it, and it never plays together with NEXA. '
+      'Nothing you watch is saved: not in the history, NEXA Wave, NEXA DNA '
+      'or playlists. YouTube Terms of Service apply.';
   static const String ytTerms = 'YouTube Terms of Service';
   static const String ytGooglePrivacy = 'Google Privacy Policy';
   static const String ytDiscoverOff =
