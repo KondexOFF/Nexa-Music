@@ -15,6 +15,7 @@ Future<int> refreshSavedYouTube(
   Duration keepAtMost = const Duration(days: 30),
   DateTime Function() now = DateTime.now,
 }) async {
+  await repo.pruneOrphanYouTube();
   final rows = await repo.staleYouTube(refreshAfter);
   for (final row in rows) {
     final videoId = row.pathKey.substring(row.pathKey.indexOf(':') + 1);

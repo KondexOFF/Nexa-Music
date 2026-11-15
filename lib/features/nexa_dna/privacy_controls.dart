@@ -5,6 +5,8 @@ import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../ui/nexa_widgets.dart';
 import '../library/library_dialogs.dart';
+import '../library/library_providers.dart';
+import '../youtube/youtube_settings.dart';
 import 'dna_providers.dart';
 
 /// Settings -> Privacy and learning: consent, pause, private session,
@@ -17,6 +19,9 @@ class PrivacyControls extends ConsumerWidget {
     final s = ref.watch(dnaSettingsProvider);
     final dna = ref.read(dnaSettingsProvider.notifier);
     final events = ref.watch(listeningEventCountProvider).value ?? 0;
+    final hasKey = ref.watch(youtubeDataApiProvider).configured;
+    Future<void> pruneSaved() =>
+        ref.read(libraryRepositoryProvider).pruneOrphanYouTube();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -31,6 +36,13 @@ class PrivacyControls extends ConsumerWidget {
           info: S.pauseLearningInfo,
           value: s.learningPaused,
           onChanged: s.historyConsent ? dna.setLearningPaused : null,
+        ),
+        _SwitchRow(
+          key: const ValueKey('yt-history-switch'),
+          title: S.ytHistory,
+          info: hasKey ? S.ytHistoryInfo : '${S.ytHistoryInfo} ${S.ytHistoryNoKey}',
+          value: s.youtubeHistory,
+          onChanged: s.historyConsent ? dna.setYouTubeHistory : null,
         ),
         _SwitchRow(
           title: S.privateSession,
@@ -61,6 +73,31 @@ class PrivacyControls extends ConsumerWidget {
                       );
                       if (ok) {
                         await ref.read(tasteRepositoryProvider).clearHistory();
+                        await pruneSaved();
+                      }
+                    },
+              disabledReason: S.historyCount(0),
+            ),
+            NexaPillButton(
+              key: const ValueKey('yt-history-clear'),
+              label: S.ytHistoryClear,
+              icon: Icons.delete_sweep_outlined,
+              variant: PillVariant.secondary,
+              height: 42,
+              onPressed: events == 0
+                  ? null
+                  : () async {
+                      final ok = await confirmAction(
+                        context,
+                        title: S.ytHistoryClear,
+                        body: S.ytHistoryClearBody,
+                        action: S.delete,
+                      );
+                      if (ok) {
+                        await ref
+                            .read(tasteRepositoryProvider)
+                            .clearYouTubeHistory();
+                        await pruneSaved();
                       }
                     },
               disabledReason: S.historyCount(0),
@@ -92,6 +129,7 @@ class PrivacyControls extends ConsumerWidget {
 
 class _SwitchRow extends StatelessWidget {
   const _SwitchRow({
+    super.key,
     required this.title,
     required this.info,
     required this.value,

@@ -316,14 +316,14 @@ void main() {
     );
 
     test('recent data is not fetched again', () async {
-      await repo.save(video('aaaaaaaaaaa'));
+      await repo.setFavoriteFor(video('aaaaaaaaaaa'), true);
       final checked = await refreshSavedYouTube(repo, oembed({}));
       expect(checked, 0);
     });
 
     test('old data is refreshed; removed videos are marked', () async {
-      await repo.save(video('aaaaaaaaaaa'));
-      await repo.save(video('bbbbbbbbbbb'));
+      await repo.setFavoriteFor(video('aaaaaaaaaaa'), true);
+      await repo.setFavoriteFor(video('bbbbbbbbbbb'), true);
       await age('aaaaaaaaaaa', 26);
       await age('bbbbbbbbbbb', 26);
       final checked = await refreshSavedYouTube(
@@ -353,8 +353,8 @@ void main() {
 
     test('data older than 30 days is removed when YouTube cannot be reached',
         () async {
-      await repo.save(video('ccccccccccc'));
-      await repo.save(video('ddddddddddd'));
+      await repo.setFavoriteFor(video('ccccccccccc'), true);
+      await repo.setFavoriteFor(video('ddddddddddd'), true);
       await repo.renameSaved(video('ccccccccccc'), 'My own name');
       await age('ccccccccccc', 31);
       await age('ddddddddddd', 27);

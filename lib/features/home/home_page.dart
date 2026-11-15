@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/tokens.dart';
 import 'home_sections.dart';
+import 'recent_section.dart';
 import 'wave_hero.dart';
 
 /// Home: NEXA Wave hero, "For Your Moment" and "Recently Played".

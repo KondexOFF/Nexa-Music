@@ -62,6 +62,7 @@
 
   function create(cmd) {
     var vars = { enablejsapi: 1, playsinline: 1, autoplay: 0 };
+    if (cmd.start) { vars.start = Math.floor(cmd.start); }
     // The origin parameter only where the page has a real origin (the
     // virtual host); a page loaded from a string has none.
     if (location.protocol === 'https:') {
@@ -98,10 +99,11 @@
     if (!apiReady) { pending = cmd; return; }
     if (!player) { create(cmd); return; }
     if (cmd.mute) { player.mute(); } else if (cmd.unmute) { player.unMute(); }
+    var video = { videoId: cmd.videoId, startSeconds: cmd.start || 0 };
     if (cmd.play) {
-      player.loadVideoById(cmd.videoId);
+      player.loadVideoById(video);
     } else {
-      player.cueVideoById(cmd.videoId);
+      player.cueVideoById(video);
     }
   }
 

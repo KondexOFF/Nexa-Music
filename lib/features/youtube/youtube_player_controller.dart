@@ -12,6 +12,8 @@ import '../../integrations/youtube/youtube_link.dart';
 import '../discover/catalog_providers.dart';
 import '../player/playback_arbiter.dart';
 import '../player/player_controller.dart';
+import '../../core/models/listening.dart';
+import 'youtube_history.dart';
 
 /// IFrame API player states (`onStateChange`).
 abstract final class YtState {
@@ -144,14 +146,23 @@ final youtubeTitleLookupProvider =
 /// The YouTube player of NEXA (E2.1): one official player on the YouTube
 /// page, never together with NEXA's own playback ([PlaybackArbiter]),
 /// paused whenever it is not visible (minimised window, page left; YouTube
-/// API Services Developer Policies III.I.9). Nothing about what is watched
-/// is recorded: no history, no NEXA Wave / DNA, no statistics.
+/// API Services Developer Policies III.I.9). What is watched never reaches
+/// NEXA Wave / DNA; a local history only when the user switched it on and
+/// the video is not made for kids ([YouTubeHistoryRecorder], E2.7b).
 class YouTubePlayerController extends Notifier<YtStatus>
     implements ExternalPlayer {
   YouTubeEmbed? _embed;
   final List<StreamSubscription<Object?>> _subs = [];
   AppLifecycleListener? _lifecycle;
   late PlaybackArbiter _arbiter;
+
+  // The video being watched, for the optional local history (E2.7b).
+  String? _sessionVideo;
+  String? _sessionTitle;
+  String? _sessionChannel;
+  DateTime? _sessionStart;
+  Duration _sessionTime = Duration.zero;
+  Duration? _sessionDuration;
 
   YouTubeEmbed? get embed => _embed;
 
@@ -218,6 +229,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
       }
       return;
     }
+    _endSession(EndReason.stopped);
     // After the provider is disposed its state is gone: pause anyway.
     if (!ref.mounted || state.active) {
       await _command({'cmd': 'pause'});
@@ -242,7 +254,12 @@ class YouTubePlayerController extends Notifier<YtStatus>
   /// Watch [videoId] (Watch / Watch in NEXA): opens the one player of the
   /// app if needed and loads the video. The player stays open while the
   /// user moves between sections (E2.6 mini-player) until it is closed.
-  Future<void> watch(String videoId, {String? title, String? channel}) async {
+  Future<void> watch(
+    String videoId, {
+    String? title,
+    String? channel,
+    Duration? start,
+  }) async {
     if (_embed == null) {
       await open();
     }
@@ -251,7 +268,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
       state = state.copyWith(videoId: videoId, title: title, channel: channel);
       return;
     }
-    await load(videoId, title: title, channel: channel);
+    await load(videoId, title: title, channel: channel, start: start);
   }
 
   /// Loads [videoId]. [play]: start at once (the user pressed Watch);
@@ -262,7 +279,11 @@ class YouTubePlayerController extends Notifier<YtStatus>
     String? channel,
     bool play = true,
     bool mute = false,
+    Duration? start,
   }) async {
+    if (videoId != _sessionVideo) {
+      _endSession(EndReason.skipped);
+    }
     final known = state.videoId == videoId && title == null;
     state = state.copyWith(
       videoId: videoId,
@@ -281,6 +302,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
       'play': play,
       'mute': mute,
       'unmute': !mute,
+      if (start != null && start > Duration.zero) 'start': start.inSeconds,
     });
     if (state.title == null) {
       unawaited(_lookUpTitle(videoId));
@@ -354,6 +376,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
       case 'ready' || 'state' || 'tick' || 'info':
         final s = e['state'];
         final newState = s is num ? s.toInt() : state.state;
+        _followSession(e, newState);
         state = state.copyWith(
           state: newState,
           autoplayBlocked: newState == YtState.playing
@@ -366,6 +389,71 @@ class YouTubePlayerController extends Notifier<YtStatus>
           _arbiter.sync();
         }
     }
+  }
+
+  /// Follows the watched video for the optional history: a session starts
+  /// when a video plays and ends when it finishes, another video is loaded
+  /// or the player closes.
+  void _followSession(Map<String, Object?> e, int newState) {
+    final time = e['time'];
+    final duration = e['duration'];
+    if (newState == YtState.playing && _sessionVideo != state.videoId) {
+      _endSession(EndReason.skipped);
+      _sessionVideo = state.videoId;
+      _sessionStart = DateTime.now();
+      _sessionTime = Duration.zero;
+      _sessionDuration = null;
+    }
+    if (_sessionVideo == null) {
+      return;
+    }
+    if (time is num && time >= 0) {
+      _sessionTime = Duration(milliseconds: (time * 1000).round());
+    }
+    if (duration is num && duration > 0) {
+      _sessionDuration = Duration(milliseconds: (duration * 1000).round());
+    }
+    if ((state.title ?? '').isNotEmpty) {
+      _sessionTitle = state.title;
+      _sessionChannel = state.channel;
+    }
+    if (newState == YtState.ended) {
+      _endSession(EndReason.completed);
+    }
+  }
+
+  void _endSession(EndReason reason) {
+    final videoId = _sessionVideo;
+    final start = _sessionStart;
+    _sessionVideo = null;
+    _sessionStart = null;
+    if (videoId == null || start == null) {
+      return;
+    }
+    final duration = _sessionDuration;
+    final listened = reason == EndReason.completed && duration != null
+        ? duration
+        : _sessionTime;
+    final title = _sessionTitle;
+    final channel = _sessionChannel;
+    _sessionTitle = null;
+    _sessionChannel = null;
+    if (!ref.mounted || listened < YouTubeHistoryRecorder.minListen) {
+      return; // NEXA is closing, or the video was only started.
+    }
+    unawaited(
+      ref
+          .read(youtubeHistoryProvider)
+          .record(
+            videoId: videoId,
+            startedAt: start,
+            listened: listened,
+            duration: duration,
+            reason: reason,
+            title: title,
+            channel: channel,
+          ),
+    );
   }
 
   void _onLifecycle(AppLifecycleState s) {

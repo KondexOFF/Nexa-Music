@@ -6,11 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/strings.dart';
 import 'package:nexa_music/core/database/app_database.dart';
+import 'package:nexa_music/core/models/listening.dart';
 import 'package:nexa_music/core/models/track.dart';
 import 'package:nexa_music/features/discover/catalog_providers.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
 import 'package:nexa_music/features/player/playback_arbiter.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
+import 'package:nexa_music/features/youtube/youtube_history.dart';
 import 'package:nexa_music/features/youtube/youtube_player_controller.dart';
 import 'package:nexa_music/integrations/youtube/youtube_embed.dart';
 import 'package:path/path.dart' as p;
@@ -313,4 +315,71 @@ void main() {
     expect(container.read(playerProvider).queue, isEmpty);
     expect(engine.loads, isEmpty, reason: 'YouTube never uses the engine');
   });
+
+  test('E2.7b: a watched video is passed to the history rule with its '
+      'position; resuming loads it from there', () async {
+    final calls = <Map<String, Object?>>[];
+    final c = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        ...testOverrides(engine: engine).skip(1),
+        youtubeEmbedFactoryProvider.overrideWithValue(() async => embed),
+        youtubeTitleLookupProvider.overrideWithValue((id) async => null),
+        youtubeHistoryProvider.overrideWith((ref) => _SpyHistory(ref, calls)),
+      ],
+    );
+    addTearDown(c.dispose);
+    final ctl = c.read(youtubePlayerProvider.notifier);
+    await ctl.open();
+    await ctl.load('M7lc1UVf-VE', title: 'Talk', channel: 'Chan');
+    embed.emit({'type': 'state', 'state': YtState.playing, 'time': 1});
+    embed.emit({
+      'type': 'tick',
+      'state': YtState.playing,
+      'time': 754.2,
+      'duration': 2400,
+    });
+    // Another video ends the first listening.
+    await ctl.load('dQw4w9WgXcQ');
+    expect(calls, hasLength(1));
+    expect(calls.single['videoId'], 'M7lc1UVf-VE');
+    expect(calls.single['listened'], const Duration(milliseconds: 754200));
+    expect(calls.single['duration'], const Duration(minutes: 40));
+    expect(calls.single['reason'], EndReason.skipped);
+    expect(calls.single['title'], 'Talk');
+
+    // Only started: nothing to keep.
+    embed.emit({'type': 'state', 'state': YtState.playing, 'time': 2});
+    await ctl.close();
+    expect(calls, hasLength(1));
+
+    await ctl.watch('M7lc1UVf-VE', start: const Duration(seconds: 754));
+    expect(embed.sent.last['start'], 754);
+  });
+}
+
+class _SpyHistory extends YouTubeHistoryRecorder {
+  _SpyHistory(super.ref, this.calls);
+
+  final List<Map<String, Object?>> calls;
+
+  @override
+  Future<YtHistoryOutcome> record({
+    required String videoId,
+    required DateTime startedAt,
+    required Duration listened,
+    required EndReason reason,
+    Duration? duration,
+    String? title,
+    String? channel,
+  }) async {
+    calls.add({
+      'videoId': videoId,
+      'listened': listened,
+      'duration': duration,
+      'reason': reason,
+      'title': title,
+    });
+    return YtHistoryOutcome.recorded;
+  }
 }

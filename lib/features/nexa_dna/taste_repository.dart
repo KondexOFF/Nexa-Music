@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 
 import '../../core/database/app_database.dart';
 import '../../core/models/listening.dart';
+import '../../core/models/track.dart';
+import '../library/library_repository.dart' show LibraryRepository;
 
 /// What the listening history says about one track.
 class TrackStats {
@@ -77,7 +79,7 @@ class TasteRepository {
           "SUM(CASE WHEN end_reason = 'skipped' AND listened_ms >= $fast "
           'THEN 1 ELSE 0 END) AS late_skips, '
           'MAX(started_at) AS last_played '
-          'FROM listening_events GROUP BY track_id',
+          "FROM listening_events WHERE mode <> 'youtube' GROUP BY track_id",
           readsFrom: {db.listeningEvents},
         )
         .get();
@@ -97,6 +99,7 @@ class TasteRepository {
   Future<List<int>> recentTrackIds({int limit = 15}) async {
     final rows =
         await (db.select(db.listeningEvents)
+              ..where((e) => e.mode.equals(PlayContext.youtube.name).not())
               ..orderBy([
                 (e) => OrderingTerm.desc(e.startedAt),
                 (e) => OrderingTerm.desc(e.id),
@@ -114,6 +117,57 @@ class TasteRepository {
 
   /// Deletes the whole listening history.
   Future<int> clearHistory() => db.delete(db.listeningEvents).go();
+
+  /// Deletes only the YouTube part of the history (E2.7b).
+  Future<int> clearYouTubeHistory() => (db.delete(
+    db.listeningEvents,
+  )..where((e) => e.mode.equals(PlayContext.youtube.name))).go();
+
+  // ---- Recently Played / Continue Listening (E2.7b) ----
+
+  /// Newest listening per track, newest first (from the last [scan]
+  /// listenings).
+  Stream<List<HistoryEntry>> watchRecent({int limit = 20, int scan = 400}) {
+    final q =
+        db.select(db.listeningEvents).join([
+            innerJoin(
+              db.tracks,
+              db.tracks.id.equalsExp(db.listeningEvents.trackId),
+            ),
+          ])
+          ..orderBy([
+            OrderingTerm.desc(db.listeningEvents.startedAt),
+            OrderingTerm.desc(db.listeningEvents.id),
+          ])
+          ..limit(scan);
+    return q.watch().map((rows) {
+      final seen = <int>{};
+      final list = <HistoryEntry>[];
+      for (final r in rows) {
+        final e = r.readTable(db.listeningEvents);
+        if (!seen.add(e.trackId)) {
+          continue;
+        }
+        list.add(
+          HistoryEntry(
+            track: LibraryRepository.toTrack(r.readTable(db.tracks)),
+            playedAt: e.startedAt,
+            listened: Duration(milliseconds: e.listenedMs),
+            duration: e.durationMs == null
+                ? null
+                : Duration(milliseconds: e.durationMs!),
+            reason: EndReason.values.asNameMap()[e.endReason] ??
+                EndReason.stopped,
+          ),
+        );
+        if (list.length >= limit) {
+          break;
+        }
+      }
+      return list;
+    });
+  }
+
 
   // ---- explicit taste ----
 
@@ -186,4 +240,35 @@ class TasteRepository {
       const TracksCompanion(disliked: Value(false), dislikedAt: Value(null)),
     );
   });
+}
+
+/// The newest listening of a track (Recently Played, Continue Listening).
+class HistoryEntry {
+  const HistoryEntry({
+    required this.track,
+    required this.playedAt,
+    required this.listened,
+    required this.reason,
+    this.duration,
+  });
+
+  final Track track;
+  final DateTime playedAt;
+  final Duration listened;
+  final Duration? duration;
+  final EndReason reason;
+
+  /// Long tracks and videos (mixes, talks, podcasts) left in the middle -
+  /// worth continuing from [listened]. Short songs simply start again.
+  static const Duration continueMinLength = Duration(minutes: 8);
+  static const Duration _margin = Duration(seconds: 30);
+
+  bool get canContinue {
+    final d = duration;
+    return reason != EndReason.completed &&
+        d != null &&
+        d >= continueMinLength &&
+        listened >= _margin &&
+        listened <= d - _margin;
+  }
 }

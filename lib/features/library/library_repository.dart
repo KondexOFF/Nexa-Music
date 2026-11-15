@@ -371,6 +371,18 @@ class LibraryRepository {
     )..where((t) => t.pathKey.equals(track.savedKey))).go();
   }
 
+  /// Removes saved YouTube entries nothing refers to any more: not a
+  /// favourite, in no playlist, not in the history (E2.7b). Returns how
+  /// many were removed.
+  Future<int> pruneOrphanYouTube() => db.customUpdate(
+    'DELETE FROM tracks WHERE source = ? AND favorite = 0 '
+    'AND id NOT IN (SELECT track_id FROM playlist_entries) '
+    'AND id NOT IN (SELECT track_id FROM listening_events)',
+    variables: [Variable.withString(TrackSource.youtube.name)],
+    updates: {db.tracks},
+    updateKind: UpdateKind.delete,
+  );
+
   /// Saved (non-library) entries by their stable id - live favourite state
   /// for catalog songs shown in Discover, Wave or the player.
   Stream<Map<int, Track>> watchSaved() =>

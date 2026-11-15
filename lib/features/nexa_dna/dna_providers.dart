@@ -25,6 +25,7 @@ class DnaSettings {
     this.onboarded = false,
     this.discovery = defaultDiscovery,
     this.waveOnline = false,
+    this.youtubeHistory = false,
   });
 
   static const double defaultDiscovery = 0.3;
@@ -52,8 +53,16 @@ class DnaSettings {
   /// artists to the catalogs as search words.
   final bool waveOnline;
 
+  /// E2.7b: YouTube videos watched in NEXA may be kept in the local history
+  /// (separate switch, off by default; made-for-kids videos never).
+  final bool youtubeHistory;
+
   /// Whether a finished listening may be written to the history.
   bool get recordsHistory => historyConsent && !learningPaused && !privateSession;
+
+  /// Whether a watched YouTube video may be written to the history (its
+  /// made-for-kids status is checked too).
+  bool get recordsYouTube => recordsHistory && youtubeHistory;
 
   DnaSettings copyWith({
     bool? loaded,
@@ -63,6 +72,7 @@ class DnaSettings {
     bool? onboarded,
     double? discovery,
     bool? waveOnline,
+    bool? youtubeHistory,
   }) => DnaSettings(
     loaded: loaded ?? this.loaded,
     historyConsent: historyConsent ?? this.historyConsent,
@@ -71,6 +81,7 @@ class DnaSettings {
     onboarded: onboarded ?? this.onboarded,
     discovery: discovery ?? this.discovery,
     waveOnline: waveOnline ?? this.waveOnline,
+    youtubeHistory: youtubeHistory ?? this.youtubeHistory,
   );
 }
 
@@ -90,6 +101,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
       final onboarded = await _repo.getBool(SettingKeys.dnaOnboarded);
       final discovery = await _repo.getDouble(SettingKeys.waveDiscovery);
       final online = await _repo.getBool(SettingKeys.waveOnline);
+      final youtube = await _repo.getBool(SettingKeys.youtubeHistory);
       if (!ref.mounted) {
         return;
       }
@@ -100,6 +112,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
         onboarded: onboarded,
         discovery: discovery?.clamp(0.0, 1.0).toDouble(),
         waveOnline: online,
+        youtubeHistory: youtube,
       );
     } on Object {
       if (ref.mounted) {
@@ -124,6 +137,11 @@ class DnaSettingsController extends Notifier<DnaSettings> {
   Future<void> setLearningPaused(bool value) async {
     state = state.copyWith(learningPaused: value);
     await _save(() => _repo.setBool(SettingKeys.learningPaused, value));
+  }
+
+  Future<void> setYouTubeHistory(bool value) async {
+    state = state.copyWith(youtubeHistory: value);
+    await _save(() => _repo.setBool(SettingKeys.youtubeHistory, value));
   }
 
   /// Not saved on purpose: a private session ends when the app closes.
@@ -172,6 +190,11 @@ final dnaSettingsProvider = NotifierProvider<DnaSettingsController, DnaSettings>
 
 final tasteItemsProvider = StreamProvider<List<TasteChoice>>(
   (ref) => ref.watch(tasteRepositoryProvider).watchItems(),
+);
+
+/// Recently Played on Home (E2.7b): the newest listening per track.
+final recentHistoryProvider = StreamProvider<List<HistoryEntry>>(
+  (ref) => ref.watch(tasteRepositoryProvider).watchRecent(),
 );
 
 final listeningEventCountProvider = StreamProvider<int>(

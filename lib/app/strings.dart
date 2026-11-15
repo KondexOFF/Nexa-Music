@@ -583,4 +583,41 @@ abstract final class S {
   static String dbFailedRestored(String copy) =>
       'The update of the library failed, so the copy made just before it was '
       'put back ($copy). Your playlists and favourites are as they were.';
+
+  // E2.7b: Recently Played, Continue Listening, YouTube history
+  static const String continueListening = 'Continue listening';
+  static String continueFrom(String at) => 'Continue from $at';
+  static const String recentEmpty =
+      'Nothing played yet - songs you listen to show up here.';
+  static const String recentOff =
+      'Listening history is off, so nothing is kept here. Switch it on in '
+      'Settings - Privacy and learning.';
+  static String playedWhen(DateTime at, DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(at.year, at.month, at.day);
+    final days = today.difference(day).inDays;
+    String two(int v) => v.toString().padLeft(2, '0');
+    final time = '${two(at.hour)}:${two(at.minute)}';
+    if (days <= 0) {
+      return 'Today $time';
+    }
+    if (days == 1) {
+      return 'Yesterday $time';
+    }
+    return '${at.year}-${two(at.month)}-${two(at.day)}';
+  }
+
+  static const String ytHistory = 'Local YouTube history';
+  static const String ytHistoryInfo =
+      'Off by default. Keeps videos you watch in NEXA in Recently Played and '
+      'Continue listening, on this PC only. Videos made for kids are never '
+      'kept: NEXA asks YouTube for this (1 unit of your API quota per '
+      'video).';
+  static const String ytHistoryNoKey =
+      'Without a YouTube API key (Settings - YouTube) NEXA cannot check '
+      'this, so no video is kept.';
+  static const String ytHistoryClear = 'Delete YouTube history';
+  static const String ytHistoryClearBody =
+      'Removes the watched YouTube videos from the history. Your songs, '
+      'favourites and playlists stay.';
 }

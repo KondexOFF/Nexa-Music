@@ -160,6 +160,31 @@ class YouTubeDataApi {
     }
   }
 
+  /// Made-for-kids status of up to 50 videos (`videos.list part=status`,
+  /// 1 unit). Videos missing from the answer (removed, private) are left
+  /// out. Throws [YouTubeApiException] (no key, offline, quota ...).
+  Future<Map<String, bool>> madeForKids(List<String> ids) async {
+    if (ids.isEmpty) {
+      return const {};
+    }
+    final found = await _get('videos', {
+      'part': 'status',
+      'id': ids.take(50).join(','),
+    });
+    final result = <String, bool>{};
+    final list = found['items'];
+    if (list is List) {
+      for (final item in list.whereType<Map<String, Object?>>()) {
+        final status = item['status'];
+        final id = item['id'];
+        if (id is String && status is Map && status['madeForKids'] is bool) {
+          result[id] = status['madeForKids']! as bool;
+        }
+      }
+    }
+    return result;
+  }
+
   /// Checks the key with one cheap request (1 unit). Throws
   /// [YouTubeApiException] when YouTube does not accept it.
   Future<void> checkKey() => _get('videos', {'part': 'id', 'id': probeVideo});

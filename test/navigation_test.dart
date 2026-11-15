@@ -90,13 +90,13 @@ void main() {
     expect(find.text(S.nothingPlaying), findsOneWidget);
   });
 
-  testWidgets('Recently Played tabs switch the table', (tester) async {
+  testWidgets('Recently Played explains an empty history (E2.7b)',
+      (tester) async {
     await pumpNexaApp(tester, size1280);
 
-    expect(find.text(S.colAlbum), findsOneWidget);
-    await tester.tap(find.text(S.tabArtists));
-    await settle(tester);
-    expect(find.text(S.colGenre), findsOneWidget);
-    expect(find.text(S.colTopTrack), findsOneWidget);
+    expect(find.text(S.recentlyPlayed), findsOneWidget);
+    // History is off by default: nothing is kept, and Home says so.
+    expect(find.text(S.recentOff), findsOneWidget);
+    expect(find.text(S.continueListening), findsNothing);
   });
 }

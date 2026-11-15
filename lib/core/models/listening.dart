@@ -1,7 +1,14 @@
 import 'package:flutter/foundation.dart';
 
 /// Where playback was started from (stored with each listening event).
-enum PlayContext { library, wave }
+enum PlayContext {
+  library,
+  wave,
+
+  /// A YouTube video in YouTube's own player (E2.7b, opt-in). Never used by
+  /// NEXA Wave or NEXA DNA.
+  youtube,
+}
 
 /// How a listening ended.
 enum EndReason {

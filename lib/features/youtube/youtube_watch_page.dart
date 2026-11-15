@@ -34,11 +34,12 @@ Future<void> openYouTubeWatch(
   required String videoId,
   String? title,
   String? channel,
+  Duration? start,
 }) async {
   ref.read(navigationProvider.notifier).go(NexaDestination.youtube);
   await ref
       .read(youtubePlayerProvider.notifier)
-      .watch(videoId, title: title, channel: channel);
+      .watch(videoId, title: title, channel: channel, start: start);
 }
 
 /// The YouTube section (E2.1 / E2.6): YouTube's own visible player with its

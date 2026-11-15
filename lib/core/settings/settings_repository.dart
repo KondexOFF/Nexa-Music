@@ -48,6 +48,7 @@ abstract final class SettingKeys {
   static const String mixAlbumGapless = 'mix.albumGapless';
   static const String historyConsent = 'dna.historyConsent';
   static const String learningPaused = 'dna.learningPaused';
+  static const String youtubeHistory = 'dna.youtubeHistory';
   static const String dnaOnboarded = 'dna.onboarded';
   static const String waveDiscovery = 'wave.discovery';
   static const String waveOnline = 'wave.online';
