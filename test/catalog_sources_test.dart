@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:nexa_music/app/strings.dart';
 import 'package:nexa_music/core/audio/transition.dart';
 import 'package:nexa_music/core/models/track.dart';
 import 'package:nexa_music/features/mix_engine/mix_settings.dart';
@@ -257,14 +256,14 @@ void main() {
     );
     final online = make(TrackSource.jamendo, -5);
     expect(online.rights.play, isTrue);
-    expect(online.rights.mix, isFalse);
+    expect(online.rights.mix, isTrue, reason: 'D-025: catalog streams crossfade');
     expect(online.fileExtension, 'STREAM');
     final plan = planTransition(
       const MixSettings(mode: TransitionMode.crossfade, crossfadeSeconds: 6),
       make(TrackSource.local, 1),
       online,
     );
-    expect(plan.kind, TransitionKind.cut);
-    expect(plan.reason, S.planNoMixRights);
+    expect(plan.kind, TransitionKind.crossfade);
+    expect(plan.fade, const Duration(seconds: 6));
   });
 }

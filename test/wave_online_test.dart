@@ -263,7 +263,8 @@ void main() {
     expect(disliked, isEmpty);
   });
 
-  test('local <-> online: cut transitions, history only for library songs',
+  test('local <-> online: crossfade transitions (D-025), history only for '
+      'library songs',
       () async {
     await dna().setHistoryConsent(true);
     await dna().setWaveOnline(true);
@@ -272,14 +273,13 @@ void main() {
     // Pattern: local, online, local, ...
     expect(player().current!.isOnline, isFalse);
     expect(player().nextEntry!.track.isOnline, isTrue);
-    expect(engine.preparedPlan!.kind, TransitionKind.cut);
-    expect(engine.preparedPlan!.reason, S.planNoMixRights);
+    expect(engine.preparedPlan!.kind, TransitionKind.crossfade);
 
     engine.finishCurrent(); // local -> online
     await pumpEventQueue();
     expect(player().current!.isOnline, isTrue);
     expect(engine.loads.last, player().current!.path);
-    expect(engine.preparedPlan!.kind, TransitionKind.cut);
+    expect(engine.preparedPlan!.kind, TransitionKind.crossfade);
 
     engine.finishCurrent(); // online -> local
     await pumpEventQueue();

@@ -7,11 +7,12 @@ import 'package:nexa_music/features/mix_engine/transition_planner.dart';
 import 'package:nexa_music/features/nexa_wave/wave_ranker.dart';
 
 /// Regression investigation 2026-10-29 (owner: "Crossfade stopped
-/// working"). Reproduces the owner's settings: 6 local songs without album
+/// working", E2-07 FAIL). The owner's settings: 6 local songs without album
 /// tags, Smart Mix 12 s, NEXA Wave with online picks at Discovery 100 %.
-/// Catalog streams may not be mixed (PlaybackRights.streamOnly), and the
-/// Wave alternates local and catalog songs, so no transition of such a Wave
-/// can be a crossfade. Local songs between themselves still crossfade.
+/// Up to E2, catalog streams were never mixed and the Wave alternates local
+/// and catalog songs, so no transition of such a Wave was a crossfade.
+/// D-025 (2026-11-15): catalog streams crossfade too - every transition of
+/// that Wave crossfades.
 void main() {
   Track local(int id) => Track(
     id: id,
@@ -62,11 +63,9 @@ void main() {
     expect(transitions(0), {TransitionKind.crossfade: 5});
   });
 
-  test('Discovery 100 % with online picks: local and catalog songs alternate, '
-      'so every transition is a plain cut - no crossfade is heard', () {
-    final kinds = transitions(1);
-    expect(kinds[TransitionKind.crossfade] ?? 0, 0);
-    expect(kinds[TransitionKind.cut], 11);
+  test('Discovery 100 % with online picks: local and catalog songs alternate '
+      'and every transition crossfades 12 s (D-025)', () {
+    expect(transitions(1), {TransitionKind.crossfade: 11});
   });
 
   test('two local songs without album tags crossfade 12 s (not gapless)', () {

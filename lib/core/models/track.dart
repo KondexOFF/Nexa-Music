@@ -27,6 +27,13 @@ class PlaybackRights {
 
   static const PlaybackRights localFile = PlaybackRights(play: true, mix: true);
   static const PlaybackRights streamOnly = PlaybackRights(play: true, mix: false);
+
+  /// Audius / Jamendo catalog streams (D-025, 2026-11-15): played and
+  /// crossfaded like local files - a volume fade while playing, nothing is
+  /// stored or redistributed. Neither the Jamendo API Terms of Use nor the
+  /// Audius Open Music License (2 July 2025) restricts it; YouTube is never
+  /// a [Track] and never mixed.
+  static const PlaybackRights catalogStream = PlaybackRights(play: true, mix: true);
 }
 
 /// A track in the NEXA library (Master Plan v1.0, section 3).
@@ -101,7 +108,7 @@ class Track {
 
   PlaybackRights get rights => switch (source) {
     TrackSource.local => PlaybackRights.localFile,
-    TrackSource.audius || TrackSource.jamendo => PlaybackRights.streamOnly,
+    TrackSource.audius || TrackSource.jamendo => PlaybackRights.catalogStream,
   };
 
   /// Format label: file extension for local files, "STREAM" for catalogs.
