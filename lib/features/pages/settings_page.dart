@@ -11,6 +11,7 @@ import '../discover/catalog_settings.dart';
 import '../nexa_dna/privacy_controls.dart';
 import '../player/player_controller.dart';
 import '../youtube/youtube_settings.dart';
+import 'database_backup_controls.dart';
 import '../../ui/nexa_widgets.dart';
 
 /// Settings: output device, media keys, planned settings and the Phase 0
@@ -80,6 +81,12 @@ class SettingsPage extends StatelessWidget {
             title: S.settingsPrivacy,
             body: S.settingsPrivacyBody,
             action: PrivacyControls(),
+          ),
+          const _SettingsCard(
+            icon: Icons.backup_outlined,
+            title: S.dbBackupsTitle,
+            body: S.dbBackupsBody,
+            action: DatabaseBackupControls(),
           ),
           const _SettingsCard(
             icon: Icons.public_rounded,

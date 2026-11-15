@@ -250,10 +250,7 @@ class _TrackDetails extends ConsumerWidget {
                         iconSize: 24,
                         boxSize: 52,
                         color: NexaColors.textSecondary,
-                        onPressed: t.isOnline
-                            ? null
-                            : () => addTracksToPlaylist(context, ref, [t.id]),
-                        disabledReason: S.onlineNotSaved,
+                        onPressed: () => addTracksToPlaylist(context, ref, [t]),
                       ),
                     ),
                     const SizedBox(width: 14),

@@ -321,6 +321,18 @@ class PlayerController extends Notifier<PlayerState> {
     if (tracks.isEmpty) {
       return;
     }
+    // YouTube entries play only in YouTube's own visible player (E2.7);
+    // NEXA's engine queue takes the files and streams.
+    final picked = tracks[start.clamp(0, tracks.length - 1)];
+    if (picked.source.isExternal) {
+      await ref.read(externalTrackLauncherProvider)?.call(picked);
+      return;
+    }
+    if (tracks.any((t) => !t.rights.play)) {
+      final playable = [for (final t in tracks) if (t.rights.play) t];
+      start = playable.indexOf(picked);
+      tracks = playable;
+    }
     _endListening(EndReason.skipped);
     final entries = _entries(tracks);
     _original = entries;
@@ -337,6 +349,7 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// Plays [tracks] in random order.
   Future<void> shuffleTracks(List<Track> tracks) async {
+    tracks = [for (final t in tracks) if (t.rights.play) t];
     if (tracks.isEmpty) {
       return;
     }
@@ -351,7 +364,7 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// Inserts [tracks] right after the current song.
   void playNext(List<Track> tracks) {
-    final entries = _entries(tracks);
+    final entries = _entries([for (final t in tracks) if (t.rights.play) t]);
     final at = state.cursor + 1;
     final queue = [...state.queue]..insertAll(at, entries);
     final currentUid = state.currentEntry?.uid;
@@ -367,7 +380,7 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// Appends [tracks] to the end of the queue.
   void addToQueue(List<Track> tracks) {
-    final entries = _entries(tracks);
+    final entries = _entries([for (final t in tracks) if (t.rights.play) t]);
     _original = [..._original, ...entries];
     state = state.copyWith(queue: [...state.queue, ...entries]);
     if (state.cursor < 0) {
@@ -648,6 +661,20 @@ final playerProvider = NotifierProvider<PlayerController, PlayerState>(
 /// when it took the key. Set only while another visible player owns the
 /// keys (E2.0 prototype: the YouTube page).
 typedef MediaKeyRedirect = Future<bool> Function(String key);
+
+/// Opens a track that NEXA's engine never plays (a YouTube entry) in its
+/// own visible player; set by the app shell.
+class ExternalTrackLauncher extends Notifier<Future<void> Function(Track)?> {
+  @override
+  Future<void> Function(Track)? build() => null;
+
+  void set(Future<void> Function(Track)? launch) => state = launch;
+}
+
+final externalTrackLauncherProvider =
+    NotifierProvider<ExternalTrackLauncher, Future<void> Function(Track)?>(
+      ExternalTrackLauncher.new,
+    );
 
 class MediaKeyRedirectController extends Notifier<MediaKeyRedirect?> {
   @override

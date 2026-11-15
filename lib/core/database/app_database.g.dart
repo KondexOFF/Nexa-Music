@@ -647,6 +647,62 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _userTitleMeta = const VerificationMeta(
+    'userTitle',
+  );
+  @override
+  late final GeneratedColumn<String> userTitle = GeneratedColumn<String>(
+    'user_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pageUrlMeta = const VerificationMeta(
+    'pageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> pageUrl = GeneratedColumn<String>(
+    'page_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _licenseMeta = const VerificationMeta(
+    'license',
+  );
+  @override
+  late final GeneratedColumn<String> license = GeneratedColumn<String>(
+    'license',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _licenseUrlMeta = const VerificationMeta(
+    'licenseUrl',
+  );
+  @override
+  late final GeneratedColumn<String> licenseUrl = GeneratedColumn<String>(
+    'license_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _metaFetchedAtMeta = const VerificationMeta(
+    'metaFetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> metaFetchedAt =
+      GeneratedColumn<DateTime>(
+        'meta_fetched_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -674,6 +730,11 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
     addedAt,
     disliked,
     dislikedAt,
+    userTitle,
+    pageUrl,
+    license,
+    licenseUrl,
+    metaFetchedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -867,6 +928,39 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
         dislikedAt.isAcceptableOrUnknown(data['disliked_at']!, _dislikedAtMeta),
       );
     }
+    if (data.containsKey('user_title')) {
+      context.handle(
+        _userTitleMeta,
+        userTitle.isAcceptableOrUnknown(data['user_title']!, _userTitleMeta),
+      );
+    }
+    if (data.containsKey('page_url')) {
+      context.handle(
+        _pageUrlMeta,
+        pageUrl.isAcceptableOrUnknown(data['page_url']!, _pageUrlMeta),
+      );
+    }
+    if (data.containsKey('license')) {
+      context.handle(
+        _licenseMeta,
+        license.isAcceptableOrUnknown(data['license']!, _licenseMeta),
+      );
+    }
+    if (data.containsKey('license_url')) {
+      context.handle(
+        _licenseUrlMeta,
+        licenseUrl.isAcceptableOrUnknown(data['license_url']!, _licenseUrlMeta),
+      );
+    }
+    if (data.containsKey('meta_fetched_at')) {
+      context.handle(
+        _metaFetchedAtMeta,
+        metaFetchedAt.isAcceptableOrUnknown(
+          data['meta_fetched_at']!,
+          _metaFetchedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -976,6 +1070,26 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, TrackRow> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}disliked_at'],
       ),
+      userTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_title'],
+      ),
+      pageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}page_url'],
+      ),
+      license: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}license'],
+      ),
+      licenseUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}license_url'],
+      ),
+      metaFetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}meta_fetched_at'],
+      ),
     );
   }
 
@@ -1018,6 +1132,22 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
   /// Explicit dislike (NEXA DNA, schema v3): never suggested by NEXA Wave.
   final bool disliked;
   final DateTime? dislikedAt;
+
+  /// The user's own name for a saved entry (rename); null = [title].
+  final String? userTitle;
+
+  /// Page of the entry at its source (backlink / "Open on YouTube").
+  final String? pageUrl;
+
+  /// Catalog licence name and link (attribution).
+  final String? license;
+  final String? licenseUrl;
+
+  /// When title / artist / artwork were last received from the source's
+  /// API. YouTube data is refreshed or removed within 30 days (YouTube API
+  /// Services Developer Policies III.E.4.c); the video id and the user's
+  /// own name are kept.
+  final DateTime? metaFetchedAt;
   const TrackRow({
     required this.id,
     required this.source,
@@ -1044,6 +1174,11 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     required this.addedAt,
     required this.disliked,
     this.dislikedAt,
+    this.userTitle,
+    this.pageUrl,
+    this.license,
+    this.licenseUrl,
+    this.metaFetchedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1095,6 +1230,21 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     if (!nullToAbsent || dislikedAt != null) {
       map['disliked_at'] = Variable<DateTime>(dislikedAt);
     }
+    if (!nullToAbsent || userTitle != null) {
+      map['user_title'] = Variable<String>(userTitle);
+    }
+    if (!nullToAbsent || pageUrl != null) {
+      map['page_url'] = Variable<String>(pageUrl);
+    }
+    if (!nullToAbsent || license != null) {
+      map['license'] = Variable<String>(license);
+    }
+    if (!nullToAbsent || licenseUrl != null) {
+      map['license_url'] = Variable<String>(licenseUrl);
+    }
+    if (!nullToAbsent || metaFetchedAt != null) {
+      map['meta_fetched_at'] = Variable<DateTime>(metaFetchedAt);
+    }
     return map;
   }
 
@@ -1145,6 +1295,21 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       dislikedAt: dislikedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(dislikedAt),
+      userTitle: userTitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userTitle),
+      pageUrl: pageUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pageUrl),
+      license: license == null && nullToAbsent
+          ? const Value.absent()
+          : Value(license),
+      licenseUrl: licenseUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(licenseUrl),
+      metaFetchedAt: metaFetchedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(metaFetchedAt),
     );
   }
 
@@ -1179,6 +1344,11 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       addedAt: serializer.fromJson<DateTime>(json['addedAt']),
       disliked: serializer.fromJson<bool>(json['disliked']),
       dislikedAt: serializer.fromJson<DateTime?>(json['dislikedAt']),
+      userTitle: serializer.fromJson<String?>(json['userTitle']),
+      pageUrl: serializer.fromJson<String?>(json['pageUrl']),
+      license: serializer.fromJson<String?>(json['license']),
+      licenseUrl: serializer.fromJson<String?>(json['licenseUrl']),
+      metaFetchedAt: serializer.fromJson<DateTime?>(json['metaFetchedAt']),
     );
   }
   @override
@@ -1210,6 +1380,11 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       'addedAt': serializer.toJson<DateTime>(addedAt),
       'disliked': serializer.toJson<bool>(disliked),
       'dislikedAt': serializer.toJson<DateTime?>(dislikedAt),
+      'userTitle': serializer.toJson<String?>(userTitle),
+      'pageUrl': serializer.toJson<String?>(pageUrl),
+      'license': serializer.toJson<String?>(license),
+      'licenseUrl': serializer.toJson<String?>(licenseUrl),
+      'metaFetchedAt': serializer.toJson<DateTime?>(metaFetchedAt),
     };
   }
 
@@ -1239,6 +1414,11 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     DateTime? addedAt,
     bool? disliked,
     Value<DateTime?> dislikedAt = const Value.absent(),
+    Value<String?> userTitle = const Value.absent(),
+    Value<String?> pageUrl = const Value.absent(),
+    Value<String?> license = const Value.absent(),
+    Value<String?> licenseUrl = const Value.absent(),
+    Value<DateTime?> metaFetchedAt = const Value.absent(),
   }) => TrackRow(
     id: id ?? this.id,
     source: source ?? this.source,
@@ -1265,6 +1445,13 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     addedAt: addedAt ?? this.addedAt,
     disliked: disliked ?? this.disliked,
     dislikedAt: dislikedAt.present ? dislikedAt.value : this.dislikedAt,
+    userTitle: userTitle.present ? userTitle.value : this.userTitle,
+    pageUrl: pageUrl.present ? pageUrl.value : this.pageUrl,
+    license: license.present ? license.value : this.license,
+    licenseUrl: licenseUrl.present ? licenseUrl.value : this.licenseUrl,
+    metaFetchedAt: metaFetchedAt.present
+        ? metaFetchedAt.value
+        : this.metaFetchedAt,
   );
   TrackRow copyWithCompanion(TracksCompanion data) {
     return TrackRow(
@@ -1311,6 +1498,15 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
       dislikedAt: data.dislikedAt.present
           ? data.dislikedAt.value
           : this.dislikedAt,
+      userTitle: data.userTitle.present ? data.userTitle.value : this.userTitle,
+      pageUrl: data.pageUrl.present ? data.pageUrl.value : this.pageUrl,
+      license: data.license.present ? data.license.value : this.license,
+      licenseUrl: data.licenseUrl.present
+          ? data.licenseUrl.value
+          : this.licenseUrl,
+      metaFetchedAt: data.metaFetchedAt.present
+          ? data.metaFetchedAt.value
+          : this.metaFetchedAt,
     );
   }
 
@@ -1341,7 +1537,12 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
           ..write('problem: $problem, ')
           ..write('addedAt: $addedAt, ')
           ..write('disliked: $disliked, ')
-          ..write('dislikedAt: $dislikedAt')
+          ..write('dislikedAt: $dislikedAt, ')
+          ..write('userTitle: $userTitle, ')
+          ..write('pageUrl: $pageUrl, ')
+          ..write('license: $license, ')
+          ..write('licenseUrl: $licenseUrl, ')
+          ..write('metaFetchedAt: $metaFetchedAt')
           ..write(')'))
         .toString();
   }
@@ -1373,6 +1574,11 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
     addedAt,
     disliked,
     dislikedAt,
+    userTitle,
+    pageUrl,
+    license,
+    licenseUrl,
+    metaFetchedAt,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1402,7 +1608,12 @@ class TrackRow extends DataClass implements Insertable<TrackRow> {
           other.problem == this.problem &&
           other.addedAt == this.addedAt &&
           other.disliked == this.disliked &&
-          other.dislikedAt == this.dislikedAt);
+          other.dislikedAt == this.dislikedAt &&
+          other.userTitle == this.userTitle &&
+          other.pageUrl == this.pageUrl &&
+          other.license == this.license &&
+          other.licenseUrl == this.licenseUrl &&
+          other.metaFetchedAt == this.metaFetchedAt);
 }
 
 class TracksCompanion extends UpdateCompanion<TrackRow> {
@@ -1431,6 +1642,11 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
   final Value<DateTime> addedAt;
   final Value<bool> disliked;
   final Value<DateTime?> dislikedAt;
+  final Value<String?> userTitle;
+  final Value<String?> pageUrl;
+  final Value<String?> license;
+  final Value<String?> licenseUrl;
+  final Value<DateTime?> metaFetchedAt;
   const TracksCompanion({
     this.id = const Value.absent(),
     this.source = const Value.absent(),
@@ -1457,6 +1673,11 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     this.addedAt = const Value.absent(),
     this.disliked = const Value.absent(),
     this.dislikedAt = const Value.absent(),
+    this.userTitle = const Value.absent(),
+    this.pageUrl = const Value.absent(),
+    this.license = const Value.absent(),
+    this.licenseUrl = const Value.absent(),
+    this.metaFetchedAt = const Value.absent(),
   });
   TracksCompanion.insert({
     this.id = const Value.absent(),
@@ -1484,6 +1705,11 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     required DateTime addedAt,
     this.disliked = const Value.absent(),
     this.dislikedAt = const Value.absent(),
+    this.userTitle = const Value.absent(),
+    this.pageUrl = const Value.absent(),
+    this.license = const Value.absent(),
+    this.licenseUrl = const Value.absent(),
+    this.metaFetchedAt = const Value.absent(),
   }) : pathKey = Value(pathKey),
        path = Value(path),
        title = Value(title),
@@ -1519,6 +1745,11 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     Expression<DateTime>? addedAt,
     Expression<bool>? disliked,
     Expression<DateTime>? dislikedAt,
+    Expression<String>? userTitle,
+    Expression<String>? pageUrl,
+    Expression<String>? license,
+    Expression<String>? licenseUrl,
+    Expression<DateTime>? metaFetchedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1546,6 +1777,11 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
       if (addedAt != null) 'added_at': addedAt,
       if (disliked != null) 'disliked': disliked,
       if (dislikedAt != null) 'disliked_at': dislikedAt,
+      if (userTitle != null) 'user_title': userTitle,
+      if (pageUrl != null) 'page_url': pageUrl,
+      if (license != null) 'license': license,
+      if (licenseUrl != null) 'license_url': licenseUrl,
+      if (metaFetchedAt != null) 'meta_fetched_at': metaFetchedAt,
     });
   }
 
@@ -1575,6 +1811,11 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     Value<DateTime>? addedAt,
     Value<bool>? disliked,
     Value<DateTime?>? dislikedAt,
+    Value<String?>? userTitle,
+    Value<String?>? pageUrl,
+    Value<String?>? license,
+    Value<String?>? licenseUrl,
+    Value<DateTime?>? metaFetchedAt,
   }) {
     return TracksCompanion(
       id: id ?? this.id,
@@ -1602,6 +1843,11 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
       addedAt: addedAt ?? this.addedAt,
       disliked: disliked ?? this.disliked,
       dislikedAt: dislikedAt ?? this.dislikedAt,
+      userTitle: userTitle ?? this.userTitle,
+      pageUrl: pageUrl ?? this.pageUrl,
+      license: license ?? this.license,
+      licenseUrl: licenseUrl ?? this.licenseUrl,
+      metaFetchedAt: metaFetchedAt ?? this.metaFetchedAt,
     );
   }
 
@@ -1683,6 +1929,21 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
     if (dislikedAt.present) {
       map['disliked_at'] = Variable<DateTime>(dislikedAt.value);
     }
+    if (userTitle.present) {
+      map['user_title'] = Variable<String>(userTitle.value);
+    }
+    if (pageUrl.present) {
+      map['page_url'] = Variable<String>(pageUrl.value);
+    }
+    if (license.present) {
+      map['license'] = Variable<String>(license.value);
+    }
+    if (licenseUrl.present) {
+      map['license_url'] = Variable<String>(licenseUrl.value);
+    }
+    if (metaFetchedAt.present) {
+      map['meta_fetched_at'] = Variable<DateTime>(metaFetchedAt.value);
+    }
     return map;
   }
 
@@ -1713,7 +1974,12 @@ class TracksCompanion extends UpdateCompanion<TrackRow> {
           ..write('problem: $problem, ')
           ..write('addedAt: $addedAt, ')
           ..write('disliked: $disliked, ')
-          ..write('dislikedAt: $dislikedAt')
+          ..write('dislikedAt: $dislikedAt, ')
+          ..write('userTitle: $userTitle, ')
+          ..write('pageUrl: $pageUrl, ')
+          ..write('license: $license, ')
+          ..write('licenseUrl: $licenseUrl, ')
+          ..write('metaFetchedAt: $metaFetchedAt')
           ..write(')'))
         .toString();
   }
@@ -3897,6 +4163,11 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   required DateTime addedAt,
   Value<bool> disliked,
   Value<DateTime?> dislikedAt,
+  Value<String?> userTitle,
+  Value<String?> pageUrl,
+  Value<String?> license,
+  Value<String?> licenseUrl,
+  Value<DateTime?> metaFetchedAt,
 });
 typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<int> id,
@@ -3924,6 +4195,11 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<DateTime> addedAt,
   Value<bool> disliked,
   Value<DateTime?> dislikedAt,
+  Value<String?> userTitle,
+  Value<String?> pageUrl,
+  Value<String?> license,
+  Value<String?> licenseUrl,
+  Value<DateTime?> metaFetchedAt,
 });
 
 final class $$TracksTableReferences
@@ -4114,6 +4390,31 @@ class $$TracksTableFilterComposer
 
   ColumnFilters<DateTime> get dislikedAt => $composableBuilder(
     column: $table.dislikedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userTitle => $composableBuilder(
+    column: $table.userTitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pageUrl => $composableBuilder(
+    column: $table.pageUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get license => $composableBuilder(
+    column: $table.license,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get licenseUrl => $composableBuilder(
+    column: $table.licenseUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get metaFetchedAt => $composableBuilder(
+    column: $table.metaFetchedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4320,6 +4621,31 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get userTitle => $composableBuilder(
+    column: $table.userTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pageUrl => $composableBuilder(
+    column: $table.pageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get license => $composableBuilder(
+    column: $table.license,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get licenseUrl => $composableBuilder(
+    column: $table.licenseUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get metaFetchedAt => $composableBuilder(
+    column: $table.metaFetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$LibraryFoldersTableOrderingComposer get folderId {
     final $$LibraryFoldersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4440,6 +4766,25 @@ class $$TracksTableAnnotationComposer
 
   GeneratedColumn<DateTime> get dislikedAt => $composableBuilder(
     column: $table.dislikedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get userTitle =>
+      $composableBuilder(column: $table.userTitle, builder: (column) => column);
+
+  GeneratedColumn<String> get pageUrl =>
+      $composableBuilder(column: $table.pageUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get license =>
+      $composableBuilder(column: $table.license, builder: (column) => column);
+
+  GeneratedColumn<String> get licenseUrl => $composableBuilder(
+    column: $table.licenseUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get metaFetchedAt => $composableBuilder(
+    column: $table.metaFetchedAt,
     builder: (column) => column,
   );
 
@@ -4574,6 +4919,11 @@ class $$TracksTableTableManager
                 Value<DateTime> addedAt = const Value.absent(),
                 Value<bool> disliked = const Value.absent(),
                 Value<DateTime?> dislikedAt = const Value.absent(),
+                Value<String?> userTitle = const Value.absent(),
+                Value<String?> pageUrl = const Value.absent(),
+                Value<String?> license = const Value.absent(),
+                Value<String?> licenseUrl = const Value.absent(),
+                Value<DateTime?> metaFetchedAt = const Value.absent(),
               }) => TracksCompanion(
                 id: id,
                 source: source,
@@ -4600,6 +4950,11 @@ class $$TracksTableTableManager
                 addedAt: addedAt,
                 disliked: disliked,
                 dislikedAt: dislikedAt,
+                userTitle: userTitle,
+                pageUrl: pageUrl,
+                license: license,
+                licenseUrl: licenseUrl,
+                metaFetchedAt: metaFetchedAt,
               ),
           createCompanionCallback:
               ({
@@ -4628,6 +4983,11 @@ class $$TracksTableTableManager
                 required DateTime addedAt,
                 Value<bool> disliked = const Value.absent(),
                 Value<DateTime?> dislikedAt = const Value.absent(),
+                Value<String?> userTitle = const Value.absent(),
+                Value<String?> pageUrl = const Value.absent(),
+                Value<String?> license = const Value.absent(),
+                Value<String?> licenseUrl = const Value.absent(),
+                Value<DateTime?> metaFetchedAt = const Value.absent(),
               }) => TracksCompanion.insert(
                 id: id,
                 source: source,
@@ -4654,6 +5014,11 @@ class $$TracksTableTableManager
                 addedAt: addedAt,
                 disliked: disliked,
                 dislikedAt: dislikedAt,
+                userTitle: userTitle,
+                pageUrl: pageUrl,
+                license: license,
+                licenseUrl: licenseUrl,
+                metaFetchedAt: metaFetchedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(

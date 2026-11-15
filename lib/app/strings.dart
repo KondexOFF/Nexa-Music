@@ -501,8 +501,6 @@ abstract final class S {
   static const String reset = 'Reset';
 
   // Online catalogs (Phase 6)
-  static const String onlineNotSaved =
-      'Online catalog songs are not saved in your library in this version';
   static const String onlineNotInLibrary = 'Not part of your library';
   static const String discoverOverline = 'DISCOVER';
   static const String discoverTitle = 'Free music from open catalogs';
@@ -552,4 +550,37 @@ abstract final class S {
       'Free for personal, non-commercial use. Create it at '
       'devportal.jamendo.com; it stays on this PC.';
   static const String jamendoTerms = 'Jamendo API terms';
+
+  // E2.7: saved catalog songs and YouTube videos, database safety
+  static const String renameSaved = 'Rename';
+  static const String deleteSaved = 'Delete saved entry';
+  static const String deleteSavedBody =
+      'It is removed from your favourites and from every playlist. Nothing '
+      'is deleted at the source.';
+  static const String ytVideoGone =
+      'No longer available on YouTube (removed or private)';
+  static const String dbBackupsTitle = 'Library backups';
+  static const String dbBackupsBody =
+      'Copies of your playlists, favourites, saved videos and history. A '
+      'copy is made automatically before NEXA updates the database; the 10 '
+      'newest are kept on this PC.';
+  static const String dbBackupNow = 'Back up now';
+  static const String dbBackupBusy = 'Backing up...';
+  static String dbBackupDone(String name) => 'Backup saved: $name';
+  static const String dbBackupFailed = 'The backup could not be saved.';
+  static const String dbNoBackups = 'No backups yet.';
+  static const String dbRestoreAction = 'Restore at next start';
+  static const String dbRestoreTitle = 'Restore this backup?';
+  static String dbRestoreBody(String copy) =>
+      'When NEXA starts next time, the library is replaced by the backup of '
+      '$copy. The current library is kept as another backup first.';
+  static String dbRestorePending(String copy) =>
+      'Will be restored at next start: $copy';
+  static const String dbFailedTitle = 'The library could not be opened';
+  static const String dbFailedNoCopy =
+      'Nothing was changed. Close NEXA and try again; if it happens again, '
+      'restore a copy from the backups folder.';
+  static String dbFailedRestored(String copy) =>
+      'The update of the library failed, so the copy made just before it was '
+      'put back ($copy). Your playlists and favourites are as they were.';
 }

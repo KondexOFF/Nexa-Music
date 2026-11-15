@@ -79,6 +79,17 @@ class _AppShellState extends ConsumerState<AppShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(libraryScanProvider.notifier).rescanIfLibraryExists();
+        // Saved YouTube entries open in YouTube's own visible player.
+        ref
+            .read(externalTrackLauncherProvider.notifier)
+            .set(
+              (t) => openYouTubeWatch(
+                ref,
+                videoId: t.sourceTrackId,
+                title: t.title,
+                channel: t.artist,
+              ),
+            );
       }
     });
     bindMediaKeys(ref);

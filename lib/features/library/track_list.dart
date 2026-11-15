@@ -109,6 +109,8 @@ enum _RowAction {
   addToPlaylist,
   favorite,
   dislike,
+  rename,
+  deleteSaved,
   remove,
   moveUp,
   moveDown,
@@ -151,14 +153,34 @@ class TrackRow extends ConsumerWidget {
       case _RowAction.addToQueue:
         player.addToQueue([track]);
       case _RowAction.addToPlaylist:
-        await addTracksToPlaylist(context, ref, [track.id]);
+        await addTracksToPlaylist(context, ref, [track]);
       case _RowAction.favorite:
-        await repo.setFavorite(track.id, !track.favorite);
+        await repo.setFavoriteFor(track, !track.favorite);
       case _RowAction.dislike:
         if (track.disliked) {
           await ref.read(tasteRepositoryProvider).setDisliked(track.id, false);
         } else {
           await ref.read(waveProvider.notifier).dislike(track);
+        }
+      case _RowAction.rename:
+        final name = await askPlaylistName(
+          context,
+          title: S.renameSaved,
+          initial: track.title,
+          action: S.save,
+        );
+        if (name != null) {
+          await repo.renameSaved(track, name);
+        }
+      case _RowAction.deleteSaved:
+        final ok = await confirmAction(
+          context,
+          title: '${S.deleteSaved} "${track.title}"?',
+          body: S.deleteSavedBody,
+          action: S.delete,
+        );
+        if (ok) {
+          await repo.deleteSaved(track);
         }
       case _RowAction.remove:
         await repo.removeFromPlaylist(entryId!);
@@ -240,6 +262,8 @@ class TrackRow extends ConsumerWidget {
                         Text(
                           dim
                               ? '${track.problem ?? S.unavailable} - ${track.artist}'
+                              : track.isOnline
+                              ? '${track.artist} - ${track.source.label}'
                               : track.artist,
                           style: NexaText.caption.copyWith(
                             color: dim ? NexaColors.coral : null,
@@ -285,7 +309,7 @@ class TrackRow extends ConsumerWidget {
             iconSize: 19,
             onPressed: () => ref
                 .read(libraryRepositoryProvider)
-                .setFavorite(track.id, !track.favorite),
+                .setFavoriteFor(track, !track.favorite),
           ),
           const SizedBox(width: 4),
           PopupMenuButton<_RowAction>(
@@ -297,15 +321,19 @@ class TrackRow extends ConsumerWidget {
             color: NexaColors.panelRaised,
             onSelected: (a) => _onAction(context, ref, a),
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: _RowAction.playNext,
-                child: Text(S.playNext),
-              ),
-              const PopupMenuItem(
-                value: _RowAction.addToQueue,
-                child: Text(S.addToQueue),
-              ),
-              const PopupMenuDivider(),
+              // YouTube entries play only in YouTube's player (E2.8 adds
+              // them to the one queue).
+              if (track.rights.play) ...[
+                const PopupMenuItem(
+                  value: _RowAction.playNext,
+                  child: Text(S.playNext),
+                ),
+                const PopupMenuItem(
+                  value: _RowAction.addToQueue,
+                  child: Text(S.addToQueue),
+                ),
+                const PopupMenuDivider(),
+              ],
               const PopupMenuItem(
                 value: _RowAction.addToPlaylist,
                 child: Text('${S.addToPlaylist}...'),
@@ -314,10 +342,21 @@ class TrackRow extends ConsumerWidget {
                 value: _RowAction.favorite,
                 child: Text(track.favorite ? S.unlike : S.like),
               ),
-              PopupMenuItem(
-                value: _RowAction.dislike,
-                child: Text(track.disliked ? S.undislike : S.dislike),
-              ),
+              if (!track.isOnline)
+                PopupMenuItem(
+                  value: _RowAction.dislike,
+                  child: Text(track.disliked ? S.undislike : S.dislike),
+                ),
+              if (track.isOnline) ...[
+                const PopupMenuItem(
+                  value: _RowAction.rename,
+                  child: Text(S.renameSaved),
+                ),
+                const PopupMenuItem(
+                  value: _RowAction.deleteSaved,
+                  child: Text(S.deleteSaved),
+                ),
+              ],
               if (entryId != null) ...[
                 const PopupMenuDivider(),
                 PopupMenuItem(
@@ -343,11 +382,12 @@ class TrackRow extends ConsumerWidget {
   }
 }
 
-/// Lets the user pick a playlist (or create one) and adds [trackIds] to it.
+/// Lets the user pick a playlist (or create one) and adds [tracks] to it
+/// (library files, catalog songs and YouTube videos; online ones are saved).
 Future<void> addTracksToPlaylist(
   BuildContext context,
   WidgetRef ref,
-  List<int> trackIds,
+  List<Track> tracks,
 ) async {
   final repo = ref.read(libraryRepositoryProvider);
   final playlists = await repo.getPlaylists();
@@ -387,5 +427,5 @@ Future<void> addTracksToPlaylist(
     }
     playlistId = await repo.createPlaylist(name);
   }
-  await repo.addToPlaylist(playlistId, trackIds);
+  await repo.addTracksToPlaylist(playlistId, tracks);
 }

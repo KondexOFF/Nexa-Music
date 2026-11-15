@@ -21,6 +21,7 @@ class SourceBadge extends StatelessWidget {
       TrackSource.local => NexaColors.textSecondary,
       TrackSource.audius => NexaColors.coral,
       TrackSource.jamendo => NexaColors.sky,
+      TrackSource.youtube => NexaColors.coral,
     },
   );
 }

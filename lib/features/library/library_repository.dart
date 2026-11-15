@@ -3,6 +3,13 @@ import 'package:drift/drift.dart';
 import '../../core/database/app_database.dart';
 import '../../core/models/track.dart';
 
+/// tracks.source of the user's own files.
+const String localSource = 'local';
+
+/// Title of a saved YouTube video whose data from YouTube had to be
+/// removed (no own name given).
+const String youtubeUnnamed = 'YouTube video';
+
 /// Which subset of the library a list shows.
 enum TrackFilter { all, favorites }
 
@@ -50,29 +57,42 @@ class LibraryRepository {
 
   final AppDatabase db;
 
-  static Track toTrack(TrackRow row) => Track(
-    id: row.id,
-    source: TrackSource.local,
-    sourceTrackId: row.pathKey,
-    path: row.path,
-    title: row.title,
-    artist: row.artist,
-    album: row.album,
-    albumArtist: row.albumArtist,
-    genre: row.genre,
-    year: row.year,
-    trackNumber: row.trackNumber,
-    discNumber: row.discNumber,
-    duration: row.durationMs == null
-        ? null
-        : Duration(milliseconds: row.durationMs!),
-    artworkPath: row.artworkPath,
-    favorite: row.favorite,
-    disliked: row.disliked,
-    available: row.available,
-    problem: row.problem,
-    addedAt: row.addedAt,
-  );
+  static Track toTrack(TrackRow row) {
+    final source = TrackSource.parse(row.source);
+    final saved = source != TrackSource.local;
+    // Saved catalog / YouTube entries: path_key = '<source>:<id>'. They get
+    // the same stable id as the live catalog track (Track.onlineId), so a
+    // song is one song whether it comes from Discover or from a playlist.
+    final sourceId = saved
+        ? row.pathKey.substring(row.pathKey.indexOf(':') + 1)
+        : row.pathKey;
+    return Track(
+      id: saved ? Track.onlineId(source, sourceId) : row.id,
+      source: source,
+      sourceTrackId: sourceId,
+      path: row.path,
+      title: (row.userTitle ?? '').trim().isNotEmpty ? row.userTitle! : row.title,
+      artist: row.artist,
+      album: row.album,
+      albumArtist: row.albumArtist,
+      genre: row.genre,
+      year: row.year,
+      trackNumber: row.trackNumber,
+      discNumber: row.discNumber,
+      duration: row.durationMs == null
+          ? null
+          : Duration(milliseconds: row.durationMs!),
+      artworkPath: row.artworkPath,
+      favorite: row.favorite,
+      disliked: row.disliked,
+      available: row.available,
+      problem: row.problem,
+      addedAt: row.addedAt,
+      pageUrl: row.pageUrl,
+      license: row.license,
+      licenseUrl: row.licenseUrl,
+    );
+  }
 
   static String _likePattern(String query) {
     final escaped = query
@@ -93,7 +113,11 @@ class LibraryRepository {
   }) {
     final q = db.select(db.tracks);
     q.where((t) {
-      Expression<bool> e = const Constant(true);
+      // Library views show the local files; Favourites also show saved
+      // catalog songs and YouTube bookmarks (E2.7).
+      Expression<bool> e = filter == TrackFilter.favorites
+          ? const Constant(true)
+          : t.source.equals(localSource);
       if (query.trim().isNotEmpty) {
         // Every word must match somewhere (title, artist, album, genre, file).
         for (final word in query.trim().split(RegExp(r'\s+'))) {
@@ -175,6 +199,8 @@ class LibraryRepository {
     final q = db.selectOnly(db.tracks)..addColumns([count]);
     if (filter == TrackFilter.favorites) {
       q.where(db.tracks.favorite.equals(true));
+    } else {
+      q.where(db.tracks.source.equals(localSource));
     }
     return q.watchSingle().map((row) => row.read(count) ?? 0);
   }
@@ -184,6 +210,7 @@ class LibraryRepository {
     final cover = db.tracks.artworkPath.max();
     final q = db.selectOnly(db.tracks)
       ..addColumns([db.tracks.album, db.tracks.artist, count, cover])
+      ..where(db.tracks.source.equals(localSource))
       ..groupBy([db.tracks.album])
       ..orderBy([OrderingTerm.asc(db.tracks.album.collate(Collate.noCase))]);
     return q.watch().map(
@@ -205,6 +232,7 @@ class LibraryRepository {
     final cover = db.tracks.artworkPath.max();
     final q = db.selectOnly(db.tracks)
       ..addColumns([db.tracks.artist, count, albums, cover])
+      ..where(db.tracks.source.equals(localSource))
       ..groupBy([db.tracks.artist])
       ..orderBy([OrderingTerm.asc(db.tracks.artist.collate(Collate.noCase))]);
     return q.watch().map(
@@ -230,6 +258,134 @@ class LibraryRepository {
           dislikedAt: favorite ? const Value(null) : const Value.absent(),
         ),
       );
+
+  // ---- saved catalog songs and YouTube bookmarks (E2.7) ----
+
+  /// Saves [track] (an Audius / Jamendo song or a YouTube video) so it can
+  /// be a favourite or in a playlist; returns its database id. A local
+  /// track already has one; an entry saved before keeps its row (the
+  /// user's own name, favourite state and data date are not touched).
+  Future<int> save(Track track) async {
+    if (track.source == TrackSource.local) {
+      return track.id;
+    }
+    final key = track.savedKey;
+    final existing = await _savedRow(key);
+    if (existing != null) {
+      return existing.id;
+    }
+    final now = DateTime.now();
+    return db
+        .into(db.tracks)
+        .insert(
+          TracksCompanion(
+            source: Value(track.source.name),
+            pathKey: Value(key),
+            path: Value(track.path),
+            title: Value(track.title),
+            artist: Value(track.artist),
+            album: Value(track.album),
+            genre: Value(track.genre),
+            durationMs: Value(track.duration?.inMilliseconds),
+            artworkPath: Value(track.artworkPath),
+            pageUrl: Value(track.pageUrl),
+            license: Value(track.license),
+            licenseUrl: Value(track.licenseUrl),
+            available: Value(track.available),
+            problem: Value(track.problem),
+            metaFetchedAt: Value(now),
+            fileSize: const Value(0),
+            fileModified: Value(now),
+            searchText: Value(
+              '${track.title} ${track.artist} ${track.album}'.toLowerCase(),
+            ),
+            addedAt: Value(now),
+          ),
+        );
+  }
+
+  /// Saved YouTube entries whose data from YouTube is older than [maxAge]
+  /// (or has no date): refreshed or removed (Developer Policies III.E.4).
+  Future<List<TrackRow>> staleYouTube(Duration maxAge) {
+    final limit = DateTime.now().subtract(maxAge);
+    return (db.select(db.tracks)..where(
+          (t) =>
+              t.source.equals(TrackSource.youtube.name) &
+              (t.metaFetchedAt.isNull() |
+                  t.metaFetchedAt.isSmallerThanValue(limit)),
+        ))
+        .get();
+  }
+
+  /// New data from YouTube for a saved video (or none: [title] null keeps
+  /// only the video id and the user's own name).
+  Future<void> refreshYouTube(
+    int rowId, {
+    String? title,
+    String? channel,
+    String? thumbnail,
+    bool? available,
+    String? problem,
+  }) =>
+      (db.update(db.tracks)..where((t) => t.id.equals(rowId))).write(
+        TracksCompanion(
+          title: Value(title ?? youtubeUnnamed),
+          artist: Value(channel ?? ''),
+          artworkPath: Value(thumbnail),
+          metaFetchedAt: Value(title == null ? null : DateTime.now()),
+          available: available == null ? const Value.absent() : Value(available),
+          problem: Value(problem),
+          searchText: Value('${title ?? ''} ${channel ?? ''} youtube'.toLowerCase()),
+        ),
+      );
+
+  Future<TrackRow?> _savedRow(String key) => (db.select(
+    db.tracks,
+  )..where((t) => t.pathKey.equals(key))).getSingleOrNull();
+
+  /// Favourite for any track: library files directly, others saved first.
+  Future<void> setFavoriteFor(Track track, bool favorite) async {
+    if (track.source == TrackSource.local) {
+      return setFavorite(track.id, favorite);
+    }
+    final id = await save(track);
+    await setFavorite(id, favorite);
+  }
+
+  /// The user's own name for a saved entry; empty = the source's title.
+  Future<void> renameSaved(Track track, String name) async {
+    final id = await save(track);
+    final v = name.trim();
+    await (db.update(db.tracks)..where((t) => t.id.equals(id))).write(
+      TracksCompanion(userTitle: Value(v.isEmpty ? null : v)),
+    );
+  }
+
+  /// Removes a saved entry (from favourites and every playlist).
+  Future<void> deleteSaved(Track track) async {
+    if (track.source == TrackSource.local) {
+      return;
+    }
+    await (db.delete(
+      db.tracks,
+    )..where((t) => t.pathKey.equals(track.savedKey))).go();
+  }
+
+  /// Saved (non-library) entries by their stable id - live favourite state
+  /// for catalog songs shown in Discover, Wave or the player.
+  Stream<Map<int, Track>> watchSaved() =>
+      (db.select(db.tracks)..where((t) => t.source.equals(localSource).not()))
+          .watch()
+          .map((rows) => {for (final r in rows) toTrack(r).id: toTrack(r)});
+
+  /// Adds any tracks (library, catalog, YouTube) to a playlist.
+  Future<void> addTracksToPlaylist(int playlistId, List<Track> tracks) async {
+    final ids = <int>[];
+    for (final t in tracks) {
+      ids.add(await save(t));
+    }
+    await addToPlaylist(playlistId, ids);
+  }
 
   // ---- folders ----
 

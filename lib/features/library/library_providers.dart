@@ -125,6 +125,17 @@ final trackProvider = StreamProvider.family<Track?, int>(
   (ref, id) => ref.watch(libraryRepositoryProvider).watchTrack(id),
 );
 
+/// Saved catalog songs and YouTube videos by their stable id (E2.7): live
+/// favourite state and the user's own names wherever such a song shows.
+final savedTracksProvider = StreamProvider<Map<int, Track>>(
+  (ref) => ref.watch(libraryRepositoryProvider).watchSaved(),
+);
+
+/// [track] as saved in the database (favourite, own name), or [track].
+Track savedOrSelf(WidgetRef ref, Track track) => track.source == TrackSource.local
+    ? track
+    : ref.watch(savedTracksProvider).value?[track.id] ?? track;
+
 final trackCountProvider = StreamProvider<int>(
   (ref) => ref.watch(libraryRepositoryProvider).watchTrackCount(),
 );
@@ -249,6 +260,7 @@ class LibraryScanController extends Notifier<ScanState> {
     final folder = await (db.select(db.libraryFolders)..limit(1)).get();
     final loose = await (db.select(db.tracks)
           ..where((t) => t.folderId.isNull())
+          ..where((t) => t.source.equals(localSource))
           ..limit(1))
         .get();
     if (folder.isEmpty && loose.isEmpty) {

@@ -234,16 +234,20 @@ class FavoriteButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = track;
-    if (t == null || t.isOnline) {
+    if (t == null) {
       return NexaIconButton(
         icon: Icons.favorite_border_rounded,
         label: S.like,
-        disabledReason: t == null ? S.nothingToPlay : S.onlineNotSaved,
+        disabledReason: S.nothingToPlay,
         iconSize: iconSize,
         boxSize: boxSize,
       );
     }
-    final live = ref.watch(trackProvider(t.id)).value ?? t;
+    // Library files by their row; catalog songs and YouTube videos are
+    // saved with their first like (E2.7).
+    final live = t.isOnline
+        ? savedOrSelf(ref, t)
+        : ref.watch(trackProvider(t.id)).value ?? t;
     return NexaIconButton(
       icon: live.favorite
           ? Icons.favorite_rounded
@@ -254,7 +258,7 @@ class FavoriteButton extends ConsumerWidget {
       boxSize: boxSize,
       onPressed: () => ref
           .read(libraryRepositoryProvider)
-          .setFavorite(t.id, !live.favorite),
+          .setFavoriteFor(live, !live.favorite),
     );
   }
 }

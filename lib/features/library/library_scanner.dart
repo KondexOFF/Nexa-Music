@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 
 import '../../core/database/app_database.dart';
+import 'library_repository.dart' show localSource;
 import 'tag_reader.dart';
 
 /// Result of an import or rescan, shown to the user.
@@ -100,9 +101,11 @@ class LibraryScanner {
         ..problems.addAll(r.problems);
     }
     // Files added one by one (no folder).
-    final loose = await (db.select(
-      db.tracks,
-    )..where((t) => t.folderId.isNull())).get();
+    // Files added one by one - never saved catalog / YouTube entries.
+    final loose = await (db.select(db.tracks)..where(
+          (t) => t.folderId.isNull() & t.source.equals(localSource),
+        ))
+        .get();
     final present = <String>[];
     for (final row in loose) {
       if (File(row.path).existsSync()) {

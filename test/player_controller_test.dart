@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/core/models/track.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
+import 'package:nexa_music/features/youtube/youtube_track.dart';
 import 'package:path/path.dart' as p;
 
 import 'helpers/fake_engine.dart';
@@ -194,5 +195,27 @@ void main() {
     player().clearUpNext();
     expect(state().upNext, isEmpty);
     expect(state().current!.title, 'Song 1');
+  });
+
+  test('YouTube entries open in YouTube\'s player, never in the queue (E2.7)',
+      () async {
+    final opened = <String>[];
+    container
+        .read(externalTrackLauncherProvider.notifier)
+        .set((t) async => opened.add(t.sourceTrackId));
+    final local = makeTracks(2);
+    final video = youtubeTrack(videoId: 'dQw4w9WgXcQ', title: 'Video');
+    final mixed = [local[0], video, local[1]];
+
+    await player().playTracks(mixed, start: 1);
+    expect(opened, ['dQw4w9WgXcQ']);
+    expect(engine.loads, isEmpty);
+
+    await player().playTracks(mixed, start: 2);
+    expect(state().queue.map((e) => e.track.title), ['Song 1', 'Song 2']);
+    expect(state().current!.title, 'Song 2');
+    player().addToQueue([video]);
+    player().playNext([video]);
+    expect(state().queue, hasLength(2));
   });
 }

@@ -10,8 +10,11 @@ import '../../app/theme/tokens.dart';
 import '../../integrations/youtube/youtube_link.dart';
 import '../../ui/nexa_widgets.dart';
 import '../discover/catalog_providers.dart';
+import '../library/track_list.dart' show addTracksToPlaylist;
+import '../player/player_controls.dart' show FavoriteButton;
 import 'youtube_player_controller.dart';
 import 'youtube_settings.dart';
+import 'youtube_track.dart';
 
 /// Smallest player NEXA shows: YouTube's recommended 16:9 minimum on the
 /// YouTube page (Required Minimum Functionality: never below 200 x 200).
@@ -103,6 +106,33 @@ class _YouTubePageState extends ConsumerState<YouTubePage> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (videoId != null) ...[
+                // Save the video: a like or a playlist (E2.7).
+                FavoriteButton(
+                  key: const ValueKey('yt-like'),
+                  track: youtubeTrack(
+                    videoId: videoId,
+                    title: title,
+                    channel: channel,
+                    thumbnail: youtubeThumbnailUrl(videoId),
+                  ),
+                ),
+                NexaIconButton(
+                  key: const ValueKey('yt-add-to-playlist'),
+                  icon: Icons.playlist_add_rounded,
+                  label: '${S.addToPlaylist}...',
+                  color: NexaColors.textSecondary,
+                  onPressed: () => addTracksToPlaylist(context, ref, [
+                    youtubeTrack(
+                      videoId: videoId,
+                      title: title,
+                      channel: channel,
+                      thumbnail: youtubeThumbnailUrl(videoId),
+                    ),
+                  ]),
+                ),
+                const SizedBox(width: 8),
+              ],
               if (status.open)
                 NexaPillButton(
                   key: const ValueKey('yt-close-player'),

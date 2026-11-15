@@ -12,7 +12,10 @@ import '../../integrations/youtube/youtube_data_api.dart';
 import '../../integrations/youtube/youtube_link.dart';
 import '../../ui/nexa_widgets.dart';
 import '../discover/catalog_providers.dart';
+import '../library/track_list.dart' show addTracksToPlaylist;
+import '../player/player_controls.dart' show FavoriteButton;
 import 'youtube_settings.dart';
+import 'youtube_track.dart';
 import 'youtube_watch_page.dart';
 
 /// The YouTube search on the Discover page (E2.3).
@@ -297,6 +300,12 @@ class YouTubeResultRow extends ConsumerWidget {
       else if (video.duration != null)
         formatClock(video.duration!),
     ].where((s) => s.isNotEmpty).join('  ·  ');
+    final track = youtubeTrack(
+      videoId: video.id,
+      title: video.title,
+      channel: video.channel,
+      thumbnail: video.thumbnailUrl,
+    );
     void watch() => unawaited(
       openYouTubeWatch(
         ref,
@@ -359,6 +368,14 @@ class YouTubeResultRow extends ConsumerWidget {
                 label: S.ytOpenOnYouTube,
                 color: NexaColors.textSecondary,
                 onPressed: () => open(youtubeWatchUrl(video.id)),
+              ),
+              // Bookmark: a like or a playlist saves the video (E2.7).
+              FavoriteButton(track: track, iconSize: 19),
+              NexaIconButton(
+                icon: Icons.playlist_add_rounded,
+                label: '${S.addToPlaylist}...',
+                color: NexaColors.textSecondary,
+                onPressed: () => addTracksToPlaylist(context, ref, [track]),
               ),
               NexaIconButton(
                 icon: Icons.smart_display_outlined,

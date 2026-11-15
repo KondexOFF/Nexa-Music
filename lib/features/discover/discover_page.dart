@@ -10,7 +10,9 @@ import '../../demo/demo_data.dart' show formatClock;
 import '../../integrations/music_source.dart';
 import '../../ui/nexa_widgets.dart';
 import '../library/track_art.dart';
+import '../library/track_list.dart' show addTracksToPlaylist;
 import '../player/player_controller.dart';
+import '../player/player_controls.dart' show FavoriteButton;
 import '../youtube/youtube_discover.dart';
 import 'catalog_providers.dart';
 import 'discover_controller.dart';
@@ -382,6 +384,14 @@ class _ResultRow extends ConsumerWidget {
                   color: NexaColors.textSecondary,
                   onPressed: () => open(page),
                 ),
+              // Saved with the first like or playlist (E2.7).
+              FavoriteButton(track: track, iconSize: 19),
+              NexaIconButton(
+                icon: Icons.playlist_add_rounded,
+                label: '${S.addToPlaylist}...',
+                color: NexaColors.textSecondary,
+                onPressed: () => addTracksToPlaylist(context, ref, [track]),
+              ),
               NexaIconButton(
                 icon: Icons.play_arrow_rounded,
                 label: S.play,

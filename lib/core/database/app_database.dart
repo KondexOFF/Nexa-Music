@@ -55,6 +55,26 @@ class Tracks extends Table {
   /// Explicit dislike (NEXA DNA, schema v3): never suggested by NEXA Wave.
   BoolColumn get disliked => boolean().withDefault(const Constant(false))();
   DateTimeColumn get dislikedAt => dateTime().nullable()();
+
+  // v4 (E2.7): saved catalog songs and YouTube bookmarks live in this table
+  // too (source != 'local', path_key = '<source>:<id>', no folder, no file).
+  // Library views and the scanner only ever look at source = 'local'.
+
+  /// The user's own name for a saved entry (rename); null = [title].
+  TextColumn get userTitle => text().nullable()();
+
+  /// Page of the entry at its source (backlink / "Open on YouTube").
+  TextColumn get pageUrl => text().nullable()();
+
+  /// Catalog licence name and link (attribution).
+  TextColumn get license => text().nullable()();
+  TextColumn get licenseUrl => text().nullable()();
+
+  /// When title / artist / artwork were last received from the source's
+  /// API. YouTube data is refreshed or removed within 30 days (YouTube API
+  /// Services Developer Policies III.E.4.c); the video id and the user's
+  /// own name are kept.
+  DateTimeColumn get metaFetchedAt => dateTime().nullable()();
 }
 
 @DataClassName('PlaylistRow')
@@ -156,7 +176,10 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => currentSchemaVersion;
+
+  /// Schema of this build (database_safety.dart backs up older files).
+  static const int currentSchemaVersion = 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -185,11 +208,54 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(tasteItems);
         await _createHistoryIndex();
       }
+      if (from < 4) {
+        // v4 (E2.7): saved catalog songs and YouTube bookmarks. One
+        // transaction; playlists, their entries and favourites are counted
+        // before and after - any difference undoes the whole step.
+        await transaction(() async {
+          final before = await _keptCounts();
+          final existing = {
+            for (final r in await customSelect(
+              'PRAGMA table_info(tracks)',
+            ).get())
+              r.read<String>('name'),
+          };
+          for (final column in [
+            tracks.userTitle,
+            tracks.pageUrl,
+            tracks.license,
+            tracks.licenseUrl,
+            tracks.metaFetchedAt,
+          ]) {
+            if (!existing.contains(column.name)) {
+              await m.addColumn(tracks, column);
+            }
+          }
+          final after = await _keptCounts();
+          if (before.toString() != after.toString()) {
+            throw StateError('Migration v4 changed saved data: $before -> $after');
+          }
+        });
+      }
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  /// Counts that a migration must never change.
+  Future<Map<String, int>> _keptCounts() async {
+    Future<int> count(String sql) async =>
+        (await customSelect(sql).getSingle()).read<int>('c');
+    return {
+      'playlists': await count('SELECT COUNT(*) AS c FROM playlists'),
+      'entries': await count('SELECT COUNT(*) AS c FROM playlist_entries'),
+      'favorites': await count(
+        'SELECT COUNT(*) AS c FROM tracks WHERE favorite = 1',
+      ),
+      'tracks': await count('SELECT COUNT(*) AS c FROM tracks'),
+    };
+  }
 
   Future<void> _createHistoryIndex() async {
     await customStatement(

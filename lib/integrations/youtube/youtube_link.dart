@@ -51,3 +51,7 @@ String? youtubeVideoId(String input) {
 /// The public YouTube page of [videoId] (for "Open on YouTube").
 String youtubeWatchUrl(String videoId) =>
     'https://www.youtube.com/watch?v=${Uri.encodeComponent(videoId)}';
+
+/// YouTube's own thumbnail of [videoId] (shown, never stored as an image).
+String youtubeThumbnailUrl(String videoId) =>
+    'https://i.ytimg.com/vi/$videoId/hqdefault.jpg';

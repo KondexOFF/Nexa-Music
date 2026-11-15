@@ -4,7 +4,12 @@ import 'package:flutter/foundation.dart';
 enum TrackSource {
   local('Library'),
   audius('Audius'),
-  jamendo('Jamendo');
+  jamendo('Jamendo'),
+
+  /// A YouTube video saved by the user (E2.7: a bookmark - video id, link,
+  /// a name; never downloaded). Played only in YouTube's own visible
+  /// player, never by NEXA's PlaybackEngine.
+  youtube('YouTube');
 
   const TrackSource(this.label);
 
@@ -12,6 +17,12 @@ enum TrackSource {
   final String label;
 
   bool get isOnline => this != TrackSource.local;
+
+  /// Played in the source's own visible player (YouTube), not by NEXA.
+  bool get isExternal => this == TrackSource.youtube;
+
+  static TrackSource parse(String name) =>
+      TrackSource.values.asNameMap()[name] ?? TrackSource.local;
 }
 
 /// What NEXA may do with a track's audio. Local files the user owns may be
@@ -34,6 +45,10 @@ class PlaybackRights {
   /// Audius Open Music License (2 July 2025) restricts it; YouTube is never
   /// a [Track] and never mixed.
   static const PlaybackRights catalogStream = PlaybackRights(play: true, mix: true);
+
+  /// YouTube: only YouTube's own visible player plays it; NEXA's engine
+  /// never loads or mixes it.
+  static const PlaybackRights externalPlayer = PlaybackRights(play: false, mix: false);
 }
 
 /// A track in the NEXA library (Master Plan v1.0, section 3).
@@ -109,10 +124,17 @@ class Track {
   PlaybackRights get rights => switch (source) {
     TrackSource.local => PlaybackRights.localFile,
     TrackSource.audius || TrackSource.jamendo => PlaybackRights.catalogStream,
+    TrackSource.youtube => PlaybackRights.externalPlayer,
   };
+
+  /// Key of a saved catalog / YouTube entry in the database (tracks.path_key).
+  String get savedKey => '${source.name}:$sourceTrackId';
 
   /// Format label: file extension for local files, "STREAM" for catalogs.
   String get fileExtension {
+    if (source.isExternal) {
+      return 'VIDEO';
+    }
     if (isOnline) {
       return 'STREAM';
     }
