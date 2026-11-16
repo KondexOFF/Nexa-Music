@@ -8,6 +8,10 @@ enum PlayContext {
   /// A YouTube video in YouTube's own player (E2.7b, opt-in). Never used by
   /// NEXA Wave or NEXA DNA.
   youtube,
+
+  /// A SoundCloud track in SoundCloud's widget (E3). Never used by NEXA
+  /// Wave or NEXA DNA.
+  soundcloud,
 }
 
 /// How a listening ended.

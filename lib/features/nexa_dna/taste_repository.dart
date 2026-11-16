@@ -79,7 +79,8 @@ class TasteRepository {
           "SUM(CASE WHEN end_reason = 'skipped' AND listened_ms >= $fast "
           'THEN 1 ELSE 0 END) AS late_skips, '
           'MAX(started_at) AS last_played '
-          "FROM listening_events WHERE mode <> 'youtube' GROUP BY track_id",
+          'FROM listening_events '
+          "WHERE mode NOT IN ('youtube', 'soundcloud') GROUP BY track_id",
           readsFrom: {db.listeningEvents},
         )
         .get();
@@ -99,7 +100,12 @@ class TasteRepository {
   Future<List<int>> recentTrackIds({int limit = 15}) async {
     final rows =
         await (db.select(db.listeningEvents)
-              ..where((e) => e.mode.equals(PlayContext.youtube.name).not())
+              ..where(
+                (e) => e.mode.isNotIn([
+                  PlayContext.youtube.name,
+                  PlayContext.soundcloud.name,
+                ]),
+              )
               ..orderBy([
                 (e) => OrderingTerm.desc(e.startedAt),
                 (e) => OrderingTerm.desc(e.id),

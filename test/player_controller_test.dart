@@ -206,7 +206,9 @@ void main() {
 
     setUp(() {
       yt = _FakeExternal();
-      container.read(externalQueuePlayerProvider.notifier).set(yt);
+      container
+          .read(externalQueuePlayerProvider.notifier)
+          .set(TrackSource.youtube, yt);
     });
 
     Track video(String id) => youtubeTrack(videoId: id, title: 'Video $id');
@@ -227,13 +229,13 @@ void main() {
 
       // YouTube plays; the transport and the queue follow it.
       yt.active = true;
-      player().externalStatus('dQw4w9WgXcQ', active: true);
+      player().externalStatus(TrackSource.youtube, 'dQw4w9WgXcQ', active: true);
       expect(state().sounding, isTrue);
       await player().togglePlay();
       expect(yt.pauses, 1);
 
       // The video ends: the queue goes on with NEXA's engine.
-      await player().externalEnded('dQw4w9WgXcQ');
+      await player().externalEnded(TrackSource.youtube, 'dQw4w9WgXcQ');
       await flush();
       expect(engine.loads, [local[0].path, local[1].path]);
       expect(state().current!.title, 'Song 2');
@@ -245,9 +247,9 @@ void main() {
       await player().playTracks([v, local[0]]);
       expect(yt.started, ['dQw4w9WgXcQ']);
       // The user watches something else in the YouTube player.
-      player().externalStatus('M7lc1UVf-VE', active: true);
-      await player().externalEnded('M7lc1UVf-VE');
-      await player().externalEnded('dQw4w9WgXcQ');
+      player().externalStatus(TrackSource.youtube, 'M7lc1UVf-VE', active: true);
+      await player().externalEnded(TrackSource.youtube, 'M7lc1UVf-VE');
+      await player().externalEnded(TrackSource.youtube, 'dQw4w9WgXcQ');
       expect(state().current!.title, 'Video dQw4w9WgXcQ');
       expect(engine.loads, isEmpty);
       // Play starts the queue's video again.
@@ -258,7 +260,7 @@ void main() {
     test('autoplay blocked: the queue waits for Continue', () async {
       final local = makeTracks(1);
       await player().playTracks([video('dQw4w9WgXcQ'), local[0]]);
-      player().externalStatus('dQw4w9WgXcQ', active: false, blocked: true);
+      player().externalStatus(TrackSource.youtube, 'dQw4w9WgXcQ', active: false, blocked: true);
       expect(state().waitingForUser, isTrue);
       expect(state().current!.title, 'Video dQw4w9WgXcQ');
       await player().togglePlay();
@@ -272,7 +274,7 @@ void main() {
       final local = makeTracks(1);
       await player().playTracks([video('dQw4w9WgXcQ'), local[0]]);
       final uid = state().currentEntry!.uid;
-      await player().externalFailed('dQw4w9WgXcQ', 'removed by the owner');
+      await player().externalFailed(TrackSource.youtube, 'dQw4w9WgXcQ', 'removed by the owner');
       await flush();
       expect(state().skipped[uid], 'removed by the owner');
       expect(state().notice, contains('removed by the owner'));
@@ -281,7 +283,9 @@ void main() {
     });
 
     test('no YouTube player: marked and skipped', () async {
-      container.read(externalQueuePlayerProvider.notifier).set(null);
+      container
+          .read(externalQueuePlayerProvider.notifier)
+          .set(TrackSource.youtube, null);
       final local = makeTracks(1);
       await player().playTracks([video('dQw4w9WgXcQ'), local[0]]);
       expect(state().current!.title, 'Song 1');

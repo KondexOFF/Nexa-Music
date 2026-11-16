@@ -9,7 +9,11 @@ enum TrackSource {
   /// A YouTube video saved by the user (E2.7: a bookmark - video id, link,
   /// a name; never downloaded). Played only in YouTube's own visible
   /// player, never by NEXA's PlaybackEngine.
-  youtube('YouTube');
+  youtube('YouTube'),
+
+  /// A SoundCloud track (E3, CR-002): its link in SoundCloud's official
+  /// widget - never streamed, mixed or cached by NEXA.
+  soundcloud('SoundCloud');
 
   const TrackSource(this.label);
 
@@ -18,8 +22,10 @@ enum TrackSource {
 
   bool get isOnline => this != TrackSource.local;
 
-  /// Played in the source's own visible player (YouTube), not by NEXA.
-  bool get isExternal => this == TrackSource.youtube;
+  /// Played in the source's own visible player (YouTube, SoundCloud), not
+  /// by NEXA's engine.
+  bool get isExternal =>
+      this == TrackSource.youtube || this == TrackSource.soundcloud;
 
   static TrackSource parse(String name) =>
       TrackSource.values.asNameMap()[name] ?? TrackSource.local;
@@ -124,7 +130,8 @@ class Track {
   PlaybackRights get rights => switch (source) {
     TrackSource.local => PlaybackRights.localFile,
     TrackSource.audius || TrackSource.jamendo => PlaybackRights.catalogStream,
-    TrackSource.youtube => PlaybackRights.externalPlayer,
+    TrackSource.youtube ||
+    TrackSource.soundcloud => PlaybackRights.externalPlayer,
   };
 
   /// Key of a saved catalog / YouTube entry in the database (tracks.path_key).
@@ -132,8 +139,11 @@ class Track {
 
   /// Format label: file extension for local files, "STREAM" for catalogs.
   String get fileExtension {
-    if (source.isExternal) {
+    if (source == TrackSource.youtube) {
       return 'VIDEO';
+    }
+    if (source.isExternal) {
+      return 'WIDGET';
     }
     if (isOnline) {
       return 'STREAM';

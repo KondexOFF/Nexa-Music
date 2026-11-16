@@ -17,12 +17,25 @@ import '../nexa_dna/dna_providers.dart';
 import '../nexa_dna/taste_repository.dart';
 import '../player/player_controller.dart';
 import '../player/player_controls.dart' show FavoriteButton;
+import '../soundcloud/soundcloud_player_controller.dart';
 import '../youtube/youtube_watch_page.dart';
 
 /// Continues [entry] from where it was left: a YouTube video in YouTube's
 /// own player, a song in NEXA's player.
 Future<void> continueEntry(WidgetRef ref, HistoryEntry entry) async {
   final t = entry.track;
+  if (t.source == TrackSource.soundcloud) {
+    await ref
+        .read(soundcloudPlayerProvider.notifier)
+        .playLink(
+          t.sourceTrackId,
+          title: t.title,
+          user: t.artist,
+          artwork: t.artworkPath,
+          start: entry.listened,
+        );
+    return;
+  }
   if (t.source.isExternal) {
     await openYouTubeWatch(
       ref,
@@ -56,7 +69,7 @@ class RecentlyPlayedSection extends ConsumerWidget {
 
     void play(int i) {
       final t = recent[i];
-      if (t.track.source.isExternal) {
+      if (t.track.source == TrackSource.youtube) {
         unawaited(
           openYouTubeWatch(
             ref,

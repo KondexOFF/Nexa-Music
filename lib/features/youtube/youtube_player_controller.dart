@@ -250,7 +250,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
     await embed.dispose();
     if (ref.mounted) {
       state = const YtStatus();
-      _queue.externalClosed();
+      _queue.externalClosed(TrackSource.youtube);
     }
   }
 
@@ -297,7 +297,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
       autoplayBlocked: false,
     );
     if (play) {
-      await _arbiter.externalStarting();
+      await _arbiter.externalStarting(this);
     }
     await _command({
       'cmd': 'load',
@@ -342,7 +342,7 @@ class YouTubePlayerController extends Notifier<YtStatus>
     if (state.videoId == null) {
       return;
     }
-    await _arbiter.externalStarting();
+    await _arbiter.externalStarting(this);
     await _command({'cmd': 'play'});
   }
 
@@ -381,16 +381,16 @@ class YouTubePlayerController extends Notifier<YtStatus>
         }
       case 'apiLoadError':
         state = state.copyWith(apiLoadFailed: true);
-        unawaited(_queue.externalFailed(state.videoId, S.ytApiLoadFailed));
+        unawaited(_queue.externalFailed(TrackSource.youtube, state.videoId, S.ytApiLoadFailed));
       case 'error':
         final code = e['code'];
         state = state.copyWith(errorCode: code is num ? code.toInt() : -1);
         unawaited(
-          _queue.externalFailed(state.videoId, youtubeErrorText(state.errorCode!)),
+          _queue.externalFailed(TrackSource.youtube, state.videoId, youtubeErrorText(state.errorCode!)),
         );
       case 'autoplayBlocked':
         state = state.copyWith(autoplayBlocked: true);
-        _queue.externalStatus(state.videoId, active: false, blocked: true);
+        _queue.externalStatus(TrackSource.youtube, state.videoId, active: false, blocked: true);
       case 'external':
         final url = '${e['url']}';
         if (isExternalPage(url)) {
@@ -409,17 +409,18 @@ class YouTubePlayerController extends Notifier<YtStatus>
               : state.autoplayBlocked,
         );
         if (e['type'] == 'state' && newState == YtState.playing) {
-          unawaited(_arbiter.externalStarting());
+          unawaited(_arbiter.externalStarting(this));
         } else {
           _arbiter.sync();
         }
         _queue.externalStatus(
+          TrackSource.youtube,
           state.videoId,
           active: state.active,
           blocked: state.autoplayBlocked,
         );
         if (e['type'] == 'state' && newState == YtState.ended) {
-          unawaited(_queue.externalEnded(state.videoId));
+          unawaited(_queue.externalEnded(TrackSource.youtube, state.videoId));
         }
     }
   }

@@ -21,6 +21,7 @@ abstract final class NexaColors {
   static const Color accentFaint = Color(0x14AD9AFF);
   static const Color coral = Color(0xFFFF7E6E);
   static const Color sky = Color(0xFF86A8FF);
+  static const Color orange = Color(0xFFFFA15C);
   static const Color demo = Color(0xFFE6C36E);
   static const Color tooltip = Color(0xFF2A2F40);
 }

@@ -1,0 +1,134 @@
+<!doctype html>
+<!--
+  NEXA Music - E3 (CR-002): SoundCloud's official embedded player (Widget
+  API) inside WebView2, served from NEXA's virtual host like the YouTube
+  player page. Nothing is drawn over or around the widget: artwork, title,
+  uploader, waveform and SoundCloud's branding are SoundCloud's own. The
+  widget and its API script always come from SoundCloud (never bundled).
+  NEXA never receives, caches or processes the audio.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXA SoundCloud player</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #111319; overflow: hidden; }
+  #widget { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+</style>
+</head>
+<body>
+<script>
+(function () {
+  'use strict';
+  var host = window.chrome && window.chrome.webview;
+  function send(type, data) {
+    var message = { type: type };
+    if (data) { for (var k in data) { message[k] = data[k]; } }
+    if (host) { host.postMessage(message); }
+  }
+
+  var widget = null;
+  var frame = null;
+  var apiReady = false;
+  var pending = null;
+  var started = false;
+  var blockTimer = null;
+
+  function src(url, play) {
+    return 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url) +
+      '&auto_play=' + (play ? 'true' : 'false') +
+      '&show_artwork=true&show_user=true&buying=false&sharing=false' +
+      '&download=false&single_active=true';
+  }
+
+  function sound() {
+    widget.getCurrentSound(function (s) {
+      if (!s) { return; }
+      send('sound', {
+        title: s.title || '',
+        user: (s.user && s.user.username) || '',
+        artwork: s.artwork_url || null,
+        permalink: s.permalink_url || null,
+        duration: s.duration || null
+      });
+    });
+  }
+
+  // WebView2 may block autoplay: after a while without PLAY the queue waits
+  // for "Continue" (never skips).
+  function watchAutoplay() {
+    if (blockTimer) { clearTimeout(blockTimer); }
+    started = false;
+    blockTimer = setTimeout(function () {
+      blockTimer = null;
+      if (!started) { send('autoplayBlocked'); }
+    }, 5000);
+  }
+
+  function bind() {
+    var E = SC.Widget.Events;
+    widget.bind(E.READY, function () { send('ready'); sound(); });
+    widget.bind(E.PLAY, function () {
+      started = true;
+      send('state', { playing: true });
+      sound();
+    });
+    widget.bind(E.PAUSE, function (e) {
+      send('state', { playing: false, position: e && e.currentPosition });
+    });
+    widget.bind(E.FINISH, function () { send('finish'); });
+    widget.bind(E.ERROR, function () { send('error'); });
+    widget.bind(E.PLAY_PROGRESS, function (e) {
+      send('progress', { position: e.currentPosition, relative: e.relativePosition });
+    });
+  }
+
+  function load(cmd) {
+    if (!apiReady) { pending = cmd; return; }
+    if (!frame) {
+      frame = document.createElement('iframe');
+      frame.id = 'widget';
+      frame.allow = 'autoplay';
+      frame.scrolling = 'no';
+      frame.src = src(cmd.url, cmd.play);
+      document.body.appendChild(frame);
+      widget = SC.Widget(frame);
+      bind();
+    } else {
+      widget.load(cmd.url, {
+        auto_play: !!cmd.play, show_artwork: true, show_user: true,
+        buying: false, sharing: false, download: false, single_active: true
+      });
+    }
+    if (cmd.play) { watchAutoplay(); }
+  }
+
+  if (host) {
+    host.addEventListener('message', function (event) {
+      var cmd = event.data || {};
+      switch (cmd.cmd) {
+        case 'load': load(cmd); break;
+        case 'play': if (widget) { widget.play(); } break;
+        case 'pause': if (widget) { widget.pause(); } break;
+        case 'seek': if (widget) { widget.seekTo(cmd.ms || 0); } break;
+      }
+    });
+  }
+
+  send('page', { origin: location.origin });
+
+  var tag = document.createElement('script');
+  tag.src = 'https://w.soundcloud.com/player/api.js';
+  tag.onload = function () {
+    apiReady = true;
+    send('api');
+    if (pending) { var cmd = pending; pending = null; load(cmd); }
+  };
+  tag.onerror = function () { send('apiLoadError'); };
+  document.head.appendChild(tag);
+})();
+</script>
+</body>
+</html>

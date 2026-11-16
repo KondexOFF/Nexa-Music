@@ -16,6 +16,9 @@ import '../../features/discover/discover_page.dart';
 import '../../features/pages/settings_page.dart';
 import '../../features/player/now_playing_page.dart';
 import '../../features/player/up_next_card.dart';
+import '../../core/models/track.dart';
+import '../../features/soundcloud/soundcloud_dock.dart';
+import '../../features/soundcloud/soundcloud_player_controller.dart';
 import '../../features/youtube/youtube_dock.dart';
 import '../../features/youtube/youtube_player_controller.dart';
 import '../../features/youtube/youtube_watch_page.dart';
@@ -57,6 +60,14 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
     try {
       await ref
+          .read(soundcloudPlayerProvider.notifier)
+          .close()
+          .timeout(const Duration(seconds: 2));
+    } on Object {
+      // Nothing open.
+    }
+    try {
+      await ref
           .read(playbackEngineProvider)
           .dispose()
           .timeout(const Duration(seconds: 3));
@@ -83,7 +94,11 @@ class _AppShellState extends ConsumerState<AppShell> {
         // player (E2.8).
         ref
             .read(externalQueuePlayerProvider.notifier)
-            .set(ref.read(youtubePlayerProvider.notifier));
+          ..set(TrackSource.youtube, ref.read(youtubePlayerProvider.notifier))
+          ..set(
+            TrackSource.soundcloud,
+            ref.read(soundcloudPlayerProvider.notifier),
+          );
       }
     });
     bindMediaKeys(ref);
@@ -207,6 +222,10 @@ class _AppShellState extends ConsumerState<AppShell> {
             ],
           ),
               // The one YouTube player above the pages (E2.6).
+              SoundCloudDock(
+                bottomInset: NexaSizes.bottomPlayer,
+                rightInset: showPanel ? panelWidth : 0,
+              ),
               YouTubeDock(
                 bottomInset: NexaSizes.bottomPlayer,
                 rightInset: showPanel ? panelWidth : 0,

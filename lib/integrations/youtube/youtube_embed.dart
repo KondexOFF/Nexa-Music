@@ -70,11 +70,17 @@ bool isExternalPage(String url) {
 
 /// Windows: Microsoft Edge WebView2 through `webview_flutter_windows`.
 class WindowsYouTubeEmbed implements YouTubeEmbed {
-  WindowsYouTubeEmbed({required this.profileDir});
+  WindowsYouTubeEmbed({required this.profileDir, this.page = 'player.html'});
 
   /// WebView2 profile (cookies, cache) inside NEXA's own data folder, so
   /// nothing is written next to the Portable exe.
   final String profileDir;
+
+  /// The bundled page: `player.html` (YouTube) or `soundcloud.html`
+  /// (SoundCloud's widget, E3) - same virtual host, same rules.
+  final String page;
+
+  String get _pageUrl => 'https://$youtubeAppHost/$page';
 
   final WebviewController _controller = WebviewController();
   final _events = StreamController<Map<String, Object?>>.broadcast();
@@ -116,7 +122,7 @@ class WindowsYouTubeEmbed implements YouTubeEmbed {
         'Microsoft Edge WebView2 Runtime is not installed.',
       );
     }
-    if (!File(p.join(assetFolder(), 'player.html')).existsSync()) {
+    if (!File(p.join(assetFolder(), page)).existsSync()) {
       throw const YouTubeEmbedUnavailable('Player page missing in the build.');
     }
     if (!_environmentSet) {
@@ -163,14 +169,14 @@ class WindowsYouTubeEmbed implements YouTubeEmbed {
     _events.add({'type': 'external', 'url': url});
     try {
       await _controller.stop();
-      await _controller.loadUrl(youtubePlayerUrl);
+      await _controller.loadUrl(_pageUrl);
     } on Object {
       // The page could not be restored; the controller reloads on demand.
     }
   }
 
   @override
-  Future<void> openPage() => _controller.loadUrl(youtubePlayerUrl);
+  Future<void> openPage() => _controller.loadUrl(_pageUrl);
 
   @override
   Future<void> send(Map<String, Object?> command) =>

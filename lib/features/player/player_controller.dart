@@ -328,8 +328,11 @@ class PlayerController extends Notifier<PlayerState> {
   /// Local files must exist; catalog streams are checked by the engine;
   /// YouTube needs its visible player.
   bool _playable(Track t) => t.source.isExternal
-      ? ref.read(externalQueuePlayerProvider) != null
+      ? _externalFor(t) != null
       : t.isOnline || File(t.path).existsSync();
+
+  QueueExternalPlayer? _externalFor(Track? t) =>
+      t == null ? null : ref.read(externalQueuePlayerProvider)[t.source];
 
   // ---- listening history (NEXA DNA, recorded only with consent) ----
 
@@ -496,7 +499,7 @@ class PlayerController extends Notifier<PlayerState> {
       return;
     }
     if (state.current!.source.isExternal) {
-      final ext = ref.read(externalQueuePlayerProvider);
+      final ext = _externalFor(state.current);
       if (ext == null) {
         return;
       }
@@ -522,7 +525,7 @@ class PlayerController extends Notifier<PlayerState> {
 
   Future<void> pause() async {
     if (_currentIsExternal) {
-      await ref.read(externalQueuePlayerProvider)?.pause();
+      await _externalFor(state.current)?.pause();
       return;
     }
     await _engine.pause();
@@ -530,7 +533,7 @@ class PlayerController extends Notifier<PlayerState> {
 
   Future<void> stop() async {
     if (_currentIsExternal) {
-      await ref.read(externalQueuePlayerProvider)?.pause();
+      await _externalFor(state.current)?.pause();
     }
     _endListening(EndReason.stopped);
     await _engine.stop();
@@ -701,7 +704,7 @@ class PlayerController extends Notifier<PlayerState> {
   /// player cannot show it (the reason is marked in the queue).
   Future<bool> _startExternal({required bool play}) async {
     final entry = state.currentEntry!;
-    final ext = ref.read(externalQueuePlayerProvider)!;
+    final ext = _externalFor(entry.track)!;
     _endListening(EndReason.skipped);
     if (_engine.state.path != null) {
       await _engine.stop();
@@ -728,18 +731,27 @@ class PlayerController extends Notifier<PlayerState> {
     _notice(S.skippedEntry(entry.track.title, reason));
   }
 
-  bool _isQueueVideo(String? videoId) {
+  bool _isQueueVideo(TrackSource source, String? id) {
     final entry = state.currentEntry;
     return entry != null &&
         entry.uid == _externalUid &&
-        entry.track.source.isExternal &&
-        entry.track.sourceTrackId == videoId;
+        entry.track.source == source &&
+        entry.track.sourceTrackId == id;
   }
+
+  bool _currentFrom(TrackSource source) =>
+      state.currentEntry?.uid == _externalUid &&
+      state.current?.source == source;
 
   /// The external player changed: [videoId] plays ([active]) or not, or
   /// waits for the user ([blocked]: autoplay blocked).
-  void externalStatus(String? videoId, {required bool active, bool blocked = false}) {
-    if (_isQueueVideo(videoId)) {
+  void externalStatus(
+    TrackSource source,
+    String? videoId, {
+    required bool active,
+    bool blocked = false,
+  }) {
+    if (_isQueueVideo(source, videoId)) {
       if (active) {
         _failedStreams = 0;
       }
@@ -747,7 +759,7 @@ class PlayerController extends Notifier<PlayerState> {
         externalActive: active,
         waitingForUser: blocked && !active,
       );
-    } else if (_externalUid != null && videoId != null) {
+    } else if (_externalUid != null && videoId != null && _currentFrom(source)) {
       // The user watches something else there: the queue's video is gone
       // from the player; Play starts it again.
       _externalUid = null;
@@ -757,8 +769,8 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// The external player was closed: the queue's video stopped with it
   /// (Play opens it again).
-  void externalClosed() {
-    if (_externalUid == null) {
+  void externalClosed(TrackSource source) {
+    if (_externalUid == null || !_currentFrom(source)) {
       return;
     }
     _externalUid = null;
@@ -766,8 +778,8 @@ class PlayerController extends Notifier<PlayerState> {
   }
 
   /// The external player finished [videoId]: the queue goes on.
-  Future<void> externalEnded(String? videoId) async {
-    if (!_isQueueVideo(videoId)) {
+  Future<void> externalEnded(TrackSource source, String? videoId) async {
+    if (!_isQueueVideo(source, videoId)) {
       return;
     }
     state = state.copyWith(externalActive: false);
@@ -776,8 +788,12 @@ class PlayerController extends Notifier<PlayerState> {
 
   /// [videoId] cannot be played there (removed, not embeddable, offline):
   /// marked with [reason] and skipped - never silently.
-  Future<void> externalFailed(String? videoId, String reason) async {
-    if (!_isQueueVideo(videoId)) {
+  Future<void> externalFailed(
+    TrackSource source,
+    String? videoId,
+    String reason,
+  ) async {
+    if (!_isQueueVideo(source, videoId)) {
       return;
     }
     final entry = state.currentEntry!;
@@ -878,17 +894,24 @@ abstract interface class QueueExternalPlayer {
   bool get active;
 }
 
-class ExternalQueuePlayerHolder extends Notifier<QueueExternalPlayer?> {
+/// The visible player of each external source (YouTube, SoundCloud).
+class ExternalQueuePlayers
+    extends Notifier<Map<TrackSource, QueueExternalPlayer>> {
   @override
-  QueueExternalPlayer? build() => null;
+  Map<TrackSource, QueueExternalPlayer> build() => const {};
 
-  void set(QueueExternalPlayer? player) => state = player;
+  void set(TrackSource source, QueueExternalPlayer? player) => state = {
+    for (final e in state.entries)
+      if (e.key != source) e.key: e.value,
+    source: ?player,
+  };
 }
 
 final externalQueuePlayerProvider =
-    NotifierProvider<ExternalQueuePlayerHolder, QueueExternalPlayer?>(
-      ExternalQueuePlayerHolder.new,
-    );
+    NotifierProvider<
+      ExternalQueuePlayers,
+      Map<TrackSource, QueueExternalPlayer>
+    >(ExternalQueuePlayers.new);
 
 class MediaKeyRedirectController extends Notifier<MediaKeyRedirect?> {
   @override

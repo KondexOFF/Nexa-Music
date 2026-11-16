@@ -13,10 +13,13 @@ import '../library/track_art.dart';
 import '../library/track_list.dart' show addTracksToPlaylist;
 import '../player/player_controller.dart';
 import '../player/player_controls.dart' show FavoriteButton;
+import '../soundcloud/soundcloud_discover.dart';
 import '../youtube/youtube_discover.dart';
 import 'catalog_providers.dart';
 import 'discover_controller.dart';
 import 'source_attribution.dart';
+
+enum _Section { catalogs, youtube, soundcloud }
 
 /// Discover: one search over the permitted online catalogs (Phase 6).
 class DiscoverPage extends ConsumerStatefulWidget {
@@ -37,9 +40,11 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     super.dispose();
   }
 
-  /// YouTube is a section of its own (E2.3), never mixed into the
-  /// Audius / Jamendo results.
-  bool _youtube = false;
+  /// YouTube (E2.3) and SoundCloud (E3) are sections of their own, never
+  /// mixed into the Audius / Jamendo results.
+  _Section _section = _Section.catalogs;
+
+  bool get _catalogs => _section == _Section.catalogs;
 
   void _search() => ref.read(discoverProvider.notifier).search(_query.text);
 
@@ -74,20 +79,29 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                   _FilterChip(
                     key: const ValueKey('discover-catalogs'),
                     label: S.discoverCatalogs,
-                    selected: !_youtube,
-                    onTap: () => setState(() => _youtube = false),
+                    selected: _catalogs,
+                    onTap: () => setState(() => _section = _Section.catalogs),
                   ),
                   _FilterChip(
                     key: const ValueKey('discover-youtube'),
                     label: 'YouTube',
-                    selected: _youtube,
-                    onTap: () => setState(() => _youtube = true),
+                    selected: _section == _Section.youtube,
+                    onTap: () => setState(() => _section = _Section.youtube),
+                  ),
+                  _FilterChip(
+                    key: const ValueKey('discover-soundcloud'),
+                    label: 'SoundCloud',
+                    selected: _section == _Section.soundcloud,
+                    onTap: () =>
+                        setState(() => _section = _Section.soundcloud),
                   ),
                 ],
               ),
               const SizedBox(height: 18),
-              if (_youtube) const YouTubeDiscoverSection(),
-              if (!_youtube) ...[
+              if (_section == _Section.youtube) const YouTubeDiscoverSection(),
+              if (_section == _Section.soundcloud)
+                const SoundCloudDiscoverSection(),
+              if (_catalogs) ...[
               Row(
                 children: [
                   Expanded(
@@ -142,7 +156,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
           ),
         ),
         for (final s in sources)
-          if (!_youtube &&
+          if (_catalogs &&
               state.query.isNotEmpty &&
               (state.filter == null || state.filter == s))
             ..._sourceSection(

@@ -625,11 +625,46 @@ abstract final class S {
   static String skippedEntry(String title, String why) =>
       'Skipped "$title": $why';
   static const String queueNoExternalPlayer =
-      'the YouTube player is not available here';
+      'its player (YouTube / SoundCloud) is not available here';
   static const String queueContinue = 'Continue';
   static const String skipped = 'Skipped';
   static const String queueWaiting =
-      'YouTube did not start the next video by itself. Press Continue.';
-  static const String queueInYouTube = 'Playing in the YouTube player';
+      'The YouTube / SoundCloud player did not start by itself. Press '
+      'Continue.';
+  static String queueInExternal(String source) =>
+      'Playing in the $source player';
   static const String addedToQueue = 'Added to the queue';
+
+  // E3: SoundCloud (official widget, CR-002)
+  static const String scUnnamed = 'SoundCloud track';
+  static String scUnavailable(String why) =>
+      'SoundCloud cannot be shown here: $why';
+  static const String scTrackError =
+      'SoundCloud cannot play this track (removed, private or not '
+      'available in your region)';
+  static const String scApiLoadFailed =
+      "SoundCloud's player could not be loaded (offline?)";
+  static const String scIntro =
+      'Paste a link to a SoundCloud track. It plays in SoundCloud\'s own '
+      'player in NEXA - with the uploader, SoundCloud\'s branding and its '
+      'controls. Like it or add it to a playlist or the queue like any '
+      'other song.';
+  static const String scLinkHint = 'https://soundcloud.com/artist/track';
+  static const String scOpenLink = 'Open link';
+  static const String scResolving = 'Looking up the link...';
+  static const String scSetLink =
+      'This is a SoundCloud playlist (set). Open one of its tracks and paste '
+      'that link - playlists come in a later version.';
+  static const String scProfileLink =
+      'This is a SoundCloud profile. Paste the link of a track.';
+  static const String scShortLink =
+      'Short links (on.soundcloud.com) cannot be opened here. Open it in the '
+      'browser and paste the full soundcloud.com address.';
+  static const String scNotALink = 'This is not a SoundCloud track link.';
+  static const String scLimits =
+      'No SoundCloud search in this version: the SoundCloud API needs '
+      'permitted access. NEXA never downloads, caches or mixes SoundCloud '
+      'audio - no crossfade, not in NEXA Wave.';
+  static const String scOpenOnSoundCloud = 'Open on SoundCloud';
+  static const String scClose = 'Close SoundCloud player';
 }

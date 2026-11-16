@@ -110,14 +110,13 @@ class _SeekBarState extends ConsumerState<SeekBar> {
 
   @override
   Widget build(BuildContext context) {
-    final external = ref.watch(
-      playerProvider.select((p) => p.current?.source.isExternal ?? false),
-    );
-    if (external) {
-      // A YouTube entry: its own player has the position and seek bar.
+    final source = ref.watch(playerProvider.select((p) => p.current?.source));
+    if (source != null && source.isExternal) {
+      // A YouTube / SoundCloud entry: its own player has the position and
+      // the seek bar.
       return Center(
         child: Text(
-          S.queueInYouTube,
+          S.queueInExternal(source.label),
           key: const ValueKey('seek-external'),
           style: NexaText.caption,
           maxLines: 1,
