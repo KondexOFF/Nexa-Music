@@ -182,13 +182,13 @@ void main() {
       nav.go(NexaDestination.settings);
       await shot('10_settings');
       await tester.drag(
-        find.byType(Scrollable).first,
-        Offset(0, -size.height * 0.9),
+        find.byKey(const PageStorageKey('page-settings')),
+        Offset(0, -size.height * 0.75),
       );
       await shot('11_settings_more');
       await tester.drag(
-        find.byType(Scrollable).first,
-        Offset(0, -size.height * 0.9),
+        find.byKey(const PageStorageKey('page-settings')),
+        Offset(0, -size.height * 0.75),
       );
       await shot('12_settings_end');
 
