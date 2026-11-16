@@ -124,16 +124,13 @@ class _LibraryHeader extends ConsumerWidget {
               onPressed: scan.running ? null : scanner.addFiles,
               disabledReason: S.scanning,
             ),
-            NexaTooltip(
-              message: scan.running ? null : S.rescanTooltip,
-              child: NexaPillButton(
-                label: S.rescan,
-                icon: Icons.refresh_rounded,
-                variant: PillVariant.secondary,
-                height: 42,
-                onPressed: scan.running ? null : scanner.rescan,
-                disabledReason: S.scanning,
-              ),
+            // E5: an icon button keeps the actions on one line.
+            NexaIconButton(
+              key: const ValueKey('library-rescan'),
+              icon: Icons.refresh_rounded,
+              label: scan.running ? S.scanning : '${S.rescan} - ${S.rescanTooltip}',
+              boxSize: 42,
+              onPressed: scan.running ? null : scanner.rescan,
             ),
           ],
         ),

@@ -19,7 +19,20 @@ import 'catalog_providers.dart';
 import 'discover_controller.dart';
 import 'source_attribution.dart';
 
-enum _Section { catalogs, youtube, soundcloud }
+/// The part of Discover on screen (Home's Sources card opens one).
+enum DiscoverSection { catalogs, youtube, soundcloud }
+
+class DiscoverSectionController extends Notifier<DiscoverSection> {
+  @override
+  DiscoverSection build() => DiscoverSection.catalogs;
+
+  void set(DiscoverSection section) => state = section;
+}
+
+final discoverSectionProvider =
+    NotifierProvider<DiscoverSectionController, DiscoverSection>(
+      DiscoverSectionController.new,
+    );
 
 /// Discover: one search over the permitted online catalogs (Phase 6).
 class DiscoverPage extends ConsumerStatefulWidget {
@@ -30,9 +43,15 @@ class DiscoverPage extends ConsumerStatefulWidget {
 }
 
 class _DiscoverPageState extends ConsumerState<DiscoverPage> {
-  late final TextEditingController _query = TextEditingController(
-    text: ref.read(discoverProvider).query,
-  );
+  late final TextEditingController _query;
+
+  @override
+  void initState() {
+    super.initState();
+    // Created here, not lazily: the catalog search may never be shown (the
+    // YouTube / SoundCloud part is open), and dispose() must not read ref.
+    _query = TextEditingController(text: ref.read(discoverProvider).query);
+  }
 
   @override
   void dispose() {
@@ -42,9 +61,12 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   /// YouTube (E2.3) and SoundCloud (E3) are sections of their own, never
   /// mixed into the Audius / Jamendo results.
-  _Section _section = _Section.catalogs;
+  DiscoverSection get _section => ref.watch(discoverSectionProvider);
 
-  bool get _catalogs => _section == _Section.catalogs;
+  bool get _catalogs => _section == DiscoverSection.catalogs;
+
+  void _show(DiscoverSection s) =>
+      ref.read(discoverSectionProvider.notifier).set(s);
 
   void _search() => ref.read(discoverProvider.notifier).search(_query.text);
 
@@ -62,15 +84,24 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
             children: [
               const Text(S.discoverOverline, style: NexaText.overline),
               const SizedBox(height: 16),
-              Text(S.discoverTitle, style: NexaText.h2.copyWith(fontSize: 26)),
-              const SizedBox(height: 8),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 680),
-                child: const Text(
-                  S.discoverIntro,
-                  style: NexaText.bodySecondary,
-                ),
+              Text(
+                switch (_section) {
+                  DiscoverSection.catalogs => S.discoverTitle,
+                  DiscoverSection.youtube => S.discoverYouTubeTitle,
+                  DiscoverSection.soundcloud => S.discoverSoundCloudTitle,
+                },
+                style: NexaText.h2.copyWith(fontSize: 26),
               ),
+              if (_catalogs) ...[
+                const SizedBox(height: 8),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 680),
+                  child: const Text(
+                    S.discoverIntro,
+                    style: NexaText.bodySecondary,
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
@@ -80,26 +111,25 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                     key: const ValueKey('discover-catalogs'),
                     label: S.discoverCatalogs,
                     selected: _catalogs,
-                    onTap: () => setState(() => _section = _Section.catalogs),
+                    onTap: () => _show(DiscoverSection.catalogs),
                   ),
                   _FilterChip(
                     key: const ValueKey('discover-youtube'),
                     label: 'YouTube',
-                    selected: _section == _Section.youtube,
-                    onTap: () => setState(() => _section = _Section.youtube),
+                    selected: _section == DiscoverSection.youtube,
+                    onTap: () => _show(DiscoverSection.youtube),
                   ),
                   _FilterChip(
                     key: const ValueKey('discover-soundcloud'),
                     label: 'SoundCloud',
-                    selected: _section == _Section.soundcloud,
-                    onTap: () =>
-                        setState(() => _section = _Section.soundcloud),
+                    selected: _section == DiscoverSection.soundcloud,
+                    onTap: () => _show(DiscoverSection.soundcloud),
                   ),
                 ],
               ),
               const SizedBox(height: 18),
-              if (_section == _Section.youtube) const YouTubeDiscoverSection(),
-              if (_section == _Section.soundcloud)
+              if (_section == DiscoverSection.youtube) const YouTubeDiscoverSection(),
+              if (_section == DiscoverSection.soundcloud)
                 const SoundCloudDiscoverSection(),
               if (_catalogs) ...[
               Row(

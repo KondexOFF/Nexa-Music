@@ -22,7 +22,7 @@ abstract final class S {
   static const String phase4 = 'Phase 4';
   static const String phase5 = 'Phase 5';
   static const String phase6 = 'Phase 6';
-  static const String notInV1 = 'Not in v1.0';
+  static const String notInV1 = 'Not available yet';
   static const String nothingToPlay =
       'Choose a song in your Library to start playback';
   static const String soonLibrary =
@@ -162,7 +162,8 @@ abstract final class S {
   static const String settingsAbout = 'About';
   static const String settingsAboutBody =
       'NEXA Music - personal Windows music player. Local library, playback, '
-      'NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo.';
+      'NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo; YouTube and '
+      'SoundCloud in their own official players.';
   static const String licences = 'Open-source licences';
   static String versionLine(String version) => 'Version $version';
   static const String settingsPrivacy = 'Privacy and learning';
@@ -667,4 +668,16 @@ abstract final class S {
       'audio - no crossfade, not in NEXA Wave.';
   static const String scOpenOnSoundCloud = 'Open on SoundCloud';
   static const String scClose = 'Close SoundCloud player';
+
+  // E5: real Home sections instead of DEMO
+  static const String yourPlaylists = 'Your playlists';
+  static const String yourPlaylistsSubtitle =
+      'Liked Songs and the playlists you made - songs, catalog tracks, '
+      'YouTube videos and SoundCloud tracks together.';
+  static const String openLibrary = 'Open Library';
+  static const String sourcesTitle = 'Sources';
+  static const String sourcesBody =
+      'Where your music comes from besides your own files.';
+  static const String discoverYouTubeTitle = 'YouTube in NEXA';
+  static const String discoverSoundCloudTitle = 'SoundCloud in NEXA';
 }

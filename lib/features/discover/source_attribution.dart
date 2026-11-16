@@ -15,17 +15,18 @@ class SourceBadge extends StatelessWidget {
   final TrackSource source;
 
   @override
-  Widget build(BuildContext context) => StatusBadge(
-    label: source.label,
-    color: switch (source) {
-      TrackSource.local => NexaColors.textSecondary,
-      TrackSource.audius => NexaColors.coral,
-      TrackSource.jamendo => NexaColors.sky,
-      TrackSource.youtube => NexaColors.coral,
-      TrackSource.soundcloud => NexaColors.orange,
-    },
-  );
+  Widget build(BuildContext context) =>
+      StatusBadge(label: source.label, color: sourceColor(source));
 }
+
+/// One colour per source, the same everywhere (badges, Sources card).
+Color sourceColor(TrackSource source) => switch (source) {
+  TrackSource.local => NexaColors.textSecondary,
+  TrackSource.audius => NexaColors.accent,
+  TrackSource.jamendo => NexaColors.sky,
+  TrackSource.youtube => NexaColors.coral,
+  TrackSource.soundcloud => NexaColors.orange,
+};
 
 /// Credits for a catalog track: artist "on <source>", licence and a link to
 /// the track page (required attribution / backlink).

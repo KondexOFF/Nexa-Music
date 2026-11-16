@@ -14,10 +14,10 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text(S.waveTitle), findsOneWidget);
-      expect(find.text(S.forYourMoment), findsOneWidget);
+      expect(find.text(S.yourPlaylists), findsOneWidget);
       expect(find.text(S.recentlyPlayed), findsOneWidget);
-      // DEMO content is labelled.
-      expect(find.text(S.demo), findsWidgets);
+      // E5: no DEMO content left on Home.
+      expect(find.text(S.demo), findsNothing);
     });
 
     testWidgets('Now Playing renders without layout errors at $label', (

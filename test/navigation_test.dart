@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/navigation.dart';
@@ -88,6 +89,19 @@ void main() {
     // Still on Home, nothing started.
     expect(find.text(S.waveTitle), findsOneWidget);
     expect(find.text(S.nothingPlaying), findsOneWidget);
+  });
+
+  testWidgets('Sources card opens the matching part of Discover (E5)',
+      (tester) async {
+    await pumpNexaApp(tester, size1280);
+    await tester.tap(find.byKey(const ValueKey('source-soundcloud')));
+    await settle(tester);
+    expect(find.text(S.discoverSoundCloudTitle), findsOneWidget);
+    expect(find.text(S.scLinkHint), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('source-jamendo')));
+    await settle(tester);
+    expect(find.text(S.discoverTitle), findsOneWidget);
   });
 
   testWidgets('Recently Played explains an empty history (E2.7b)',

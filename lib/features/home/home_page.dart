@@ -5,7 +5,8 @@ import 'home_sections.dart';
 import 'recent_section.dart';
 import 'wave_hero.dart';
 
-/// Home: NEXA Wave hero, "For Your Moment" and "Recently Played".
+/// Home: NEXA Wave hero, your playlists, Continue listening and Recently
+/// Played.
 class HomePage extends StatelessWidget {
   const HomePage({super.key, this.ambientMotion = true});
 
@@ -21,7 +22,7 @@ class HomePage extends StatelessWidget {
         children: [
           WaveHero(animate: ambientMotion),
           const SizedBox(height: NexaSpace.xl - 4),
-          const MomentSection(),
+          const PlaylistsSection(),
           const SizedBox(height: NexaSpace.xl - 4),
           const RecentlyPlayedSection(),
         ],
