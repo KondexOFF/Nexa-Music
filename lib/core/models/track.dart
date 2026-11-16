@@ -48,12 +48,11 @@ class PlaybackRights {
   /// Audius / Jamendo catalog streams (D-025, 2026-11-15): played and
   /// crossfaded like local files - a volume fade while playing, nothing is
   /// stored or redistributed. Neither the Jamendo API Terms of Use nor the
-  /// Audius Open Music License (2 July 2025) restricts it; YouTube is never
-  /// a [Track] and never mixed.
+  /// Audius Open Music License (2 July 2025) restricts it.
   static const PlaybackRights catalogStream = PlaybackRights(play: true, mix: true);
 
-  /// YouTube: only YouTube's own visible player plays it; NEXA's engine
-  /// never loads or mixes it.
+  /// YouTube and SoundCloud: only their own visible players play them;
+  /// NEXA's engine never loads, mixes or analyses them.
   static const PlaybackRights externalPlayer = PlaybackRights(play: false, mix: false);
 }
 

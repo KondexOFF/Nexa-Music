@@ -22,19 +22,8 @@ abstract final class S {
   static const String phase4 = 'Phase 4';
   static const String phase5 = 'Phase 5';
   static const String phase6 = 'Phase 6';
-  static const String notInV1 = 'Not available yet';
   static const String nothingToPlay =
       'Choose a song in your Library to start playback';
-  static const String soonLibrary =
-      'Demo content - your own songs are on the Library page';
-  static const String soonPlaylists =
-      'Adding the playing song to a playlist arrives with playback (Phase 3)';
-  static const String soonFavorites =
-      'Demo song - favorites work for songs in your Library';
-  static const String soonWave = 'NEXA Wave arrives in Phase 5';
-  static const String soonBrowse =
-      'Demo collection - NEXA collections arrive with NEXA Wave (Phase 5)';
-  static const String lyricsNotInV1 = 'Lyrics are not part of NEXA Music v1.0';
 
   // Demo labelling
   static const String demo = 'DEMO';
@@ -112,7 +101,6 @@ abstract final class S {
   static const String repeat = 'Repeat';
   static const String volume = 'Volume';
   static const String queueTab = 'Queue';
-  static const String lyricsTab = 'Lyrics';
   static const String mixChipTooltip = 'Open NEXA Mix Engine';
 
   // Mix Engine
@@ -284,11 +272,15 @@ abstract final class S {
       'Change your NEXA DNA or remove a dislike.';
   static const String wavePlaying = 'Wave is playing';
   static const String familiar = 'Familiar';
-  static const String discovery = 'Discovery';
-  static const String familiarDiscovery = 'Familiar - Discovery';
+  // Wave's slider is about what you know, not about the Discover page
+  // (owner 2026-11-16: do not mix up Discover and NEXA Wave).
+  static const String discovery = 'New to you';
+  static const String familiarDiscovery = 'Familiar - New to you';
   static const String familiarDiscoveryInfo =
-      'Left: songs you already know and finish. Right: songs you have not '
-      'played yet.';
+      'Left: songs you already know and finish. Right: songs new to you - '
+      'songs of your library you have not played yet and, with online picks '
+      'on, catalog songs (up to half of the Wave). Searching the catalogs is '
+      'the Discover page.';
   static const String fresh = 'NEW';
   static const String privateSession = 'Private session';
   static const String privateSessionInfo =
@@ -335,10 +327,11 @@ abstract final class S {
   static const String waveOnline = 'Online picks from Audius and Jamendo';
   static const String waveOnlineInfo =
       'Mixes streamed catalog songs into your Wave - none at Familiar, up to '
-      'half at Discovery. Your liked genres and artists are sent to the '
+      'half at New to you. Your liked genres and artists are sent to the '
       'catalogs as search words; your listening history and files never '
-      'are. Online songs are streamed only: never saved, never crossfaded, '
-      'not added to your history.';
+      'are. Online songs are streamed (never downloaded), crossfaded like '
+      'your files, and saved only when you like them or add them to a '
+      'playlist; they are not added to your history.';
   static const String waveOnlineNoSource =
       'No online catalog is switched on (Settings - Online catalogs). The '
       'Wave uses your library.';
@@ -502,7 +495,6 @@ abstract final class S {
   static const String reset = 'Reset';
 
   // Online catalogs (Phase 6)
-  static const String onlineNotInLibrary = 'Not part of your library';
   static const String discoverOverline = 'DISCOVER';
   static const String discoverTitle = 'Free music from open catalogs';
   static const String discoverIntro =
@@ -675,6 +667,7 @@ abstract final class S {
       'Liked Songs and the playlists you made - songs, catalog tracks, '
       'YouTube videos and SoundCloud tracks together.';
   static const String openLibrary = 'Open Library';
+  static String openOnSource(String source) => 'Open on $source';
   static const String sourcesTitle = 'Sources';
   static const String sourcesBody =
       'Where your music comes from besides your own files.';

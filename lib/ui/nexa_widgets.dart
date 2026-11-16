@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../app/strings.dart';
 import '../app/theme/nexa_theme.dart';
 import '../app/theme/tokens.dart';
 
@@ -224,12 +223,6 @@ class StatusBadge extends StatelessWidget {
     required this.color,
     this.tooltip,
   });
-
-  /// Marks placeholder (demo) content.
-  const StatusBadge.demo({super.key})
-    : label = S.demo,
-      color = NexaColors.demo,
-      tooltip = S.demoTooltip;
 
   /// Marks a feature that belongs to a later phase.
   const StatusBadge.phase(this.label, {super.key, this.tooltip})

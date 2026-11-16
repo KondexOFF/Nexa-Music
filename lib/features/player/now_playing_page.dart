@@ -9,6 +9,7 @@ import '../../core/models/track.dart';
 import '../../demo/demo_data.dart' show formatClock;
 import '../library/library_providers.dart';
 import '../library/track_art.dart';
+import '../discover/catalog_providers.dart' show linkOpenerProvider;
 import '../library/track_list.dart';
 import '../../ui/nexa_widgets.dart';
 import '../mix_engine/mix_engine_panel.dart';
@@ -254,33 +255,44 @@ class _TrackDetails extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    _Circle(
-                      child: NexaIconButton(
-                        icon: Icons.album_outlined,
-                        label: S.goToAlbum,
-                        iconSize: 24,
-                        boxSize: 52,
-                        color: NexaColors.textSecondary,
-                        onPressed: t.isOnline
-                            ? null
-                            : () => _goToGroup(ref, album: t.album),
-                        disabledReason: S.onlineNotInLibrary,
+                    // E5 audit: library songs open their album / artist;
+                    // online songs open their page at the source instead
+                    // of showing disabled buttons.
+                    if (!t.isOnline) ...[
+                      _Circle(
+                        child: NexaIconButton(
+                          icon: Icons.album_outlined,
+                          label: S.goToAlbum,
+                          iconSize: 24,
+                          boxSize: 52,
+                          color: NexaColors.textSecondary,
+                          onPressed: () => _goToGroup(ref, album: t.album),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    _Circle(
-                      child: NexaIconButton(
-                        icon: Icons.person_outline_rounded,
-                        label: S.goToArtist,
-                        iconSize: 24,
-                        boxSize: 52,
-                        color: NexaColors.textSecondary,
-                        onPressed: t.isOnline
-                            ? null
-                            : () => _goToGroup(ref, artist: t.artist),
-                        disabledReason: S.onlineNotInLibrary,
+                      const SizedBox(width: 14),
+                      _Circle(
+                        child: NexaIconButton(
+                          icon: Icons.person_outline_rounded,
+                          label: S.goToArtist,
+                          iconSize: 24,
+                          boxSize: 52,
+                          color: NexaColors.textSecondary,
+                          onPressed: () => _goToGroup(ref, artist: t.artist),
+                        ),
                       ),
-                    ),
+                    ] else if ((t.pageUrl ?? '').isNotEmpty)
+                      _Circle(
+                        child: NexaIconButton(
+                          key: const ValueKey('np-open-source'),
+                          icon: Icons.open_in_new_rounded,
+                          label: S.openOnSource(t.source.label),
+                          iconSize: 24,
+                          boxSize: 52,
+                          color: NexaColors.textSecondary,
+                          onPressed: () =>
+                              ref.read(linkOpenerProvider)(t.pageUrl!),
+                        ),
+                      ),
                   ],
                 ),
         ),
@@ -362,43 +374,6 @@ class _NowPlayingTabs extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(width: 24),
-            const Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: NexaTooltip(
-                  message: S.lyricsNotInV1,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(4, 8, 12, 10),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.notes_rounded,
-                          size: 18,
-                          color: NexaColors.textDisabled,
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          S.lyricsTab,
-                          style: TextStyle(
-                            fontFamily: NexaText.family,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: NexaColors.textDisabled,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        StatusBadge(
-                          label: S.notInV1,
-                          color: NexaColors.textTertiary,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
             ),
           ],
