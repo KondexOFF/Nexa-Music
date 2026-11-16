@@ -19,6 +19,33 @@ class SourceBadge extends StatelessWidget {
       StatusBadge(label: source.label, color: sourceColor(source));
 }
 
+/// One icon per source (compact rows, Sources card).
+IconData sourceIcon(TrackSource source) => switch (source) {
+  TrackSource.local => Icons.library_music_rounded,
+  TrackSource.audius => Icons.podcasts_rounded,
+  TrackSource.jamendo => Icons.album_rounded,
+  TrackSource.youtube => Icons.smart_display_rounded,
+  TrackSource.soundcloud => Icons.cloud_rounded,
+};
+
+/// The source as a small coloured icon with its name as tooltip - for
+/// narrow rows (Up Next) where a badge would hide the title.
+class SourceIcon extends StatelessWidget {
+  const SourceIcon({super.key, required this.source, this.size = 15});
+
+  final TrackSource source;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => NexaTooltip(
+    message: source.label,
+    child: Semantics(
+      label: source.label,
+      child: Icon(sourceIcon(source), size: size, color: sourceColor(source)),
+    ),
+  );
+}
+
 /// One colour per source, the same everywhere (badges, Sources card).
 Color sourceColor(TrackSource source) => switch (source) {
   TrackSource.local => NexaColors.textSecondary,

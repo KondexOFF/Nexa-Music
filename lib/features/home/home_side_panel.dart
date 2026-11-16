@@ -8,7 +8,7 @@ import '../../app/navigation.dart';
 import '../../core/models/track.dart';
 import '../../ui/nexa_widgets.dart';
 import '../discover/discover_page.dart' show DiscoverSection, discoverSectionProvider;
-import '../discover/source_attribution.dart' show sourceColor;
+import '../discover/source_attribution.dart' show sourceColor, sourceIcon;
 import '../nexa_wave/wave_page.dart' show MyTastePanel;
 import '../player/up_next_card.dart';
 
@@ -55,10 +55,10 @@ class SourcesCard extends ConsumerWidget {
     }
 
     const sources = [
-      (TrackSource.audius, Icons.podcasts_rounded, DiscoverSection.catalogs),
-      (TrackSource.jamendo, Icons.album_rounded, DiscoverSection.catalogs),
-      (TrackSource.youtube, Icons.smart_display_rounded, DiscoverSection.youtube),
-      (TrackSource.soundcloud, Icons.cloud_rounded, DiscoverSection.soundcloud),
+      (TrackSource.audius, DiscoverSection.catalogs),
+      (TrackSource.jamendo, DiscoverSection.catalogs),
+      (TrackSource.youtube, DiscoverSection.youtube),
+      (TrackSource.soundcloud, DiscoverSection.soundcloud),
     ];
     return NexaPanel(
       child: Column(
@@ -68,21 +68,11 @@ class SourcesCard extends ConsumerWidget {
           const SizedBox(height: 4),
           const Text(S.sourcesBody, style: NexaText.caption),
           const SizedBox(height: NexaSpace.sm),
-          for (var row = 0; row < 2; row++) ...[
-            if (row > 0) const SizedBox(height: NexaSpace.sm),
-            Row(
-              children: [
-                for (var col = 0; col < 2; col++) ...[
-                  if (col > 0) const SizedBox(width: NexaSpace.sm),
-                  Expanded(
-                    child: _SourceTile(
-                      source: sources[row * 2 + col].$1,
-                      icon: sources[row * 2 + col].$2,
-                      onTap: () => open(sources[row * 2 + col].$3),
-                    ),
-                  ),
-                ],
-              ],
+          for (var i = 0; i < sources.length; i++) ...[
+            if (i > 0) const SizedBox(height: 6),
+            _SourceTile(
+              source: sources[i].$1,
+              onTap: () => open(sources[i].$2),
             ),
           ],
         ],
@@ -92,14 +82,9 @@ class SourcesCard extends ConsumerWidget {
 }
 
 class _SourceTile extends StatelessWidget {
-  const _SourceTile({
-    required this.source,
-    required this.icon,
-    required this.onTap,
-  });
+  const _SourceTile({required this.source, required this.onTap});
 
   final TrackSource source;
-  final IconData icon;
   final VoidCallback onTap;
 
   @override
@@ -114,21 +99,27 @@ class _SourceTile extends StatelessWidget {
         semanticLabel: '${S.navDiscover}: ${source.label}',
         borderRadius: BorderRadius.circular(NexaRadius.md),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: [
-              Icon(icon, size: 17, color: color),
-              const SizedBox(width: 6),
+              Icon(sourceIcon(source), size: 17, color: color),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   source.label,
+                  key: ValueKey('source-label-${source.name}'),
                   style: NexaText.body.copyWith(
-                    fontSize: 12.5,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: NexaColors.textTertiary,
               ),
             ],
           ),

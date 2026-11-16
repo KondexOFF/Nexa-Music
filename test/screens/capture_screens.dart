@@ -35,6 +35,7 @@ Future<void> _loadIcons() async {
 
 Future<void> _seed(AppDatabase db) async {
   final now = DateTime.now();
+  final dir = Directory.systemTemp.createTempSync('nexa_capture');
   final songs = [
     ('Midnight Avenue', 'Lumen Drive', 'City Lights', 214),
     ('Glass Horizon', 'Aurora Fields', 'Northern', 247),
@@ -46,13 +47,14 @@ Future<void> _seed(AppDatabase db) async {
   ];
   final ids = <int>[];
   for (final (title, artist, album, secs) in songs) {
+    final file = File('${dir.path}/$title.flac')..writeAsStringSync('x');
     ids.add(
       await db
           .into(db.tracks)
           .insert(
             TracksCompanion.insert(
-              pathKey: 'c:/music/$title.flac'.toLowerCase(),
-              path: 'C:/Music/$title.flac',
+              pathKey: file.path.toLowerCase(),
+              path: file.path,
               title: title,
               artist: artist,
               album: album,
@@ -163,7 +165,16 @@ void main() {
       final tracks = await tester.runAsync(
         () => LibraryRepository(db).getTracks(),
       );
-      await container.read(playerProvider.notifier).playTracks(tracks!);
+      await container.read(playerProvider.notifier).playTracks([
+        ...tracks!.take(3),
+        youtubeTrack(videoId: 'dQw4w9WgXcQ', title: 'Live session', channel: 'Studio'),
+        soundcloudTrack(
+          url: 'https://soundcloud.com/artist/night-drive',
+          title: 'Night Drive',
+          user: 'Artist',
+        ),
+        ...tracks.skip(3),
+      ]);
       nav.go(NexaDestination.home);
       await shot('08_home_playing');
       nav.go(NexaDestination.nowPlaying);

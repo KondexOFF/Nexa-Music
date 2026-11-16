@@ -186,7 +186,7 @@ class MixEnginePanel extends ConsumerWidget {
                 child: Text(
                   S.albumGaplessTitle,
                   style: NexaText.h3,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

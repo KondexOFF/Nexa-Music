@@ -146,8 +146,6 @@ class _YouTubeDiscoverSectionState
         key: const ValueKey('yt-discover-off'),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _Header(),
-          const SizedBox(height: 8),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 680),
             child: const Text(S.ytDiscoverOff, style: NexaText.bodySecondary),
@@ -168,8 +166,6 @@ class _YouTubeDiscoverSectionState
       key: const ValueKey('yt-discover'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _Header(),
-        const SizedBox(height: 6),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
           child: const Text(S.ytDiscoverInfo, style: NexaText.bodySecondary),
@@ -269,19 +265,6 @@ class _YouTubeDiscoverSectionState
       ],
     );
   }
-}
-
-class _Header extends StatelessWidget {
-  const _Header();
-
-  @override
-  Widget build(BuildContext context) => const Row(
-    children: [
-      StatusBadge(label: 'YouTube', color: NexaColors.coral),
-      SizedBox(width: 10),
-      Text(S.ytSection, style: NexaText.h3),
-    ],
-  );
 }
 
 /// One search result: thumbnail, title, channel, length, the YouTube mark,

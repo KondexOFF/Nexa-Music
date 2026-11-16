@@ -10,6 +10,7 @@ import '../../ui/nexa_widgets.dart';
 import 'library_dialogs.dart';
 import '../nexa_dna/dna_providers.dart';
 import '../nexa_wave/wave_controller.dart';
+import '../discover/source_attribution.dart' show SourceBadge;
 import '../player/player_controller.dart';
 import 'library_providers.dart';
 import 'track_art.dart';
@@ -252,18 +253,27 @@ class TrackRow extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          track.title,
-                          style: titleStyle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                track.title,
+                                style: titleStyle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // E5: the source as a badge, like everywhere.
+                            if (track.isOnline) ...[
+                              const SizedBox(width: 8),
+                              SourceBadge(source: track.source),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 2),
                         Text(
                           dim
                               ? '${track.problem ?? S.unavailable} - ${track.artist}'
-                              : track.isOnline
-                              ? '${track.artist} - ${track.source.label}'
                               : track.artist,
                           style: NexaText.caption.copyWith(
                             color: dim ? NexaColors.coral : null,
