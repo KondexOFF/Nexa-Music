@@ -136,7 +136,7 @@ void FlutterWindow::HandleWindowCall(
     if (IsZoomed(hwnd) || IsIconic(hwnd)) {
       ShowWindow(hwnd, SW_RESTORE);
     }
-    const UINT dpi = FlutterDesktopGetDpiForHWnd(hwnd);
+    const UINT dpi = GetDpiForWindow(hwnd);
     const double scale = dpi / 96.0;
     RECT want{0, 0, static_cast<LONG>(IntArg(*args, "width", 420) * scale),
               static_cast<LONG>(IntArg(*args, "height", 276) * scale)};
