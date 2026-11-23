@@ -20,7 +20,6 @@ import 'package:http/http.dart' as http;
 import 'package:integration_test/integration_test.dart';
 import 'package:media_kit/media_kit.dart' show MediaKit;
 import 'package:nexa_music/app/strings.dart';
-import 'package:nexa_music/core/audio/transition.dart';
 import 'package:nexa_music/core/database/app_database.dart';
 import 'package:nexa_music/core/models/listening.dart';
 import 'package:nexa_music/features/discover/catalog_providers.dart';
@@ -229,13 +228,15 @@ void main() {
           isNotEmpty,
         );
 
-        // Catalog songs never get a crossfade.
+        // D-025 (owner, 2026-11-15): catalog streams have mix rights, so a
+        // transition next to a catalog song is never cut for lack of them
+        // (Smart Mix may still shorten or cut very short songs).
         final mix = c.read(mixSettingsProvider);
         for (var i = 0; i + 1 < queue.length; i++) {
           final a = queue[i].track;
           final b = queue[i + 1].track;
           if (a.isOnline || b.isOnline) {
-            expect(planTransition(mix, a, b).kind, TransitionKind.cut);
+            expect(planTransition(mix, a, b).reason, isNot(S.planNoMixRights));
           }
         }
 
