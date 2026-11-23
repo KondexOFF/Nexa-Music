@@ -92,16 +92,6 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                 },
                 style: NexaText.h2.copyWith(fontSize: 26),
               ),
-              if (_catalogs) ...[
-                const SizedBox(height: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 680),
-                  child: const Text(
-                    S.discoverIntro,
-                    style: NexaText.bodySecondary,
-                  ),
-                ),
-              ],
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
@@ -128,6 +118,17 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                 ],
               ),
               const SizedBox(height: 18),
+              // Every section: title, tabs, then its own introduction.
+              if (_catalogs) ...[
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 680),
+                  child: const Text(
+                    S.discoverIntro,
+                    style: NexaText.bodySecondary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               if (_section == DiscoverSection.youtube) const YouTubeDiscoverSection(),
               if (_section == DiscoverSection.soundcloud)
                 const SoundCloudDiscoverSection(),

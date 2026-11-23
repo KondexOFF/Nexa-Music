@@ -159,6 +159,43 @@ class MixingEngine implements PlaybackEngine {
     final fade = _nextPlan.fade < s.duration ? _nextPlan.fade : s.duration;
     if (s.duration - s.position <= fade) {
       unawaited(_startFade(s.duration - s.position));
+      return;
+    }
+    if (_nextPlan.quietEnd) {
+      unawaited(_checkQuietEnd(s, fade));
+    }
+  }
+
+  /// Smart Mix v1: the file went quiet in its last part (silence or a very
+  /// low level, measured while it plays) - the crossfade starts now instead
+  /// of after the quiet tail.
+  static const Duration quietWindow = Duration(seconds: 30);
+  bool _quietCheck = false;
+
+  Future<void> _checkQuietEnd(EngineState s, Duration fade) async {
+    final deck = activeDeck;
+    // QuietDetector is a separate capability of a deck (not a subtype of
+    // PlaybackEngine), so a plain cast, not a promotion.
+    final detector = deck is QuietDetector ? deck as QuietDetector : null;
+    if (_quietCheck ||
+        detector == null ||
+        s.position < s.duration - quietWindow) {
+      return;
+    }
+    _quietCheck = true;
+    try {
+      final since = await detector.quietSince();
+      if (since == null || _fadeStart != null || !_preloaded || _disposed) {
+        return;
+      }
+      final now = deck.state;
+      final tailStart = now.duration - quietWindow;
+      if (since >= tailStart && since <= now.position) {
+        final remaining = now.duration - now.position;
+        await _startFade(remaining < fade ? remaining : fade);
+      }
+    } finally {
+      _quietCheck = false;
     }
   }
 

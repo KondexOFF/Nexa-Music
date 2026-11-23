@@ -15,7 +15,12 @@ enum TransitionKind {
 /// A decided transition plus the reason shown to the user.
 @immutable
 class TransitionPlan {
-  const TransitionPlan(this.kind, {this.fade = Duration.zero, this.reason = ''});
+  const TransitionPlan(
+    this.kind, {
+    this.fade = Duration.zero,
+    this.reason = '',
+    this.quietEnd = false,
+  });
 
   static const TransitionPlan cut = TransitionPlan(TransitionKind.cut);
 
@@ -24,6 +29,12 @@ class TransitionPlan {
 
   /// Short explanation ("Same album: gapless").
   final String reason;
+
+  /// Smart Mix: when the current file goes quiet near its end (silence or
+  /// a very low level, measured while it plays), the crossfade starts
+  /// there instead of after the quiet tail. Not part of equality: it only
+  /// moves the start of the same transition.
+  final bool quietEnd;
 
   @override
   bool operator ==(Object other) =>
