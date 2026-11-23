@@ -1,0 +1,188 @@
+{
+ "run": {
+  "run": "20261123_210045",
+  "startedAt": "2026-11-23T21:00:45",
+  "commit": "cb2e415",
+  "uncommitted": false,
+  "appVersion": "1.0.0+8",
+  "appCode": "8314e95744fe",
+  "build": "B1",
+  "appCodeKnown": "измерен в начале прогона",
+  "groups": "",
+  "stages": {
+   "unit": true,
+   "integration": true,
+   "exe": false
+  }
+ },
+ "checks": [
+  {
+   "id": "SYS-library",
+   "ft": "-",
+   "title": "Test library present and unchanged (SHA-256)",
+   "status": "PASS",
+   "detail": "36 tracks",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-loopback",
+   "ft": "-",
+   "title": "WASAPI loopback recorder built",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-audio",
+   "ft": "-",
+   "title": "Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available",
+   "status": "PASS",
+   "detail": "device 'Digital Output (High Definition Audio Device)', mute off, volume 100 %, process loopback ok, system loopback ok",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-eventlog",
+   "ft": "FT-28",
+   "title": "Windows Event Log: no crash of nexa_music.exe during the whole run",
+   "status": "PASS",
+   "detail": "0 crash records",
+   "level": "Windows system"
+  },
+  {
+   "id": "UNIT-analyze",
+   "ft": "-",
+   "title": "flutter analyze",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "static analysis"
+  },
+  {
+   "id": "UNIT-tests",
+   "ft": "-",
+   "title": "Existing unit / widget tests (FakeEngine, in-memory database)",
+   "status": "PASS",
+   "detail": "exit 0; +261: All tests passed!",
+   "level": "unit / widget tests"
+  },
+  {
+   "id": "AT-02-count",
+   "ft": "FT-02",
+   "title": "Import: every test file is in the library once",
+   "status": "PASS",
+   "detail": "library 36 / expected 36; problems: []",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-tags",
+   "ft": "FT-02",
+   "title": "Import: titles, artists, albums incl. Cyrillic MP3 / FLAC",
+   "status": "PASS",
+   "detail": "all tags as written",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-wav-cyrillic",
+   "ft": "FT-02",
+   "title": "Import: Cyrillic RIFF INFO tags in WAV (known issue TD-04)",
+   "status": "PASS",
+   "detail": "read correctly",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-durations",
+   "ft": "FT-02",
+   "title": "Import: durations within 0.3 s of the generated length",
+   "status": "PASS",
+   "detail": "largest deviation 0.071 s",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-cover",
+   "ft": "FT-02",
+   "title": "Import: folder cover.jpg used as artwork",
+   "status": "PASS",
+   "detail": "4 of 4 tracks in meta/ have a cover",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-files-unchanged",
+   "ft": "FT-02",
+   "title": "Import never changes, moves or adds music files",
+   "status": "PASS",
+   "detail": "38 files compared by SHA-256",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-rescan",
+   "ft": "FT-02",
+   "title": "Rescan adds no duplicates",
+   "status": "PASS",
+   "detail": "36 tracks after rescan",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-03-restart",
+   "ft": "FT-03",
+   "title": "After a restart: library, playlist, likes, Mix mode and volume restored",
+   "status": "PASS",
+   "detail": "tracks 36, playlist 3 songs, favorites 2, mode gapless, volume 0.6",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-04-missing",
+   "ft": "FT-04",
+   "title": "Renamed file: unavailable with a reason, available again after renaming back",
+   "status": "PASS",
+   "detail": "while renamed: unavailable \"File not found\"; after: available; available tracks 36 (the renamed copy stays listed as missing by design)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-05-search",
+   "ft": "FT-05",
+   "title": "Search: words, letter case and Cyrillic",
+   "status": "PASS",
+   "detail": "\"seq 0\" 11 (11), \"тестовая\" 1 (>=1), \"ТЕСТОВЫЙ\" 2 (>=2), \"live band\" 3 (3)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-playback-output",
+   "ft": "-",
+   "title": "Group \"playback\" not run",
+   "status": "BLOCKED",
+   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-mix-output",
+   "ft": "-",
+   "title": "Group \"mix\" not run",
+   "status": "BLOCKED",
+   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-dna-output",
+   "ft": "-",
+   "title": "Group \"dna\" not run",
+   "status": "BLOCKED",
+   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-online-output",
+   "ft": "-",
+   "title": "Group \"online\" not run",
+   "status": "BLOCKED",
+   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-output",
+   "ft": "-",
+   "title": "Test tones played on the silent output device (not on the speakers / headset)",
+   "status": "BLOCKED",
+   "detail": "the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  }
+ ]
+}

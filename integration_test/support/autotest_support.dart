@@ -177,17 +177,20 @@ Future<void> useTestOutput(ProviderContainer c) async {
     return;
   }
   final engine = c.read(playbackEngineProvider);
+  // mpv names WASAPI devices "wasapi/{guid}" (without the endpoint id's
+  // "{0.0.0.00000000}." prefix): matched by the endpoint's own GUID.
+  final guid = RegExp(r'\{[0-9a-f-]+\}$').firstMatch(want)?.group(0) ?? want;
   OutputDevice? match;
   await waitUntil(() {
     match = engine.availableDevices
-        .where((d) => d.id.toLowerCase().endsWith(want))
+        .where((d) => d.id.toLowerCase().contains(guid))
         .firstOrNull;
     return match != null;
   }, timeout: const Duration(seconds: 10));
   if (match == null) {
     TestOutput.problem =
         'the audio engine does not offer the silent output device '
-        '(${engine.availableDevices.map((d) => d.description).join(', ')})';
+        '(${engine.availableDevices.map((d) => '${d.description} = ${d.id}').join(', ')})';
     return;
   }
   await c.read(playerProvider.notifier).setOutputDevice(match!);
