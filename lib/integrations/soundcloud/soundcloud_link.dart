@@ -7,9 +7,10 @@ import 'package:http/http.dart' as http;
 sealed class SoundCloudLink {
   const SoundCloudLink();
 
-  /// Parses a pasted link. Only single tracks play in this version (one
-  /// queue entry = one sound); sets, profiles and short links are named so
-  /// the user knows what to paste instead.
+  /// Parses a pasted link. Tracks, playlists (sets) and profiles all play
+  /// in SoundCloud's widget (D-026); a set or a profile is one queue entry
+  /// that the widget plays through. Short links are expanded first
+  /// ([expand]).
   static SoundCloudLink parse(String input) {
     final text = input.trim();
     final uri = Uri.tryParse(text.contains('://') ? text : 'https://$text');
@@ -36,15 +37,20 @@ sealed class SoundCloudLink {
     if (parts.isEmpty || reserved.contains(parts.first.toLowerCase())) {
       return const SoundCloudNotALink();
     }
-    if (parts.length >= 2 && parts[1] == 'sets') {
-      return const SoundCloudSet();
+    final user = parts.first;
+    if (parts.length >= 3 && parts[1] == 'sets') {
+      // A private set link has a secret token as its fourth part.
+      final set = parts.length >= 4 && parts[3].startsWith('s-')
+          ? '$user/sets/${parts[2]}/${parts[3]}'
+          : '$user/sets/${parts[2]}';
+      return SoundCloudSet('https://soundcloud.com/$set');
     }
     if (parts.length < 2 ||
         const {
           'tracks', 'albums', 'popular-tracks', 'reposts', 'likes',
           'following', 'followers', 'comments', 'sets',
         }.contains(parts[1].toLowerCase())) {
-      return const SoundCloudProfile();
+      return SoundCloudProfile('https://soundcloud.com/$user');
     }
     // A private track link has a secret token as its third part.
     final path = parts.length >= 3 && parts[2].startsWith('s-')
@@ -61,16 +67,67 @@ class SoundCloudTrackLink extends SoundCloudLink {
   final String url;
 }
 
+/// A playlist or album (`https://soundcloud.com/<user>/sets/<name>`).
 class SoundCloudSet extends SoundCloudLink {
-  const SoundCloudSet();
+  const SoundCloudSet(this.url);
+
+  final String url;
 }
 
+/// A profile: the widget plays the uploader's tracks.
 class SoundCloudProfile extends SoundCloudLink {
-  const SoundCloudProfile();
+  const SoundCloudProfile(this.url);
+
+  final String url;
 }
 
+/// `on.soundcloud.com/...`: SoundCloud redirects it to the full address.
 class SoundCloudShortLink extends SoundCloudLink {
-  const SoundCloudShortLink();
+  const SoundCloudShortLink([this.url = '']);
+
+  final String url;
+}
+
+/// Expands a short link through SoundCloud's own redirect (only the
+/// address is read, nothing else) and parses the result; other links are
+/// parsed as they are.
+Future<SoundCloudLink> expandSoundCloudLink(
+  String input,
+  http.Client client,
+) async {
+  final parsed = SoundCloudLink.parse(input);
+  if (parsed is! SoundCloudShortLink) {
+    return parsed;
+  }
+  final text = input.trim();
+  final uri = Uri.tryParse(text.contains('://') ? text : 'https://$text');
+  if (uri == null) {
+    return parsed;
+  }
+  try {
+    var next = uri.replace(scheme: 'https');
+    for (var hop = 0; hop < 3; hop++) {
+      final request = http.Request('GET', next)..followRedirects = false;
+      final response = await client
+          .send(request)
+          .timeout(const Duration(seconds: 15));
+      unawaited(response.stream.drain<void>());
+      final location = response.headers['location'];
+      if (response.statusCode < 300 ||
+          response.statusCode >= 400 ||
+          location == null) {
+        break;
+      }
+      next = next.resolve(location);
+      final target = SoundCloudLink.parse(next.toString());
+      if (target is! SoundCloudShortLink && target is! SoundCloudNotALink) {
+        return target;
+      }
+    }
+  } on Object {
+    // Offline or refused: the short link stays unexpanded.
+  }
+  return parsed;
 }
 
 class SoundCloudNotALink extends SoundCloudLink {

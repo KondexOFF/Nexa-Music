@@ -15,6 +15,7 @@ import '../player/player_controller.dart';
 import '../../core/models/listening.dart';
 import '../../core/models/track.dart';
 import '../library/library_repository.dart' show youtubeUnnamed;
+import '../privacy/ad_block.dart';
 import 'youtube_history.dart';
 
 /// IFrame API player states (`onStateChange`).
@@ -112,6 +113,9 @@ String youtubeErrorText(int code) => switch (code) {
 final youtubeEmbedFactoryProvider = Provider<Future<YouTubeEmbed> Function()>(
   (ref) => () async => WindowsYouTubeEmbed(
     profileDir: p.join((await appDataDirectory()).path, 'webview2'),
+    extension: adBlockRequest(ref.read(adBlockProvider)),
+    onExtension: (reply) =>
+        unawaited(ref.read(adBlockProvider.notifier).report(reply)),
   ),
 );
 

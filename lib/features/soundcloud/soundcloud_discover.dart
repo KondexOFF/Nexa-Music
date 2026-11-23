@@ -42,36 +42,45 @@ class _SoundCloudDiscoverSectionState
   }
 
   Future<void> _resolve() async {
-    final parsed = SoundCloudLink.parse(_link.text);
-    final problem = switch (parsed) {
-      SoundCloudTrackLink() => null,
-      SoundCloudSet() => S.scSetLink,
-      SoundCloudProfile() => S.scProfileLink,
-      SoundCloudShortLink() => S.scShortLink,
-      SoundCloudNotALink() => S.scNotALink,
-    };
-    if (parsed is! SoundCloudTrackLink) {
-      setState(() {
-        _problem = problem;
-        _track = null;
-      });
-      return;
-    }
     setState(() {
       _busy = true;
       _problem = null;
     });
-    final meta = await ref.read(soundcloudOEmbedProvider).fetch(parsed.url);
+    final parsed = await expandSoundCloudLink(
+      _link.text,
+      ref.read(httpClientProvider),
+    );
+    if (!mounted) {
+      return;
+    }
+    // A track, a playlist (set) or a profile: all play in the widget.
+    final (String? url, String kind) = switch (parsed) {
+      SoundCloudTrackLink(:final url) => (url, S.scKindTrack),
+      SoundCloudSet(:final url) => (url, S.scKindSet),
+      SoundCloudProfile(:final url) => (url, S.scKindProfile),
+      SoundCloudShortLink() => (null, S.scShortLink),
+      SoundCloudNotALink() => (null, S.scNotALink),
+    };
+    if (url == null) {
+      setState(() {
+        _busy = false;
+        _problem = kind;
+        _track = null;
+      });
+      return;
+    }
+    final meta = await ref.read(soundcloudOEmbedProvider).fetch(url);
     if (!mounted) {
       return;
     }
     setState(() {
       _busy = false;
       _track = soundcloudTrack(
-        url: parsed.url,
+        url: url,
         title: meta?.title,
         user: meta?.author,
         artwork: meta?.thumbnail,
+        album: kind,
       );
     });
   }

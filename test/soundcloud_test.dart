@@ -45,13 +45,49 @@ void main() {
       );
     });
 
-    test('other links are named, never played', () {
-      expect(SoundCloudLink.parse('https://soundcloud.com/a/sets/b'),
-          isA<SoundCloudSet>());
-      expect(SoundCloudLink.parse('https://soundcloud.com/artist'),
-          isA<SoundCloudProfile>());
-      expect(SoundCloudLink.parse('https://soundcloud.com/artist/tracks'),
-          isA<SoundCloudProfile>());
+    test('playlists and profiles become canonical links (D-026)', () {
+      String? set(String s) => switch (SoundCloudLink.parse(s)) {
+        SoundCloudSet(:final url) => url,
+        _ => null,
+      };
+      String? profile(String s) => switch (SoundCloudLink.parse(s)) {
+        SoundCloudProfile(:final url) => url,
+        _ => null,
+      };
+      expect(set('https://soundcloud.com/a/sets/b?si=x'),
+          'https://soundcloud.com/a/sets/b');
+      expect(set('https://soundcloud.com/a/sets/b/s-Tok'),
+          'https://soundcloud.com/a/sets/b/s-Tok');
+      expect(profile('https://soundcloud.com/artist'),
+          'https://soundcloud.com/artist');
+      expect(profile('https://soundcloud.com/artist/tracks'),
+          'https://soundcloud.com/artist');
+      expect(profile('https://soundcloud.com/artist/sets'),
+          'https://soundcloud.com/artist');
+    });
+
+    test('short links are expanded through the redirect', () async {
+      final client = MockClient((r) async {
+        expect(r.url.host, 'on.soundcloud.com');
+        return http.Response('', 302, headers: {
+          'location': 'https://soundcloud.com/artist-name/track-name?si=1',
+        });
+      });
+      final link = await expandSoundCloudLink(
+        'https://on.soundcloud.com/xYz',
+        client,
+      );
+      expect(link, isA<SoundCloudTrackLink>());
+      expect((link as SoundCloudTrackLink).url,
+          'https://soundcloud.com/artist-name/track-name');
+      final offline = await expandSoundCloudLink(
+        'https://on.soundcloud.com/xYz',
+        MockClient((r) async => throw const SocketException('offline')),
+      );
+      expect(offline, isA<SoundCloudShortLink>());
+    });
+
+    test('other links are not SoundCloud links', () {
       expect(SoundCloudLink.parse('https://on.soundcloud.com/xYz'),
           isA<SoundCloudShortLink>());
       expect(SoundCloudLink.parse('https://soundcloud.com/discover/sets/x'),

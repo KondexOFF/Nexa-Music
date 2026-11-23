@@ -649,22 +649,63 @@ abstract final class S {
   static const String scApiLoadFailed =
       "SoundCloud's player could not be loaded (offline?)";
   static const String scIntro =
-      'Paste a link to a SoundCloud track. It plays in SoundCloud\'s own '
-      'player in NEXA - with the uploader, SoundCloud\'s branding and its '
-      'controls. Like it or add it to a playlist or the queue like any '
-      'other song.';
-  static const String scLinkHint = 'https://soundcloud.com/artist/track';
+      'Paste a link to a SoundCloud track, playlist or profile. It plays in '
+      'SoundCloud\'s own player in NEXA - with the uploader, SoundCloud\'s '
+      'branding and its controls; a playlist or profile plays through as one '
+      'entry. Like it or add it to a playlist or the queue like any other '
+      'song.';
+  static const String scLinkHint =
+      'https://soundcloud.com/artist/track (or a playlist / profile)';
+  static const String scKindTrack = 'SoundCloud';
+  static const String scKindSet = 'SoundCloud playlist';
+  static const String scKindProfile = 'SoundCloud profile';
   static const String scOpenLink = 'Open link';
   static const String scResolving = 'Looking up the link...';
-  static const String scSetLink =
-      'This is a SoundCloud playlist (set). Open one of its tracks and paste '
-      'that link - playlists come in a later version.';
-  static const String scProfileLink =
-      'This is a SoundCloud profile. Paste the link of a track.';
+  // Optional ad blocking in the web players (D-026, Settings - Privacy)
+  static const String adBlockTitle =
+      'Ad blocking in the YouTube and SoundCloud players';
+  static const String adBlockInfo =
+      'Optional, off by default: a local uBlock Origin Lite (unpacked '
+      'Chromium build, chosen by you - NEXA does not bundle or download it) '
+      'in the web players only. Your library, Audius and Jamendo never use '
+      'it. Blocking YouTube ads breaks the YouTube API rules (Developer '
+      'Policies III.I.05-06); not every ad is blocked, and YouTube may '
+      'detect it or stop playing videos. Remove takes it out completely.';
+  static const String adBlockWarningTitle = 'Switch on ad blocking?';
+  static const String adBlockWarningBody =
+      'This is not an officially permitted use of the YouTube player: '
+      'blocking ads breaks the YouTube API Services Developer Policies '
+      '(III.I.05-06). Your API key or access can be revoked, YouTube may '
+      'detect the blocker, and videos may stop playing. NEXA does not '
+      'promise that any ad is blocked. Use it only for yourself and switch '
+      'it off if YouTube misbehaves.';
+  static const String adBlockSwitchOn = 'Switch on';
+  static const String adBlockChoose = 'Choose folder';
+  static const String adBlockChooseTitle =
+      'Folder of the unpacked uBlock Origin Lite (Chromium)';
+  static const String adBlockRemove = 'Remove from the players';
+  static const String adBlockNoFolder = 'No extension folder chosen.';
+  static String adBlockFolder(String path) => 'Extension folder: $path';
+  static String adBlockBadFolder(String path) =>
+      'Not an unpacked extension (no manifest.json): $path';
+  static const String adBlockNextPlayer =
+      'Takes effect when the YouTube or SoundCloud player opens next time.';
+  static const String adBlockRemoveNext =
+      'Removed from the players when one opens next time.';
+  static const String adBlockRestart =
+      'Restart NEXA to apply: the web players of this run were started '
+      'without extension support.';
+  static String adBlockRefused(String why) => 'WebView2 refused: $why';
+  static const String adBlockRemoved =
+      'Removed: the web players run without extensions again.';
+  static const String adBlockLoaded =
+      'On in the web players. Whether an ad is blocked depends on YouTube.';
+  static const String adBlockOff = 'Switched off in the web players.';
   static const String scShortLink =
-      'Short links (on.soundcloud.com) cannot be opened here. Open it in the '
-      'browser and paste the full soundcloud.com address.';
-  static const String scNotALink = 'This is not a SoundCloud track link.';
+      'This short link could not be opened (offline, or SoundCloud did not '
+      'send the full address). Open it in the browser and paste the full '
+      'soundcloud.com address.';
+  static const String scNotALink = 'This is not a SoundCloud link.';
   static const String scLimits =
       'No SoundCloud search in this version: the SoundCloud API needs '
       'permitted access. NEXA never downloads, caches or mixes SoundCloud '

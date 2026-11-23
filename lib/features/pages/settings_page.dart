@@ -10,6 +10,7 @@ import '../../core/audio/playback_engine.dart';
 import '../discover/catalog_settings.dart';
 import '../nexa_dna/privacy_controls.dart';
 import '../player/player_controller.dart';
+import '../privacy/ad_block.dart';
 import '../youtube/youtube_settings.dart';
 import 'database_backup_controls.dart';
 import '../../ui/nexa_widgets.dart';
@@ -80,7 +81,14 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.privacy_tip_outlined,
             title: S.settingsPrivacy,
             body: S.settingsPrivacyBody,
-            action: PrivacyControls(),
+            action: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                PrivacyControls(),
+                Divider(height: 32),
+                AdBlockControls(),
+              ],
+            ),
           ),
           const _SettingsCard(
             icon: Icons.backup_outlined,

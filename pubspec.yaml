@@ -49,6 +49,13 @@ dependencies:
   # E2.0 YouTube prototype: Microsoft Edge WebView2 (Windows).
   webview_flutter_windows: ^1.3.0
 
+# Local fork of the WebView2 plugin with browser-extension support (D-026:
+# optional ad blocking in the web players; BSD-3-Clause, licence in
+# third_party/webview_flutter_windows/LICENSE).
+dependency_overrides:
+  webview_flutter_windows:
+    path: third_party/webview_flutter_windows
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

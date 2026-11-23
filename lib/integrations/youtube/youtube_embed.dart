@@ -70,7 +70,18 @@ bool isExternalPage(String url) {
 
 /// Windows: Microsoft Edge WebView2 through `webview_flutter_windows`.
 class WindowsYouTubeEmbed implements YouTubeEmbed {
-  WindowsYouTubeEmbed({required this.profileDir, this.page = 'player.html'});
+  WindowsYouTubeEmbed({
+    required this.profileDir,
+    this.page = 'player.html',
+    this.extension,
+    this.onExtension,
+  });
+
+  /// Optional ad blocking (Settings - Privacy, D-026): a local unpacked
+  /// browser extension to switch on, off or remove in the WebView2 profile,
+  /// and where the answer goes. Null: no extension support at all.
+  final ({String path, String id, bool enabled, bool remove})? extension;
+  final void Function(Map<String, Object?> reply)? onExtension;
 
   /// WebView2 profile (cookies, cache) inside NEXA's own data folder, so
   /// nothing is written next to the Portable exe.
@@ -86,6 +97,16 @@ class WindowsYouTubeEmbed implements YouTubeEmbed {
   final _events = StreamController<Map<String, Object?>>.broadcast();
   final List<StreamSubscription<Object?>> _subs = [];
   static bool _environmentSet = false;
+
+  /// The environment of this run allows browser extensions.
+  static bool _environmentExtensions = false;
+
+  /// For integration tests that create the WebView2 environment
+  /// themselves (never used by the app).
+  static void environmentCreated({required bool extensions}) {
+    _environmentSet = true;
+    _environmentExtensions = extensions;
+  }
 
   @override
   Stream<Map<String, Object?>> get events => _events.stream;
@@ -128,8 +149,15 @@ class WindowsYouTubeEmbed implements YouTubeEmbed {
     if (!_environmentSet) {
       try {
         await Directory(profileDir).create(recursive: true);
-        await WebviewController.initializeEnvironment(userDataPath: profileDir);
+        // Extensions are allowed in the environment only while ad blocking
+        // is used (on, or still installed and to be switched off /
+        // removed); otherwise WebView2 runs without extension support.
+        await WebviewController.initializeEnvironment(
+          userDataPath: profileDir,
+          browserExtensions: extension != null,
+        );
         _environmentSet = true;
+        _environmentExtensions = extension != null;
       } on PlatformException {
         // Already created by an earlier controller in this process.
         _environmentSet = true;
@@ -142,6 +170,24 @@ class WindowsYouTubeEmbed implements YouTubeEmbed {
     // Links in the player (title, logo, "Watch on YouTube") would open a new
     // web view window. They are shown in this view for a moment instead and
     // handed to the system browser (see [_onUrl]); the player page returns.
+    final ext = extension;
+    if (ext != null && !_environmentExtensions) {
+      // The environment of this run was created without extensions.
+      onExtension?.call({'ok': false, 'error': 'restart'});
+    } else if (ext != null) {
+      try {
+        final reply = await _controller.setBrowserExtension(
+          path: ext.path,
+          id: ext.id,
+          nameHint: 'uBlock',
+          enabled: ext.enabled,
+          remove: ext.remove,
+        );
+        onExtension?.call(reply);
+      } on Object catch (e) {
+        onExtension?.call({'ok': false, 'error': '$e'});
+      }
+    }
     await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.sameWindow);
     await _controller.setDefaultContextMenusEnabled(false);
     await _controller.setDevToolsEnabled(false);

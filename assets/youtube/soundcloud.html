@@ -78,7 +78,23 @@
     widget.bind(E.PAUSE, function (e) {
       send('state', { playing: false, position: e && e.currentPosition });
     });
-    widget.bind(E.FINISH, function () { send('finish'); });
+    // A playlist or a profile is one NEXA queue entry: SoundCloud's widget
+    // plays it through; NEXA's queue moves on only after its last sound.
+    widget.bind(E.FINISH, function () {
+      widget.getSounds(function (sounds) {
+        widget.getCurrentSoundIndex(function (index) {
+          var count = (sounds && sounds.length) || 1;
+          if (index + 1 >= count) { send('finish'); return; }
+          send('advance', { index: index + 1, count: count });
+          // The widget usually goes on by itself; if not, the next sound.
+          setTimeout(function () {
+            widget.getCurrentSoundIndex(function (now) {
+              if (now === index) { widget.skip(index + 1); }
+            });
+          }, 1200);
+        });
+      });
+    });
     widget.bind(E.ERROR, function () { send('error'); });
     widget.bind(E.PLAY_PROGRESS, function (e) {
       send('progress', { position: e.currentPosition, relative: e.relativePosition });

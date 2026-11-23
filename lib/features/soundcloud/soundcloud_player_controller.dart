@@ -14,6 +14,7 @@ import '../library/library_providers.dart';
 import '../nexa_dna/dna_providers.dart';
 import '../player/playback_arbiter.dart';
 import '../player/player_controller.dart';
+import '../privacy/ad_block.dart';
 
 /// State of SoundCloud's widget in NEXA (E3).
 class ScStatus {
@@ -86,6 +87,9 @@ final soundcloudEmbedFactoryProvider =
       (ref) => () async => WindowsYouTubeEmbed(
         profileDir: p.join((await appDataDirectory()).path, 'webview2'),
         page: 'soundcloud.html',
+        extension: adBlockRequest(ref.read(adBlockProvider)),
+        onExtension: (reply) =>
+            unawaited(ref.read(adBlockProvider.notifier).report(reply)),
       ),
     );
 
@@ -93,14 +97,16 @@ final soundcloudOEmbedProvider = Provider<SoundCloudOEmbed>(
   (ref) => SoundCloudOEmbed(ref.watch(httpClientProvider)),
 );
 
-/// A SoundCloud link as a [Track] entry: the link, its title and uploader -
-/// never audio (CR-002).
+/// A SoundCloud link (track, playlist or profile) as a [Track] entry: the
+/// link, its title and uploader - never audio (CR-002). A playlist or a
+/// profile is one entry that the widget plays through (D-026).
 Track soundcloudTrack({
   required String url,
   String? title,
   String? user,
   String? artwork,
   Duration? duration,
+  String? album,
 }) {
   final name = (title ?? '').trim();
   return Track(
@@ -110,7 +116,7 @@ Track soundcloudTrack({
     path: url,
     title: name.isEmpty ? S.scUnnamed : name,
     artist: user ?? '',
-    album: TrackSource.soundcloud.label,
+    album: album ?? TrackSource.soundcloud.label,
     duration: duration,
     artworkPath: artwork,
     addedAt: DateTime.now(),
