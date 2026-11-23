@@ -58,9 +58,18 @@ class MediaKitEngine implements PlaybackEngine {
       }),
       _player.stream.error.listen(_errors.add),
       _player.stream.playlist.listen(_onPlaylist),
-      _player.stream.audioDevices.listen(
-        (list) => _devices.add(_availableFrom(list)),
-      ),
+      _player.stream.audioDevices.listen((list) {
+        _devices.add(_availableFrom(list));
+        // A device chosen before mpv listed it (the saved device at start).
+        final wanted = _wantedDevice;
+        if (wanted != null) {
+          final match = list.where((d) => d.name == wanted);
+          if (match.isNotEmpty) {
+            _wantedDevice = null;
+            unawaited(_player.setAudioDevice(match.first));
+          }
+        }
+      }),
     ];
   }
 
@@ -72,6 +81,9 @@ class MediaKitEngine implements PlaybackEngine {
   final _devices = StreamController<List<OutputDevice>>.broadcast();
   final _advanced = StreamController<String>.broadcast();
   EngineState _state = const EngineState();
+
+  /// Device asked for but not (yet) in mpv's list.
+  String? _wantedDevice;
 
   /// File appended to the mpv playlist for a gapless transition, and its
   /// index in that playlist.
@@ -218,6 +230,9 @@ class MediaKitEngine implements PlaybackEngine {
   @override
   Future<void> setDevice(OutputDevice device) async {
     final match = _player.state.audioDevices.where((d) => d.name == device.id);
+    // Not listed yet (mpv reports its devices shortly after start): applied
+    // as soon as it is; until then the Windows default device plays.
+    _wantedDevice = match.isEmpty && !device.isAuto ? device.id : null;
     await _player.setAudioDevice(
       match.isEmpty ? AudioDevice.auto() : match.first,
     );

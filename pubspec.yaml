@@ -54,6 +54,9 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
+  # E6: migration test on a copy of the owner's database (reads the file
+  # directly, already used by drift).
+  sqlite3: ^3.5.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

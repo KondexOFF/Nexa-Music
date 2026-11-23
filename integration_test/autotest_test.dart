@@ -82,6 +82,16 @@ void main() {
           continue;
         }
         final (run, limit) = entry.value;
+        if (TestOutput.blocked && entry.key != 'library') {
+          // Without the silent device the tones would be heard: not played.
+          results.blocked(
+            'AT-${entry.key}-output',
+            '-',
+            'Group "${entry.key}" not run',
+            'silent output device: ${TestOutput.problem}',
+          );
+          continue;
+        }
         try {
           await run().timeout(limit);
         } on TimeoutException {
@@ -105,6 +115,15 @@ void main() {
         await results.save(json);
       }
     });
+    if (AutoTestConfig.device.isNotEmpty) {
+      results.add(
+        'AT-output',
+        '-',
+        'Test tones played on the silent output device (not on the speakers / headset)',
+        TestOutput.blocked ? 'BLOCKED' : 'PASS',
+        detail: TestOutput.problem ?? 'device: ${TestOutput.chosen}',
+      );
+    }
     await results.save(p.join(AutoTestConfig.out, 'integration.json'));
   }, timeout: const Timeout(Duration(minutes: 30)));
 }
@@ -114,7 +133,7 @@ void main() {
 /// Imports the test library into the test profile without checking it
 /// (the "library" group does the checks).
 Future<void> _importLibraryOnly() async {
-  final c = autoTestContainer();
+  final c = await autoTestContainer();
   try {
     final repo = c.read(libraryRepositoryProvider);
     if ((await repo.getTracks()).isEmpty) {
@@ -130,7 +149,7 @@ Future<void> _importLibraryOnly() async {
 Future<void> _library(AutoTestResults r, LibraryManifest m) async {
   final root = AutoTestConfig.library;
   final before = hashTree(root);
-  final c = autoTestContainer();
+  final c = await autoTestContainer();
   try {
     final repo = c.read(libraryRepositoryProvider);
     final report = await c.read(libraryScanProvider.notifier).addFolder();
@@ -229,7 +248,7 @@ Future<void> _library(AutoTestResults r, LibraryManifest m) async {
     c.dispose();
   }
 
-  final c2 = autoTestContainer();
+  final c2 = await autoTestContainer();
   try {
     final repo = c2.read(libraryRepositoryProvider);
     c2.read(playerProvider);
@@ -310,7 +329,7 @@ Future<void> _playback(
   LibraryManifest m,
   Loopback loop,
 ) async {
-  final c = autoTestContainer();
+  final c = await autoTestContainer();
   final errors = <String>[];
   try {
     final player = c.read(playerProvider.notifier);
@@ -580,7 +599,7 @@ bool _listEquals<T>(List<T> a, List<T> b) {
 // -------------------------------------------------------------------- mix
 
 Future<void> _mix(AutoTestResults r, LibraryManifest m, Loopback loop) async {
-  final c = autoTestContainer();
+  final c = await autoTestContainer();
   try {
     final player = c.read(playerProvider.notifier);
     final engine = c.read(playbackEngineProvider);
@@ -696,7 +715,7 @@ Future<void> _mix(AutoTestResults r, LibraryManifest m, Loopback loop) async {
 // -------------------------------------------------------------------- dna
 
 Future<void> _dna(AutoTestResults r, LibraryManifest m) async {
-  final c = autoTestContainer();
+  final c = await autoTestContainer();
   try {
     final player = c.read(playerProvider.notifier);
     final engine = c.read(playbackEngineProvider);
@@ -839,7 +858,7 @@ Future<void> _dna(AutoTestResults r, LibraryManifest m) async {
   }
 
   // FT-24: delete history, reset DNA, restart.
-  final c2 = autoTestContainer();
+  final c2 = await autoTestContainer();
   try {
     final taste = c2.read(tasteRepositoryProvider);
     final repo = c2.read(libraryRepositoryProvider);
@@ -871,7 +890,7 @@ Future<void> _dna(AutoTestResults r, LibraryManifest m) async {
 
 Future<void> _online(AutoTestResults r, Loopback loop) async {
   final client = http.Client();
-  final c = autoTestContainer();
+  final c = await autoTestContainer();
   try {
     final player = c.read(playerProvider.notifier);
     final engine = c.read(playbackEngineProvider);

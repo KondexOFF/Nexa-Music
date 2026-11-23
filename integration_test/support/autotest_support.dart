@@ -5,9 +5,11 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexa_music/core/audio/playback_engine.dart';
 import 'package:nexa_music/core/database/app_database.dart';
 import 'package:nexa_music/core/models/track.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
+import 'package:nexa_music/features/player/player_controller.dart';
 import 'package:path/path.dart' as p;
 
 import '../../test/helpers/audio_analysis.dart';
@@ -32,6 +34,12 @@ abstract final class AutoTestConfig {
   /// output muted, at 0 % or without loopback: every sound measurement is
   /// then BLOCKED with this reason (playback itself is still tested).
   static const String audioBlocked = String.fromEnvironment('NEXA_AT_AUDIO_BLOCKED');
+
+  /// Endpoint id of the output device nobody listens to (NEXA_AutoTest.ps1
+  /// -OutputDevice): NEXA plays there and only that device is recorded, so
+  /// the test tones are not heard (owner request 2026-11-23). 'none': the
+  /// device asked for was not found. Empty: Windows default device.
+  static const String device = String.fromEnvironment('NEXA_AT_DEVICE');
 
   /// Comma separated groups to run (empty: all).
   static const String groups = String.fromEnvironment('NEXA_AT_GROUPS');
@@ -145,9 +153,57 @@ class FixedPicker implements LibraryPicker {
   Future<List<String>> pickFiles() async => const [];
 }
 
+/// The silent output device of this run ([AutoTestConfig.device]).
+abstract final class TestOutput {
+  /// Description of the device NEXA plays on (null: Windows default).
+  static String? chosen;
+
+  /// Why the silent device could not be used. Then nothing may play: the
+  /// tones would be heard on the speakers.
+  static String? problem;
+
+  static bool get blocked => problem != null;
+}
+
+/// Sends NEXA's sound to the silent device (and saves it in the profile, so
+/// the exe stage, which copies this profile, plays there too).
+Future<void> useTestOutput(ProviderContainer c) async {
+  final want = AutoTestConfig.device.trim().toLowerCase();
+  if (want.isEmpty || TestOutput.blocked) {
+    return;
+  }
+  if (want == 'none') {
+    TestOutput.problem = 'the silent output device given to NEXA_AutoTest.ps1 was not found';
+    return;
+  }
+  final engine = c.read(playbackEngineProvider);
+  OutputDevice? match;
+  await waitUntil(() {
+    match = engine.availableDevices
+        .where((d) => d.id.toLowerCase().endsWith(want))
+        .firstOrNull;
+    return match != null;
+  }, timeout: const Duration(seconds: 10));
+  if (match == null) {
+    TestOutput.problem =
+        'the audio engine does not offer the silent output device '
+        '(${engine.availableDevices.map((d) => d.description).join(', ')})';
+    return;
+  }
+  await c.read(playerProvider.notifier).setOutputDevice(match!);
+  TestOutput.chosen = match!.description;
+}
+
 /// Container with the real engine, the real HTTP client and a database
-/// file in the isolated AutoTest profile.
-ProviderContainer autoTestContainer() {
+/// file in the isolated AutoTest profile; NEXA plays on the silent output
+/// device when one is set.
+Future<ProviderContainer> autoTestContainer() async {
+  final c = _container();
+  await useTestOutput(c);
+  return c;
+}
+
+ProviderContainer _container() {
   final profile = AutoTestConfig.profile;
   Directory(profile).createSync(recursive: true);
   return ProviderContainer(
@@ -240,6 +296,10 @@ class Loopback {
     Future<void> Function() during, {
     bool expectSound = true,
   }) async {
+    if (TestOutput.blocked) {
+      lastError = 'silent output device: ${TestOutput.problem}';
+      return null;
+    }
     if (!available) {
       lastError = AutoTestConfig.audioBlocked.isNotEmpty
           ? 'sound check before the run: ${AutoTestConfig.audioBlocked}'
@@ -252,7 +312,14 @@ class Loopback {
     await Directory(dir).create(recursive: true);
     // With this process id the recorder captures only NEXA's own audio
     // (process loopback), so other programs cannot disturb the measurement.
-    final proc = await Process.start(exe, [file, '$seconds', '$pid']);
+    // With a silent output device only that device is recorded (nothing else
+    // plays there).
+    final proc = await Process.start(exe, [
+      file,
+      '$seconds',
+      '$pid',
+      if (AutoTestConfig.device.isNotEmpty) AutoTestConfig.device,
+    ]);
     final ready = Completer<void>();
     final errors = StringBuffer();
     proc.stdout.transform(utf8.decoder).transform(const LineSplitter()).listen((

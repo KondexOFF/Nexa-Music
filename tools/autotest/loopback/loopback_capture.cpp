@@ -4,8 +4,9 @@
 // can measure real audio: which test tone is audible, crossfade overlap,
 // gapless gaps, clipping, silence on pause, volume.
 //
-// Usage: loopback_capture.exe <out.wav> <seconds> [pid]
-//        loopback_capture.exe --check     (can sound be measured at all?)
+// Usage: loopback_capture.exe <out.wav> <seconds> [pid] [endpoint id]
+//        loopback_capture.exe --check [endpoint id]
+//                                         (can sound be measured at all?)
 //
 // During a recording the recorder also watches the Windows output: mute and
 // volume of the default device and of the recorded process's own session
@@ -18,6 +19,12 @@
 // sounds) cannot disturb the measurement. Without a pid, or if process
 // loopback is unavailable, it records the whole default output device
 // (system loopback) and says so ("mode=system").
+//
+// With an endpoint id ("{0.0.0.00000000}.{guid}", the device NEXA was told
+// to play on, e.g. an unused digital output) it records that device only
+// ("mode=device") and watches its mute / volume. The AutoTest uses this so
+// its test tones are not heard on the owner's speakers or headset, and
+// nothing else plays on that device to disturb the measurement.
 //
 // Packets are placed on a wall-clock timeline (QPC time stamps); stretches
 // without packets become silence, so real gaps stay in the recording.
@@ -273,12 +280,21 @@ LONGLONG Now100ns() {
 // "--check": can the AutoTest measure sound at all? Prints one CHECK line.
 // Exit 0 = ready, 3 = output muted or at 0 %, 4 = no output device,
 // 5 = loopback capture not available.
-int Check() {
+// The output device to use: [endpoint] if given, else the Windows default.
+HRESULT GetOutput(IMMDeviceEnumerator* enumerator, const wchar_t* endpoint,
+                  IMMDevice** device) {
+  if (endpoint && *endpoint) {
+    return enumerator->GetDevice(endpoint, device);
+  }
+  return enumerator->GetDefaultAudioEndpoint(eRender, eConsole, device);
+}
+
+int Check(const wchar_t* endpoint) {
   IMMDeviceEnumerator* enumerator = nullptr;
   IMMDevice* device = nullptr;
   if (FAILED(CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
                               IID_PPV_ARGS(&enumerator))) ||
-      FAILED(enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device))) {
+      FAILED(GetOutput(enumerator, endpoint, &device))) {
     printf("CHECK device=none\n");
     SafeRelease(&enumerator);
     return 4;
@@ -337,16 +353,19 @@ int Check() {
 int wmain(int argc, wchar_t** argv) {
   if (argc >= 2 && wcscmp(argv[1], L"--check") == 0) {
     if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))) return 5;
-    const int code = Check();
+    const int code = Check(argc >= 3 ? argv[2] : nullptr);
     CoUninitialize();
     return code;
   }
   if (argc < 3) {
-    fprintf(stderr, "usage: loopback_capture <out.wav> <seconds> [pid] | --check\n");
+    fprintf(stderr,
+            "usage: loopback_capture <out.wav> <seconds> [pid] [endpoint id] | "
+            "--check [endpoint id]\n");
     return 2;
   }
   const double seconds = _wtof(argv[2]);
   const DWORD pid = argc >= 4 ? static_cast<DWORD>(_wtoi(argv[3])) : 0;
+  const wchar_t* endpoint = argc >= 5 && *argv[4] ? argv[4] : nullptr;
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   if (FAILED(hr)) return Fail("CoInitializeEx", hr);
 
@@ -369,13 +388,14 @@ int wmain(int argc, wchar_t** argv) {
   const char* mode = "system";
   HRESULT process_error = S_OK;
 
-  // Default output device: watched for mute / volume during the recording
-  // (and used for system loopback).
+  // Output device (the given endpoint or the default one): watched for
+  // mute / volume during the recording (and used for system loopback).
   if (SUCCEEDED(CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
                                  IID_PPV_ARGS(&enumerator)))) {
-    enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device);
+    hr = GetOutput(enumerator, endpoint, &device);
+    if (FAILED(hr) && endpoint) return Fail("GetDevice endpoint", hr);
   }
-  if (pid != 0) {
+  if (pid != 0 && !endpoint) {
     capture = ActivateProcessLoopback(pid, &process_error);
   }
   if (capture) {
@@ -406,6 +426,7 @@ int wmain(int argc, wchar_t** argv) {
     // System loopback of the default output device. A silent render stream
     // keeps packets coming while nothing plays.
     if (!device) return Fail("GetDefaultAudioEndpoint", E_FAIL);
+    if (endpoint) mode = "device";
     hr = device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
                           reinterpret_cast<void**>(&render));
     if (FAILED(hr)) return Fail("Activate render", hr);

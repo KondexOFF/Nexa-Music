@@ -21,7 +21,12 @@ param(
     [switch]$WithExe,
     # Test an existing Portable folder next to the repository (for example
     # NEXA_Music_1.0.0_Windows_x64) instead of building a new one.
-    [string]$UsePortable = ''
+    [string]$UsePortable = '',
+    # Part of the name of an output device nobody listens to (e.g. "Digital
+    # Output"): NEXA plays the test tones there and only that device is
+    # recorded, so nothing is heard on the speakers / headset (owner request
+    # 2026-11-23). Empty: the Windows default device, as before.
+    [string]$OutputDevice = ''
 )
 # -Groups selects integration groups only (for example
 # "NEXA_AutoTest.cmd -Groups playback,mix"): the exe stage then runs only
@@ -156,11 +161,27 @@ if (-not (Test-Path $loopExe)) { $loopExe = '' }
 $soundGroups = @('playback', 'mix', 'online', 'probe')
 $needsSound = -not $SkipIntegration -and (-not $Groups -or @($Groups.Split(',') | Where-Object { $soundGroups -contains $_.Trim() }).Count -gt 0)
 $audioBlocked = ''
+# Silent output device (see -OutputDevice): its endpoint id for NEXA and the
+# recorder.
+$endpoint = ''
+if ($OutputDevice) {
+    $dev = @(Get-PnpDevice -Class AudioEndpoint -Status OK -ErrorAction SilentlyContinue |
+        Where-Object { $_.InstanceId -match '\{0\.0\.0\.' -and $_.FriendlyName -like "*$OutputDevice*" })
+    if ($dev.Count -eq 1) {
+        $endpoint = $dev[0].InstanceId -replace '^SWD\\MMDEVAPI\\', ''
+        Log "silent output device: $($dev[0].FriendlyName)"
+    } else {
+        $audioBlocked = "output device '$OutputDevice' not found or not unique ($($dev.Count) matches)"
+    }
+}
 if ($loopExe -or $needsSound) {
-    if (-not $loopExe) {
+    if ($audioBlocked) {
+        # Silent device missing: NEXA stays muted (no tone on the speakers).
+    } elseif (-not $loopExe) {
         $audioBlocked = 'loopback recorder not built'
     } else {
-        $out = (& $loopExe --check 2>&1 | Out-String).Trim()
+        $out = $(if ($endpoint) { & $loopExe --check $endpoint 2>&1 } else { & $loopExe --check 2>&1 }) | Out-String
+        $out = $out.Trim()
         $checkCode = $LASTEXITCODE
         $f = @{}
         foreach ($mm in [regex]::Matches($out, '(\w+)=("[^"]*"|\S+)')) { $f[$mm.Groups[1].Value] = $mm.Groups[2].Value.Trim('"') }
@@ -170,7 +191,7 @@ if ($loopExe -or $needsSound) {
         switch ($checkCode) {
             0 { }
             3 { $audioBlocked = "Windows sound is muted or at 0 % ($detail)" }
-            4 { $audioBlocked = 'no audio output device'; $detail = 'no default output device' }
+            4 { $audioBlocked = 'no audio output device'; $detail = $(if ($endpoint) { "output device '$OutputDevice' not available" } else { 'no default output device' }) }
             5 { $audioBlocked = "loopback capture is not available ($detail)" }
             default { $audioBlocked = "sound check failed (exit $checkCode): $out" }
         }
@@ -210,6 +231,7 @@ if (-not $SkipIntegration -and $libOk) {
     $jamendo = Join-Path $root '_phase1_ctl\jamendo_client_id.txt'
     $defines = "--dart-define=NEXA_AT_LIBRARY=`"$lib`" --dart-define=NEXA_AT_OUT=`"$itOut`" " +
         "--dart-define=NEXA_AT_LOOPBACK=`"$loopExe`" --dart-define=NEXA_AT_GROUPS=$Groups " +
+        $(if ($OutputDevice) { "--dart-define=NEXA_AT_DEVICE=`"$(if ($endpoint) { $endpoint } else { 'none' })`" " } else { '' }) +
         $(if ($audioBlocked) { "--dart-define=NEXA_AT_AUDIO_BLOCKED=`"$($audioBlocked -replace '"', "'")`" " } else { '' }) +
         $(if (Test-Path $jamendo) { "--dart-define=NEXA_AT_JAMENDO_ID_FILE=`"$jamendo`"" } else { '' })
     $code = Run "flutter test integration_test/autotest_test.dart -d windows $defines" (Join-Path $run 'integration.log') 2700
