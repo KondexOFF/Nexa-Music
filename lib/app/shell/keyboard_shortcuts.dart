@@ -1,12 +1,16 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/player/player_controller.dart';
+import '../navigation.dart';
 
-/// App-wide playback shortcuts (Phase 7, keyboard access):
+/// App-wide shortcuts (Phase 7, keyboard access):
 /// Space play / pause, Ctrl + Right / Left next / previous,
-/// Ctrl + Up / Down volume, Ctrl + M mute, Esc leaves a text field.
+/// Ctrl + Up / Down volume, Ctrl + M mute, Esc leaves a text field;
+/// Alt + Left / Right and the mouse's back / forward buttons go back /
+/// forward between pages (D-026).
 ///
 /// Keys reach this widget only when nothing below handles them: text fields
 /// keep Space and Ctrl + arrows for typing, and Space on a focused button
@@ -57,6 +61,17 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
       player.togglePlay();
       return KeyEventResult.handled;
     }
+    if (HardwareKeyboard.instance.isAltPressed && !ctrl && !repeat) {
+      final nav = ref.read(navigationProvider.notifier);
+      if (key == LogicalKeyboardKey.arrowLeft) {
+        nav.goBack();
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.arrowRight) {
+        nav.goForward();
+        return KeyEventResult.handled;
+      }
+    }
     if (!ctrl) {
       return KeyEventResult.ignored;
     }
@@ -79,11 +94,21 @@ class _KeyboardShortcutsState extends ConsumerState<KeyboardShortcuts> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      focusNode: _node,
-      autofocus: true,
-      onKeyEvent: _onKey,
-      child: widget.child,
+    return Listener(
+      onPointerDown: (e) {
+        final nav = ref.read(navigationProvider.notifier);
+        if (e.buttons & kBackMouseButton != 0) {
+          nav.goBack();
+        } else if (e.buttons & kForwardMouseButton != 0) {
+          nav.goForward();
+        }
+      },
+      child: Focus(
+        focusNode: _node,
+        autofocus: true,
+        onKeyEvent: _onKey,
+        child: widget.child,
+      ),
     );
   }
 }

@@ -253,8 +253,10 @@ abstract final class S {
   static const String keyboardTitle = 'Keyboard shortcuts';
   static const String keyboardBody =
       'Space: play / pause  -  Ctrl + Right / Left: next / previous  -  '
-      'Ctrl + Up / Down: volume  -  Ctrl + M: mute. Tab moves between '
-      'controls; Enter or Space activates the focused control.';
+      'Ctrl + Up / Down: volume  -  Ctrl + M: mute  -  Alt + Left / Right '
+      'or the mouse\'s back / forward buttons: previous / next page. Tab '
+      'moves between controls; Enter or Space activates the focused '
+      'control.';
 
   // NEXA DNA and NEXA Wave (Phase 5)
   static const String dislike = 'Dislike';

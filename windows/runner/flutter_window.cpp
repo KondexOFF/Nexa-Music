@@ -32,6 +32,72 @@ bool BoolArg(const flutter::EncodableMap& map, const char* key) {
   return false;
 }
 
+// NEXA remembers its window size and position between starts (D-026), in
+// its own data folder: NEXA_DATA_DIR, else com.kondexoff/nexa_music under
+// APPDATA - the same folder the Dart side uses.
+std::wstring PlacementFile() {
+  wchar_t buffer[1024];
+  DWORD n = GetEnvironmentVariableW(L"NEXA_DATA_DIR", buffer, 1024);
+  std::wstring dir;
+  if (n > 0 && n < 1024) {
+    dir = buffer;
+  } else {
+    n = GetEnvironmentVariableW(L"APPDATA", buffer, 1024);
+    if (n == 0 || n >= 1024) {
+      return std::wstring();
+    }
+    dir = std::wstring(buffer) + L"\\com.kondexoff\\nexa_music";
+  }
+  return dir + L"\\window_placement.bin";
+}
+
+// A saved placement that still fits on a connected monitor; never minimised.
+bool LoadPlacement(WINDOWPLACEMENT* placement) {
+  const std::wstring path = PlacementFile();
+  if (path.empty()) {
+    return false;
+  }
+  HANDLE file = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ,
+                            nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                            nullptr);
+  if (file == INVALID_HANDLE_VALUE) {
+    return false;
+  }
+  WINDOWPLACEMENT read{};
+  DWORD got = 0;
+  const BOOL ok = ReadFile(file, &read, sizeof(read), &got, nullptr);
+  CloseHandle(file);
+  if (!ok || got != sizeof(read) || read.length != sizeof(read)) {
+    return false;
+  }
+  const RECT& r = read.rcNormalPosition;
+  if (r.right - r.left < 200 || r.bottom - r.top < 150 ||
+      MonitorFromRect(&r, MONITOR_DEFAULTTONULL) == nullptr) {
+    return false;
+  }
+  if (read.showCmd != SW_SHOWMAXIMIZED) {
+    read.showCmd = SW_SHOWNORMAL;
+  }
+  read.flags = 0;
+  *placement = read;
+  return true;
+}
+
+void SavePlacement(const WINDOWPLACEMENT& placement) {
+  const std::wstring path = PlacementFile();
+  if (path.empty()) {
+    return;
+  }
+  HANDLE file = CreateFileW(path.c_str(), GENERIC_WRITE, 0, nullptr,
+                            CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (file == INVALID_HANDLE_VALUE) {
+    return;
+  }
+  DWORD written = 0;
+  WriteFile(file, &placement, sizeof(placement), &written, nullptr);
+  CloseHandle(file);
+}
+
 std::string StringArg(const flutter::EncodableMap& map, const char* key) {
   auto it = map.find(flutter::EncodableValue(key));
   if (it != map.end()) {
@@ -85,7 +151,12 @@ bool FlutterWindow::OnCreate() {
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
-    this->Show();
+    WINDOWPLACEMENT saved{};
+    if (LoadPlacement(&saved)) {
+      SetWindowPlacement(GetHandle(), &saved);
+    } else {
+      this->Show();
+    }
   });
 
   // Flutter can complete the first frame before the "show window" callback is
@@ -167,6 +238,18 @@ void FlutterWindow::SendMediaKey(const char* method) {
 }
 
 void FlutterWindow::OnDestroy() {
+  if (HWND hwnd = GetHandle()) {
+    WINDOWPLACEMENT placement{};
+    placement.length = sizeof(WINDOWPLACEMENT);
+    if (mini_mode_) {
+      placement = normal_placement_;  // Where it was before the mini window.
+    } else {
+      GetWindowPlacement(hwnd, &placement);
+    }
+    if (placement.length == sizeof(WINDOWPLACEMENT)) {
+      SavePlacement(placement);
+    }
+  }
   media_session_.Detach();
   media_session_attached_ = false;
   media_keys_channel_ = nullptr;
