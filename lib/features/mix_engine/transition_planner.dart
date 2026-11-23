@@ -70,12 +70,7 @@ TransitionPlan planTransition(MixSettings s, Track current, Track next) {
       reason: S.planTooShort,
     );
   }
-  return TransitionPlan(
-    TransitionKind.crossfade,
-    fade: fade,
-    reason: reason,
-    quietEnd: s.mode == TransitionMode.smartMix && s.allowSmartAdjust,
-  );
+  return TransitionPlan(TransitionKind.crossfade, fade: fade, reason: reason);
 }
 
 const Duration _smartShort = Duration(seconds: 3);

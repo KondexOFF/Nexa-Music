@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/strings.dart';
-import 'package:nexa_music/core/audio/media_kit_engine.dart';
 import 'package:nexa_music/core/audio/mixing_engine.dart';
 import 'package:nexa_music/core/audio/playback_engine.dart';
 import 'package:nexa_music/core/models/track.dart';
@@ -368,100 +367,4 @@ void main() {
     expect(find.text(S.gaplessNote), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-
-  group('Smart Mix v1: quiet ending (D-026)', () {
-    test('silencedetect metadata as mpv prints it', () {
-      expect(
-        MediaKitEngine.parseQuietSince('{"lavfi.silence_start":"171.25"}'),
-        const Duration(milliseconds: 171250),
-      );
-      expect(
-        MediaKitEngine.parseQuietSince('lavfi.silence_start=171.25'),
-        const Duration(milliseconds: 171250),
-      );
-      expect(
-        MediaKitEngine.parseQuietSince(
-          '{"lavfi.silence_start":"12.0","lavfi.silence_end":"14.5",'
-          '"lavfi.silence_duration":"2.5"}',
-        ),
-        isNull,
-        reason: 'sound came back',
-      );
-      expect(MediaKitEngine.parseQuietSince(''), isNull);
-    });
-
-    test('planner marks only Smart Mix crossfades', () {
-      Track t(int n) => Track(
-        id: n,
-        source: TrackSource.local,
-        sourceTrackId: '$n',
-        path: 'C:/m/$n.mp3',
-        title: 'T$n',
-        artist: 'A$n',
-        album: 'Album $n',
-        duration: const Duration(minutes: 4),
-        addedAt: DateTime(2026),
-      );
-      const crossfade = MixSettings(
-        mode: TransitionMode.crossfade,
-        crossfadeSeconds: 6,
-      );
-      expect(planTransition(crossfade, t(1), t(2)).quietEnd, isFalse);
-      const smart = MixSettings(
-        mode: TransitionMode.smartMix,
-        crossfadeSeconds: 6,
-      );
-      expect(planTransition(smart, t(1), t(2)).quietEnd, isTrue);
-    });
-
-    test('a quiet tail starts the crossfade early; quiet mid-track does not',
-        () async {
-      final decks = <_QuietDeck>[];
-      var now = DateTime(2026);
-      final engine = MixingEngine(
-        createDeck: () {
-          final d = _QuietDeck();
-          decks.add(d);
-          return d;
-        },
-        clock: () => now,
-        autoTick: false,
-      );
-      addTearDown(engine.dispose);
-      await engine.load('a.mp3');
-      await engine.prepareNext(
-        'b.mp3',
-        const TransitionPlan(
-          TransitionKind.crossfade,
-          fade: Duration(seconds: 6),
-          quietEnd: true,
-        ),
-      );
-      // Quiet in the middle of the song: nothing happens.
-      decks[0].quiet = const Duration(minutes: 1);
-      decks[0].setPosition(const Duration(minutes: 1, seconds: 5));
-      engine.onTick();
-      await Future<void>.delayed(Duration.zero);
-      expect(engine.isFading, isFalse);
-
-      // Quiet since 2:35 of 3:00 (a quiet tail): the fade starts at 2:37.
-      decks[0].quiet = const Duration(minutes: 2, seconds: 35);
-      decks[0].setPosition(const Duration(minutes: 2, seconds: 37));
-      engine.onTick();
-      await Future<void>.delayed(Duration.zero);
-      await Future<void>.delayed(Duration.zero);
-      expect(engine.isFading, isTrue);
-      now = now.add(const Duration(seconds: 7));
-      engine.onTick();
-      await Future<void>.delayed(Duration.zero);
-      expect(engine.state.path, 'b.mp3');
-    });
-  });
-}
-
-class _QuietDeck extends FakeEngine implements QuietDetector {
-  Duration? quiet;
-
-  @override
-  Future<Duration?> quietSince() async => quiet;
 }

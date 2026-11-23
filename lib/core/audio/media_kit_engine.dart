@@ -5,7 +5,7 @@ import 'package:media_kit/media_kit.dart';
 import 'playback_engine.dart';
 
 /// [PlaybackEngine] on media_kit / libmpv (engine approved in Phase 0, D-002).
-class MediaKitEngine implements PlaybackEngine, QuietDetector {
+class MediaKitEngine implements PlaybackEngine {
   MediaKitEngine() : _player = Player() {
     final platform = _player.platform;
     if (platform is NativePlayer) {
@@ -13,15 +13,6 @@ class MediaKitEngine implements PlaybackEngine, QuietDetector {
       // audio output open between compatible files.
       unawaited(platform.setProperty('prefetch-playlist', 'yes'));
       unawaited(platform.setProperty('gapless-audio', 'weak'));
-      // Smart Mix v1 (D-026): FFmpeg's silencedetect measures, while the
-      // file plays, where its level stays below -40 dBFS for 1.5 s. It only
-      // reads the samples (no change to the sound); the result is read
-      // from mpv's af-metadata. A failure leaves playback as it is.
-      unawaited(
-        platform
-            .setProperty('af', '@$_quietLabel:lavfi=[silencedetect=n=-40dB:d=1.5]')
-            .catchError((Object _) {}),
-      );
     }
     _subs = [
       _player.stream.playing.listen((v) {
@@ -90,41 +81,6 @@ class MediaKitEngine implements PlaybackEngine, QuietDetector {
   final _devices = StreamController<List<OutputDevice>>.broadcast();
   final _advanced = StreamController<String>.broadcast();
   EngineState _state = const EngineState();
-
-  static const String _quietLabel = 'nexaquiet';
-
-  @override
-  Future<Duration?> quietSince() async {
-    final platform = _player.platform;
-    if (platform is! NativePlayer) {
-      return null;
-    }
-    try {
-      final text = await platform.getProperty('af-metadata/$_quietLabel');
-      return parseQuietSince(text);
-    } on Object {
-      return null;
-    }
-  }
-
-  /// Reads silencedetect's metadata ("lavfi.silence_start", and
-  /// "lavfi.silence_end" once the sound is back) as mpv prints it.
-  static Duration? parseQuietSince(String text) {
-    double? value(String key) {
-      final m = RegExp('$key["\']?\\s*[:=]\\s*["\']?(-?[0-9.]+)').firstMatch(text);
-      return m == null ? null : double.tryParse(m.group(1)!);
-    }
-
-    final start = value('silence_start');
-    if (start == null || start < 0) {
-      return null;
-    }
-    final end = value('silence_end');
-    if (end != null && end >= start) {
-      return null; // The sound came back.
-    }
-    return Duration(milliseconds: (start * 1000).round());
-  }
 
   /// Device asked for but not (yet) in mpv's list.
   String? _wantedDevice;

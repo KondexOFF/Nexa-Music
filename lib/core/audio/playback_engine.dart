@@ -59,14 +59,6 @@ class EngineState {
 /// The single audio interface of NEXA Music (Master Plan v1.0, section 3:
 /// core/audio). Exactly one track plays at a time; the Mix Engine
 /// (Phase 4) builds on this.
-/// An engine that measures, while a file plays, where its sound became
-/// quiet (Smart Mix v1: silence or a level below about -40 dBFS).
-abstract interface class QuietDetector {
-  /// Position since which the current file has been quiet without a break,
-  /// or null while it is not quiet (or nothing was measured).
-  Future<Duration?> quietSince();
-}
-
 abstract interface class PlaybackEngine {
   /// State changes (position updates several times per second).
   Stream<EngineState> get states;

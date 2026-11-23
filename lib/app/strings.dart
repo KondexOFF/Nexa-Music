@@ -106,9 +106,8 @@ abstract final class S {
   // Mix Engine
   static const String mixEngine = 'NEXA MIX ENGINE';
   static const String mixNote =
-      'Applied to playback and saved. Smart Mix v1 uses track length, '
-      'albums and a quiet ending (silence or a very low level near the end '
-      'starts the next track early).';
+      'Applied to playback and saved. Smart Mix v1 uses track length and '
+      'albums; it does not analyse silence or loudness.';
   static const String albumGaplessTitle = 'Keep albums gapless';
   static const String albumGaplessInfo =
       'The next track of the same album always follows without overlap, so '
@@ -139,14 +138,11 @@ abstract final class S {
   static const String gaplessNote = 'No overlap in Gapless';
   static const String smartMixTitle = 'Smart Mix';
   static const String smartMixDescription =
-      'Lets NEXA shorten the overlap for short tracks and start the next '
-      'track when one ends quietly. Tempo and key matching are not part of '
-      'v1.';
+      'Lets NEXA shorten the overlap for short tracks, based on track '
+      'length. Tempo and key matching are not part of v1.';
   static const String smartMixInfo =
-      'Smart Mix v1 only uses simple, explainable signals: track length, '
-      'album order and a quiet ending measured while the track plays '
-      '(below about -40 dB for 1.5 s in its last 30 s). It never lengthens '
-      'your crossfade.';
+      'Smart Mix v1 only uses simple, explainable signals: track length and '
+      'album order. It never lengthens your crossfade.';
 
   // Pages
   static const String waveHeading = 'Your Wave';
