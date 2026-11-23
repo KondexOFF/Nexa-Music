@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
-import '../../demo/demo_data.dart' show formatClock;
+import '../../ui/time_format.dart' show formatClock;
 import '../../ui/nexa_widgets.dart';
 import '../discover/source_attribution.dart' show SourceIcon;
 import '../library/track_art.dart';

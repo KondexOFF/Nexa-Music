@@ -5,7 +5,7 @@ import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models/track.dart';
-import '../../demo/demo_data.dart' show formatClock;
+import '../../ui/time_format.dart' show formatClock;
 import '../../ui/isolated_slider.dart';
 import '../../ui/nexa_widgets.dart';
 import '../../ui/play_ring_button.dart';

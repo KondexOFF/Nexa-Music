@@ -156,6 +156,18 @@ final outputDevicesProvider = StreamProvider<List<OutputDevice>>((ref) async* {
   yield* engine.devices;
 });
 
+/// The output device chosen in Settings ('auto' = Windows default).
+final outputDeviceIdProvider = FutureProvider<String>((ref) async {
+  try {
+    return await ref
+            .read(settingsRepositoryProvider)
+            .getString(SettingKeys.audioDevice) ??
+        'auto';
+  } on Object {
+    return 'auto';
+  }
+});
+
 /// Queue, transport, shuffle / repeat and volume (Phase 3).
 class PlayerController extends Notifier<PlayerState> {
   late PlaybackEngine _engine;
@@ -858,6 +870,7 @@ class PlayerController extends Notifier<PlayerState> {
   Future<void> setOutputDevice(OutputDevice device) async {
     await _engine.setDevice(device);
     await _settings.setString(SettingKeys.audioDevice, device.id);
+    ref.invalidate(outputDeviceIdProvider);
   }
 
   /// Media keys from the Windows runner ("nexa/media_keys").

@@ -69,7 +69,7 @@ class SettingsPage extends StatelessWidget {
           ),
           const _SettingsCard(
             icon: Icons.music_note_outlined,
-            title: 'Media keys',
+            title: S.mediaKeysTitle,
             body: S.mediaKeysBody,
           ),
           const _SettingsCard(
@@ -184,10 +184,17 @@ class _OutputDevicePicker extends ConsumerWidget {
     final devices =
         ref.watch(outputDevicesProvider).value ??
         const [OutputDevice('auto', 'System default')];
+    // Shows the device in use; a saved device that is not connected now is
+    // named instead of silently showing the default.
+    final chosen = ref.watch(outputDeviceIdProvider).value ?? 'auto';
+    final current = devices.where((d) => d.id == chosen).firstOrNull;
     return DropdownButtonHideUnderline(
       child: DropdownButton<OutputDevice>(
-        value: null,
-        hint: const Text(S.outputDevice, style: NexaText.body),
+        value: current,
+        hint: Text(
+          chosen == 'auto' ? S.outputDevice : S.outputDeviceMissing,
+          style: NexaText.body,
+        ),
         dropdownColor: NexaColors.panelRaised,
         items: [
           for (final d in devices)

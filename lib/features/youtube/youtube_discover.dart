@@ -7,7 +7,7 @@ import '../../app/navigation.dart';
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
-import '../../demo/demo_data.dart' show formatClock;
+import '../../ui/time_format.dart' show formatClock;
 import '../../integrations/youtube/youtube_data_api.dart';
 import '../../integrations/youtube/youtube_link.dart';
 import '../../ui/nexa_widgets.dart';

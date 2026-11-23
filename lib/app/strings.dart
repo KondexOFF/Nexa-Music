@@ -161,7 +161,8 @@ abstract final class S {
   static const String settingsMix = 'Mix Engine defaults';
   static const String settingsMixBody =
       'Transition mode, crossfade length and the album rule are saved and '
-      'used on every start. Change them in the NEXA Mix Engine panel.';
+      'used on every start. Change them in the NEXA Mix Engine panel on Home '
+      'and on Now Playing.';
   static const String settingsDev = 'Developer tools';
   static const String settingsDevBody =
       'Phase 0 audio engine test (media_kit): open a local file and test '
@@ -240,8 +241,11 @@ abstract final class S {
   static const String goToAlbum = 'Go to album';
   static const String goToArtist = 'Go to artist';
   static const String outputDevice = 'Output device';
+  static const String outputDeviceMissing =
+      'The chosen device is not connected - choose another';
   static const String outputDeviceBody =
       'Where NEXA plays sound. "System default" follows the Windows setting.';
+  static const String mediaKeysTitle = 'Media keys';
   static const String mediaKeysBody =
       'Media keys and the Windows media overlay control NEXA, also in the '
       'background. Windows sends the keys to the app that is playing, so '
