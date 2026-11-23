@@ -36,8 +36,9 @@ void main() {
     duration: const Duration(minutes: 3),
     addedAt: DateTime(2026),
   );
+  // Library songs not played yet and catalog songs: all new to the user.
   WaveItem item(Track t) =>
-      WaveItem(track: t, score: 1, reason: 'test', fresh: false);
+      WaveItem(track: t, score: 1, reason: 'test', fresh: true);
 
   const settings = MixSettings(
     mode: TransitionMode.smartMix,
@@ -45,7 +46,7 @@ void main() {
   );
 
   Map<TransitionKind, int> transitions(double discovery) {
-    final wave = WaveRanker.merge(
+    final wave = WaveRanker.compose(
       [for (var i = 1; i <= 6; i++) item(local(i))],
       [for (var i = 1; i <= 10; i++) item(online(i))],
       discovery: discovery,

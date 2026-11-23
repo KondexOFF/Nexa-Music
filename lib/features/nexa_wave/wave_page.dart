@@ -99,7 +99,16 @@ class _WavePageState extends ConsumerState<WavePage> {
               if (trackCount == 0)
                 const _Message(text: S.waveEmptyLibrary)
               else if (rows.isEmpty && wave.message != null)
-                _Message(text: wave.message!),
+                _Message(text: wave.message!)
+              else if (wave.message != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    wave.message!,
+                    key: const ValueKey('wave-note'),
+                    style: NexaText.caption.copyWith(color: NexaColors.sky),
+                  ),
+                ),
             ],
           ),
         ),
@@ -294,6 +303,31 @@ class _TuningPanel extends ConsumerWidget {
                 Text(
                   S.waveOnlineCount(onlineReady),
                   style: NexaText.caption.copyWith(color: NexaColors.sky),
+                ),
+              ],
+              if (settings.waveOnline) ...[
+                const SizedBox(height: 14),
+                const Text(S.waveOnlineShare, style: NexaText.title),
+                const SizedBox(height: 4),
+                const Text(S.waveOnlineShareInfo, style: NexaText.caption),
+                IsolatedSlider(
+                  child: Slider(
+                    key: const ValueKey('wave-online-share'),
+                    value: settings.onlineShare,
+                    divisions: 10,
+                    label: S.waveOnlineShareValue(settings.onlineShare),
+                    semanticFormatterCallback: S.waveOnlineShareValue,
+                    onChanged: (v) => dna.setOnlineShare(v),
+                    onChangeEnd: (_) =>
+                        ref.read(waveProvider.notifier).refresh(),
+                  ),
+                ),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(S.waveShareLibrary, style: NexaText.caption),
+                    Text(S.waveShareOnline, style: NexaText.caption),
+                  ],
                 ),
               ],
             ],

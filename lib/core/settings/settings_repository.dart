@@ -53,6 +53,7 @@ abstract final class SettingKeys {
   static const String dnaOnboarded = 'dna.onboarded';
   static const String waveDiscovery = 'wave.discovery';
   static const String waveOnline = 'wave.online';
+  static const String waveOnlineShare = 'wave.onlineShare';
   static const String audiusEnabled = 'catalog.audius.enabled';
   static const String jamendoClientId = 'catalog.jamendo.clientId';
   static const String youtubeEnabled = 'youtube.enabled';

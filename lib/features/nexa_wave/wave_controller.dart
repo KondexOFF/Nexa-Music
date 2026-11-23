@@ -269,38 +269,47 @@ class WaveController extends Notifier<WaveState> {
       return const [];
     }
     final ranker = ref.read(waveRankerProvider);
+    // Every candidate ranked: the batch takes new and familiar songs
+    // separately (D-026), so a top-N cut here could starve one of them.
     final local = ranker.rank(
       tracks: tracks,
       taste: choices,
       stats: stats,
       recent: {...recent, ...skip},
       discovery: settings.discovery,
-      limit: limit,
+      limit: tracks.length,
       random: ref.read(waveRandomProvider),
     );
-    var items = local;
+    var online = const <WaveItem>[];
     if (settings.waveOnline && _onlinePool.isNotEmpty) {
       // Catalog songs: same exclusions and likes, no history, no repeats
       // within the session, hidden ones left out.
-      final online = ranker.rank(
+      online = ranker.rank(
         tracks: [for (final c in _onlinePool) c.track],
         taste: choices,
         recent: {...skip, ..._hiddenOnline},
         discovery: settings.discovery,
-        limit: limit,
+        limit: _onlinePool.length,
         random: ref.read(waveRandomProvider),
         basis: {for (final c in _onlinePool) c.track.id: c.basis},
         repeatWhenEmpty: false,
       );
-      items = WaveRanker.merge(
-        local,
-        online,
-        discovery: settings.discovery,
-        limit: limit,
-      );
     }
+    final items = WaveRanker.compose(
+      local,
+      online,
+      discovery: settings.discovery,
+      onlineShare: settings.onlineShare,
+      limit: limit,
+    );
+    // At "New to you" 100 % familiar songs only come in when nothing new
+    // is left - say so instead of looking like a mistake.
+    final noNewLeft =
+        settings.discovery >= 0.999 && items.any((i) => !i.fresh);
     state = items.isEmpty
         ? state.copyWith(message: S.waveNothingLeft)
+        : noNewLeft
+        ? state.copyWith(message: S.waveNoNewLeft)
         : state.copyWith(clearMessage: true);
     return items;
   }

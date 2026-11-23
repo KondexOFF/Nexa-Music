@@ -26,9 +26,13 @@ class DnaSettings {
     this.discovery = defaultDiscovery,
     this.waveOnline = false,
     this.youtubeHistory = false,
+    this.onlineShare = DnaSettings.defaultOnlineShare,
   });
 
   static const double defaultDiscovery = 0.3;
+
+  /// Catalog share of the Wave's new songs until the user changes it.
+  static const double defaultOnlineShare = 0.5;
 
   final bool loaded;
 
@@ -57,6 +61,10 @@ class DnaSettings {
   /// (separate switch, off by default; made-for-kids videos never).
   final bool youtubeHistory;
 
+  /// D-026: share of catalog songs among the Wave's new songs (0 = library
+  /// only, 1 = catalogs only), used while online picks are on.
+  final double onlineShare;
+
   /// Whether a finished listening may be written to the history.
   bool get recordsHistory => historyConsent && !learningPaused && !privateSession;
 
@@ -73,6 +81,7 @@ class DnaSettings {
     double? discovery,
     bool? waveOnline,
     bool? youtubeHistory,
+    double? onlineShare,
   }) => DnaSettings(
     loaded: loaded ?? this.loaded,
     historyConsent: historyConsent ?? this.historyConsent,
@@ -82,6 +91,7 @@ class DnaSettings {
     discovery: discovery ?? this.discovery,
     waveOnline: waveOnline ?? this.waveOnline,
     youtubeHistory: youtubeHistory ?? this.youtubeHistory,
+    onlineShare: onlineShare ?? this.onlineShare,
   );
 }
 
@@ -102,6 +112,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
       final discovery = await _repo.getDouble(SettingKeys.waveDiscovery);
       final online = await _repo.getBool(SettingKeys.waveOnline);
       final youtube = await _repo.getBool(SettingKeys.youtubeHistory);
+      final share = await _repo.getDouble(SettingKeys.waveOnlineShare);
       if (!ref.mounted) {
         return;
       }
@@ -113,6 +124,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
         discovery: discovery?.clamp(0.0, 1.0).toDouble(),
         waveOnline: online,
         youtubeHistory: youtube,
+        onlineShare: share?.clamp(0.0, 1.0).toDouble(),
       );
     } on Object {
       if (ref.mounted) {
@@ -165,6 +177,13 @@ class DnaSettingsController extends Notifier<DnaSettings> {
     await _save(() => _repo.setBool(SettingKeys.waveOnline, value));
   }
 
+  /// D-026: catalog share of the Wave's new songs (saved).
+  Future<void> setOnlineShare(double value) async {
+    final v = value.clamp(0.0, 1.0).toDouble();
+    state = state.copyWith(onlineShare: v);
+    await _save(() => _repo.setDouble(SettingKeys.waveOnlineShare, v));
+  }
+
   /// Resets the Wave settings (consent and pause stay as chosen; online
   /// picks go back to off).
   Future<void> resetPreferences() async {
@@ -172,6 +191,7 @@ class DnaSettingsController extends Notifier<DnaSettings> {
       discovery: DnaSettings.defaultDiscovery,
       onboarded: false,
       waveOnline: false,
+      onlineShare: DnaSettings.defaultOnlineShare,
     );
     await _save(() async {
       await _repo.setDouble(
@@ -180,6 +200,10 @@ class DnaSettingsController extends Notifier<DnaSettings> {
       );
       await _repo.setBool(SettingKeys.dnaOnboarded, false);
       await _repo.setBool(SettingKeys.waveOnline, false);
+      await _repo.setDouble(
+        SettingKeys.waveOnlineShare,
+        DnaSettings.defaultOnlineShare,
+      );
     });
   }
 }

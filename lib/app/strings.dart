@@ -277,10 +277,13 @@ abstract final class S {
   static const String discovery = 'New to you';
   static const String familiarDiscovery = 'Familiar - New to you';
   static const String familiarDiscoveryInfo =
-      'Left: songs you already know and finish. Right: songs new to you - '
-      'songs of your library you have not played yet and, with online picks '
-      'on, catalog songs (up to half of the Wave). Searching the catalogs is '
-      'the Discover page.';
+      'How many picks are new to you. Left: only songs you already know. '
+      'Right: only new songs - library songs you have not played yet and, '
+      'with online picks on, catalog songs. Searching the catalogs is the '
+      'Discover page.';
+  static const String waveNoNewLeft =
+      'Nothing new left to discover - familiar songs fill the Wave. Switch '
+      'on online picks or add music to hear new songs.';
   static const String fresh = 'NEW';
   static const String privateSession = 'Private session';
   static const String privateSessionInfo =
@@ -326,8 +329,8 @@ abstract final class S {
   // NEXA Wave across catalogs (E1)
   static const String waveOnline = 'Online picks from Audius and Jamendo';
   static const String waveOnlineInfo =
-      'Mixes streamed catalog songs into your Wave - none at Familiar, up to '
-      'half at New to you. Your liked genres and artists are sent to the '
+      'Mixes streamed catalog songs into the new songs of your Wave (the '
+      'share is yours to set below). Your liked genres and artists are sent to the '
       'catalogs as search words; your listening history and files never '
       'are. Online songs are streamed (never downloaded), crossfaded like '
       'your files, and saved only when you like them or add them to a '
@@ -345,6 +348,14 @@ abstract final class S {
   static const String waveOnlineWhyKey =
       'a catalog key is missing or was rejected.';
   static const String waveOnlineWhyError = 'the catalogs answered with an error.';
+  static const String waveOnlineShare = 'Library - Online';
+  static const String waveOnlineShareInfo =
+      'Where the new songs come from. Without online songs (offline, no '
+      'catalog) the library fills in.';
+  static const String waveShareLibrary = 'Library';
+  static const String waveShareOnline = 'Online';
+  static String waveOnlineShareValue(double v) =>
+      '${(v * 100).round()} % online';
   static String waveOnlineCount(int n) =>
       n == 1 ? '1 online song ready' : '$n online songs ready';
   static String basisPopular(String source) => 'Popular on $source right now';

@@ -6,7 +6,8 @@ import 'package:nexa_music/core/models/track.dart';
 import 'package:nexa_music/features/nexa_wave/wave_ranker.dart';
 
 /// E1: catalog songs in the Wave follow the same exclusions and likes as
-/// library songs, and Familiar <-> Discovery decides how many join a batch.
+/// library songs. D-026: Familiar <-> New to you decides how many picks are
+/// new; the library / online share decides where the new ones come from.
 void main() {
   Track local(int id, {String artist = 'Local', String? genre}) => Track(
     id: id,
@@ -59,77 +60,122 @@ void main() {
     repeatWhenEmpty: repeat,
   );
 
-  group('online slots by Familiar <-> Discovery', () {
-    test('none at Familiar, at least one above it, half at Discovery', () {
-      expect(WaveRanker.onlineSlots(0, 8), 0);
-      expect(WaveRanker.onlineSlots(0.05, 8), 1);
-      expect(WaveRanker.onlineSlots(0.3, 8), 1);
-      expect(WaveRanker.onlineSlots(0.5, 8), 2);
-      expect(WaveRanker.onlineSlots(1, 8), 4);
-      expect(WaveRanker.onlineSlots(1, 0), 0);
-    });
-  });
-
-  group('merge', () {
-    final localItems = rank([for (var i = 1; i <= 10; i++) local(i)]);
-    final onlineItems = rank([for (var i = 1; i <= 10; i++) online('o$i')]);
-
-    List<bool> pattern(List<WaveItem> items) => [
-      for (final i in items) i.track.isOnline,
+  group('compose (D-026): new vs familiar, library vs online share', () {
+    WaveItem item(Track t, {required bool fresh}) =>
+        WaveItem(track: t, score: 1, reason: 'test', fresh: fresh);
+    final known = [for (var i = 1; i <= 10; i++) item(local(i), fresh: false)];
+    final unplayed = [
+      for (var i = 11; i <= 20; i++) item(local(i), fresh: true),
+    ];
+    final catalog = [
+      for (var i = 1; i <= 10; i++) item(online('o$i'), fresh: true),
     ];
 
-    test('Familiar keeps the Wave local', () {
-      final m = WaveRanker.merge(
-        localItems,
-        onlineItems,
-        discovery: 0,
+    int onlineIn(List<WaveItem> m) => m.where((i) => i.track.isOnline).length;
+    int knownIn(List<WaveItem> m) =>
+        m.where((i) => !i.track.isOnline && !i.fresh).length;
+    int unplayedIn(List<WaveItem> m) =>
+        m.where((i) => !i.track.isOnline && i.fresh).length;
+
+    test('New to you 100 %: no song you already know (Full Discover)', () {
+      final m = WaveRanker.compose(
+        [...known, ...unplayed],
+        catalog,
+        discovery: 1,
         limit: 8,
       );
-      expect(pattern(m), everyElement(isFalse));
       expect(m, hasLength(8));
+      expect(knownIn(m), 0);
+      expect(onlineIn(m), 4); // default share 50 %
+      expect(unplayedIn(m), 4);
     });
 
-    test('Discovery spreads catalog songs evenly, starting local', () {
-      final m = WaveRanker.merge(
-        localItems,
-        onlineItems,
+    test('the share decides library vs online among new songs', () {
+      List<WaveItem> at(double share) => WaveRanker.compose(
+        [...known, ...unplayed],
+        catalog,
+        discovery: 1,
+        onlineShare: share,
+        limit: 8,
+      );
+      expect(onlineIn(at(0)), 0);
+      expect(onlineIn(at(0.25)), 2);
+      expect(onlineIn(at(1)), 8);
+      expect(knownIn(at(1)), 0);
+    });
+
+    test('Familiar 0 %: only known songs, catalogs never fill in', () {
+      final m = WaveRanker.compose(
+        [...known.take(3), ...unplayed],
+        catalog,
+        discovery: 0,
+        onlineShare: 1,
+        limit: 8,
+      );
+      expect(onlineIn(m), 0);
+      expect(knownIn(m), 3);
+      expect(unplayedIn(m), 5); // not enough known songs: new library songs
+    });
+
+    test('in between: new and familiar parts by the slider', () {
+      final m = WaveRanker.compose(
+        [...known, ...unplayed],
+        catalog,
+        discovery: 0.5,
+        limit: 8,
+      );
+      expect(knownIn(m), 4);
+      expect(onlineIn(m) + unplayedIn(m), 4);
+      expect(onlineIn(m), 2);
+    });
+
+    test('without online songs the library fills in (offline, no catalog)',
+        () {
+      final m = WaveRanker.compose(
+        [...known, ...unplayed],
+        const [],
+        discovery: 1,
+        onlineShare: 1,
+        limit: 8,
+      );
+      expect(m, hasLength(8));
+      expect(unplayedIn(m), 8);
+      expect(onlineIn(m), 0);
+    });
+
+    test('one kind of new song runs short: the other stands in, familiar '
+        'songs only when nothing new is left', () {
+      final fewUnplayed = WaveRanker.compose(
+        [...known, ...unplayed.take(1)],
+        catalog,
         discovery: 1,
         limit: 8,
       );
-      expect(pattern(m), [false, true, false, true, false, true, false, true]);
-      final some = WaveRanker.merge(
-        localItems,
-        onlineItems,
-        discovery: 0.3,
-        limit: 8,
-      );
-      expect(pattern(some).where((o) => o), hasLength(1));
-      expect(pattern(some).first, isFalse);
-    });
+      expect(unplayedIn(fewUnplayed), 1);
+      expect(onlineIn(fewUnplayed), 7);
+      expect(knownIn(fewUnplayed), 0);
 
-    test('when one side runs short, the other fills the batch', () {
-      final fewLocal = WaveRanker.merge(
-        localItems.take(2).toList(),
-        onlineItems,
-        discovery: 0.3,
-        limit: 8,
-      );
-      expect(fewLocal, hasLength(8));
-      expect(pattern(fewLocal).where((o) => !o), hasLength(2));
-
-      final fewOnline = WaveRanker.merge(
-        localItems,
-        onlineItems.take(1).toList(),
+      final nothingNew = WaveRanker.compose(
+        [...known, ...unplayed.take(1)],
+        catalog.take(1).toList(),
         discovery: 1,
         limit: 8,
       );
-      expect(fewOnline, hasLength(8));
-      expect(pattern(fewOnline).where((o) => o), hasLength(1));
+      expect(nothingNew, hasLength(8));
+      expect(unplayedIn(nothingNew) + onlineIn(nothingNew), 2);
+      expect(knownIn(nothingNew), 6);
+    });
 
-      expect(
-        WaveRanker.merge(const [], onlineItems, discovery: 0.5, limit: 8),
-        hasLength(8),
+    test('catalog songs are spread over the batch', () {
+      final m = WaveRanker.compose(
+        [...known, ...unplayed],
+        catalog,
+        discovery: 1,
+        limit: 8,
       );
+      expect([for (final i in m) i.track.isOnline], [
+        false, true, false, true, false, true, false, true,
+      ]);
     });
   });
 

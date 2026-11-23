@@ -45,8 +45,8 @@ class WaveItem {
 /// E1: catalog songs (Audius, Jamendo) are ranked by the same rules - the
 /// same exclusions, liked artists and genres - but they never have history,
 /// so they always count as discoveries; their "why" is the catalog's basis
-/// unless the user's own taste explains them. [merge] then mixes them into
-/// the local picks by the Familiar <-> Discovery setting.
+/// unless the user's own taste explains them. [compose] then builds the
+/// batch from Familiar <-> New to you and the catalog share.
 class WaveRanker {
   const WaveRanker();
 
@@ -172,48 +172,102 @@ class WaveRanker {
     return _spreadArtists(scored, limit);
   }
 
-  /// At most this share of a Wave batch comes from the catalogs (at
-  /// Discovery 100 %).
-  static const double maxOnlineShare = 0.5;
+  /// Default share of catalog songs among the new songs of a batch (the
+  /// user changes it on the Wave page; D-026 replaced the fixed 50 % limit).
+  static const double defaultOnlineShare = 0.5;
 
-  /// How many of [limit] picks may come from the catalogs: none at
-  /// Familiar (0), growing to [maxOnlineShare] at Discovery (1), at least
-  /// one as soon as Discovery is above 0.
-  static int onlineSlots(double discovery, int limit) {
-    final d = discovery.clamp(0.0, 1.0).toDouble();
-    if (d <= 0 || limit <= 0) {
-      return 0;
-    }
-    return math.max(1, (limit * maxOnlineShare * d).round());
-  }
-
-  /// One Wave batch from the local and the catalog picks (each already
-  /// ranked): [onlineSlots] catalog songs spread evenly between the local
-  /// ones, starting with a local song. When one side runs short the other
-  /// fills the batch; a "Familiar" setting (0) never adds catalog songs.
-  static List<WaveItem> merge(
+  /// One Wave batch (D-026).
+  ///
+  /// Familiar <-> New to you decides how many picks are new to the user:
+  /// at 100 % only new songs, at 0 % only songs already played. The new
+  /// part comes from the library songs not played yet and - with online
+  /// picks on - from the catalogs, by [onlineShare] (0 = library only,
+  /// 1 = catalogs only). When one kind runs out the other fills in; only
+  /// when nothing new is left at all, familiar songs fill the batch (the
+  /// Wave never stops, and the controller says why). Catalog songs are
+  /// spread evenly over the batch.
+  static List<WaveItem> compose(
     List<WaveItem> local,
     List<WaveItem> online, {
     required double discovery,
+    double onlineShare = defaultOnlineShare,
     required int limit,
   }) {
-    if (onlineSlots(discovery, limit) == 0 || online.isEmpty) {
-      return local.take(limit).toList();
+    if (limit <= 0) {
+      return const [];
     }
-    var onlineCount = math.min(onlineSlots(discovery, limit), online.length);
-    final localCount = math.min(local.length, limit - onlineCount);
-    onlineCount = math.min(online.length, limit - localCount);
-    final total = localCount + onlineCount;
+    final d = discovery.clamp(0.0, 1.0).toDouble();
+    final share = online.isEmpty ? 0.0 : onlineShare.clamp(0.0, 1.0).toDouble();
+    final fresh = [for (final i in local) if (i.fresh) i];
+    final known = [for (final i in local) if (!i.fresh) i];
+    var fi = 0;
+    var ki = 0;
+    var oi = 0;
+    final pickedLocal = <WaveItem>[];
+    final pickedOnline = <WaveItem>[];
+    int takeFresh(int n) {
+      var got = 0;
+      while (got < n && fi < fresh.length) {
+        pickedLocal.add(fresh[fi++]);
+        got++;
+      }
+      return got;
+    }
+
+    int takeKnown(int n) {
+      var got = 0;
+      while (got < n && ki < known.length) {
+        pickedLocal.add(known[ki++]);
+        got++;
+      }
+      return got;
+    }
+
+    int takeOnline(int n) {
+      var got = 0;
+      while (got < n && oi < online.length) {
+        pickedOnline.add(online[oi++]);
+        got++;
+      }
+      return got;
+    }
+
+    final newCount = (limit * d).round();
+    final familiarCount = limit - newCount;
+    // New part: catalogs by the share, the library for the rest, each
+    // standing in for the other.
+    final onlineWanted = (newCount * share).round();
+    var newGot = takeOnline(onlineWanted);
+    newGot += takeFresh(newCount - newGot);
+    if (share > 0) {
+      newGot += takeOnline(newCount - newGot);
+    }
+    // Familiar part; without history every song counts as new, so new
+    // songs fill it then.
+    var got = newGot + takeKnown(familiarCount);
+    got += takeFresh(limit - got);
+    // At Familiar 0 % catalog songs (always new) never fill in.
+    if (share > 0 && d > 0) {
+      got += takeOnline(limit - got);
+    }
+    // Nothing new left at all: familiar songs rather than an empty Wave.
+    got += takeKnown(limit - got);
+
+    // Library picks keep their ranking order; catalog songs are spread.
+    final order = {for (var i = 0; i < local.length; i++) local[i].track.id: i};
+    pickedLocal.sort(
+      (a, b) => order[a.track.id]!.compareTo(order[b.track.id]!),
+    );
+    final total = pickedLocal.length + pickedOnline.length;
     final result = <WaveItem>[];
     var li = 0;
-    var oi = 0;
+    var oj = 0;
     for (var i = 0; i < total; i++) {
-      // Catalog songs wanted after i + 1 picks, spread over the batch.
-      final wanted = ((i + 1) * onlineCount) ~/ total;
-      if ((oi < wanted && oi < onlineCount) || li >= localCount) {
-        result.add(online[oi++]);
+      final wanted = ((i + 1) * pickedOnline.length) ~/ total;
+      if ((oj < wanted && oj < pickedOnline.length) || li >= pickedLocal.length) {
+        result.add(pickedOnline[oj++]);
       } else {
-        result.add(local[li++]);
+        result.add(pickedLocal[li++]);
       }
     }
     return result;
