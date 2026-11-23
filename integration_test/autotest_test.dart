@@ -116,12 +116,22 @@ void main() {
       }
     });
     if (AutoTestConfig.device.isNotEmpty) {
+      // Selected is not enough: Windows may refuse to play on that device.
+      final refused = results.checks.any(
+        (c) => '${c['detail']}'.contains('Could not open/initialize audio device') ||
+            '${c['detail']}'.contains('Initialize render'),
+      );
       results.add(
         'AT-output',
         '-',
         'Test tones played on the silent output device (not on the speakers / headset)',
-        TestOutput.blocked ? 'BLOCKED' : 'PASS',
-        detail: TestOutput.problem ?? 'device: ${TestOutput.chosen}',
+        TestOutput.blocked || refused ? 'BLOCKED' : 'PASS',
+        detail: TestOutput.problem ??
+            (refused
+                ? 'Windows cannot play on ${TestOutput.chosen}: nothing was heard, '
+                      'but sound could not be measured - choose another device or run '
+                      'without -OutputDevice'
+                : 'device: ${TestOutput.chosen}'),
       );
     }
     await results.save(p.join(AutoTestConfig.out, 'integration.json'));
@@ -970,8 +980,10 @@ Future<void> _online(AutoTestResults r, Loopback loop) async {
     if (audius != null && jamendo != null) {
       final plan = planTransition(c.read(mixSettingsProvider), audius, jamendo);
       r.check(
-        'AT-26-no-mix', 'FT-26', 'Catalog tracks are never crossfaded; not written to the history',
-        plan.kind == TransitionKind.cut && plan.reason == S.planNoMixRights && await taste.eventCount() == events0,
+        // D-025 (owner, 2026-11-15): Audius / Jamendo streams have mix rights,
+        // so NEXA's crossfade may join them like local files.
+        'AT-26-no-mix', 'FT-26', 'Catalog streams may be crossfaded (D-025, no "no mix rights" cut); not written to the history',
+        plan.reason != S.planNoMixRights && plan.kind != TransitionKind.cut && await taste.eventCount() == events0,
         detail: 'plan ${plan.kind.name} "${plan.reason}"; history $events0->${await taste.eventCount()}',
       );
     }
