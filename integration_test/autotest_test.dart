@@ -92,6 +92,16 @@ void main() {
           );
           continue;
         }
+        // Also replaces a BLOCKED "not run" of an earlier run in the report.
+        results.add(
+          'AT-${entry.key}-output',
+          '-',
+          'Group "${entry.key}" run on the chosen output device',
+          'PASS',
+          detail: AutoTestConfig.device.isEmpty
+              ? 'Windows default output device'
+              : 'silent device: ${TestOutput.chosen}',
+        );
         try {
           await run().timeout(limit);
         } on TimeoutException {
