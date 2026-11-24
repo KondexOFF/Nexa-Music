@@ -137,7 +137,10 @@ void main() {
     final dna = c.read(dnaSettingsProvider.notifier);
     await dna.setHistoryConsent(true);
     await dna.setWaveOnline(true);
-    await dna.setDiscovery(1);
+    // Everything new, from the library and the catalogs: just below the
+    // right end, which plays online picks only since D-026 Final (that end
+    // is covered by test/wave_online_test.dart).
+    await dna.setDiscovery(0.99);
     await c.read(playerProvider.notifier).setVolume(0);
     c.read(waveProvider);
   }
