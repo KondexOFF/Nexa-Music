@@ -105,4 +105,84 @@ void main() {
     await ctl().report({'ok': false, 'error': 'AddBrowserExtension 0x8'});
     expect(state().status, S.adBlockRefused('AddBrowserExtension 0x8'));
   });
+
+  group('install from the downloaded .zip', () {
+    late Directory store;
+    late ProviderContainer z;
+
+    ProviderContainer withUnpacker(ZipUnpacker unpack) {
+      final c = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          adBlockStoreProvider.overrideWithValue((
+            dir: () async => store,
+            unpack: unpack,
+          )),
+        ],
+      );
+      addTearDown(c.dispose);
+      return c;
+    }
+
+    setUp(() => store = Directory.systemTemp.createTempSync('nexa_ubol_store'));
+    tearDown(() => store.deleteSync(recursive: true));
+
+    test('unpacked into NEXA\'s folder (one folder level is found)', () async {
+      z = withUnpacker((zip, dest) async {
+        final inner = Directory(p.join(dest, 'uBOLite.chromium'))
+          ..createSync();
+        File(p.join(inner.path, 'manifest.json'))
+            .writeAsStringSync('{"name": "uBlock Origin Lite"}');
+      });
+      z.read(adBlockProvider);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      final ok = await z.read(adBlockProvider.notifier).installZip('x.zip');
+      expect(ok, isTrue);
+      final s = z.read(adBlockProvider);
+      expect(s.pathValid, isTrue);
+      expect(p.isWithin(store.path, s.path!), isTrue);
+      expect(extensionName(s.path!), 'uBlock Origin Lite');
+      expect(s.status, S.adBlockNextPlayer);
+    });
+
+    test('a localized name is read from the default locale', () {
+      final f = Directory(p.join(store.path, 'loc'))..createSync();
+      File(p.join(f.path, 'manifest.json')).writeAsStringSync(
+        '{"name": "__MSG_extName__", "default_locale": "en"}',
+      );
+      Directory(p.join(f.path, '_locales', 'en')).createSync(recursive: true);
+      File(p.join(f.path, '_locales', 'en', 'messages.json')).writeAsStringSync(
+        '{"extName": {"message": "uBlock Origin Lite"}}',
+      );
+      expect(extensionName(f.path), 'uBlock Origin Lite');
+    });
+
+    test('a .zip without an extension is refused and removed', () async {
+      z = withUnpacker((zip, dest) async {
+        File(p.join(dest, 'readme.txt')).writeAsStringSync('no extension');
+      });
+      z.read(adBlockProvider);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(await z.read(adBlockProvider.notifier).installZip('x.zip'), isFalse);
+      expect(z.read(adBlockProvider).status, S.adBlockNotExtension);
+      expect(z.read(adBlockProvider).path, isNull);
+      expect(store.listSync(), isEmpty);
+    });
+
+    test('Windows Expand-Archive unpacks a real .zip', () async {
+      final src = Directory(p.join(store.path, 'src'))..createSync();
+      File(p.join(src.path, 'manifest.json')).writeAsStringSync('{"name": "uBlock"}');
+      final zip = p.join(store.path, 'ext.zip');
+      final made = await Process.run('powershell', [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        r'Compress-Archive -Path (Join-Path $env:SRC "*") -DestinationPath $env:ZIP',
+      ], environment: {'SRC': src.path, 'ZIP': zip});
+      expect(made.exitCode, 0, reason: '${made.stderr}');
+      final dest = Directory(p.join(store.path, 'out'))..createSync();
+      await expandArchive(zip, dest.path);
+      expect(findExtensionFolder(dest.path), dest.path);
+    }, skip: !Platform.isWindows);
+  });
 }

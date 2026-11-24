@@ -17,9 +17,20 @@ import '../player/player_controller.dart';
 import '../player/player_controls.dart' show FavoriteButton;
 import 'soundcloud_player_controller.dart';
 
+/// SoundCloud's own search page in the browser (an official hand-off).
+/// The words are only used when they are not a link.
+String soundCloudSearchUrl(String words) {
+  final q = words.trim();
+  if (q.isEmpty || q.contains('soundcloud.com') || q.contains('on.soundcloud')) {
+    return 'https://soundcloud.com/search';
+  }
+  return Uri.https('soundcloud.com', '/search', {'q': q}).toString();
+}
+
 /// SoundCloud on the Discover page (E3, CR-002): a pasted track link plays
-/// in SoundCloud's official widget. There is no SoundCloud search in this
-/// version (the API needs permitted access, CR-002).
+/// in SoundCloud's official widget. There is no search inside NEXA: the API
+/// needs paid credentials (Artist Pro, 2026) and its terms conflict with
+/// NEXA's unified queue and cache (reports/FEATURE_COMPLETE_REPORT.md).
 class SoundCloudDiscoverSection extends ConsumerStatefulWidget {
   const SoundCloudDiscoverSection({super.key});
 
@@ -134,6 +145,14 @@ class _SoundCloudDiscoverSectionState
         ],
         const SizedBox(height: 18),
         const Text(S.scLimits, style: NexaText.caption),
+        const SizedBox(height: 6),
+        NexaTextLink(
+          key: const ValueKey('sc-search-site'),
+          label: S.scSearchOnSite,
+          onTap: () => unawaited(
+            ref.read(linkOpenerProvider)(soundCloudSearchUrl(_link.text)),
+          ),
+        ),
       ],
     );
   }

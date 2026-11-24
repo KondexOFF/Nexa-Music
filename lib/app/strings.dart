@@ -704,9 +704,25 @@ abstract final class S {
       'promise that any ad is blocked. Use it only for yourself and switch '
       'it off if YouTube misbehaves.';
   static const String adBlockSwitchOn = 'Switch on';
-  static const String adBlockChoose = 'Choose folder';
+  static const String adBlockChoose = 'Choose an unpacked folder';
   static const String adBlockChooseTitle =
       'Folder of the unpacked uBlock Origin Lite (Chromium)';
+  static const String adBlockGet = 'Get uBlock Origin Lite';
+  static const String adBlockChooseZip = 'Choose the downloaded .zip';
+  static const String adBlockChooseZipTitle =
+      'uBlock Origin Lite for Chromium (.zip)';
+  static const String adBlockSteps =
+      'How: 1. Get uBlock Origin Lite opens its official release page - '
+      'download the Chromium .zip. 2. Switch on and choose that .zip: NEXA '
+      'unpacks it into its own data folder. 3. Open a YouTube or SoundCloud '
+      'player.';
+  static const String adBlockUnpacking = 'Unpacking...';
+  static const String adBlockNotExtension =
+      'This .zip has no unpacked extension (no manifest.json). Take the '
+      'Chromium .zip of uBlock Origin Lite.';
+  static String adBlockUnpackFailed(String why) =>
+      'Could not unpack the .zip: $why';
+  static const String adBlockRestartNow = 'Restart NEXA now';
   static const String adBlockRemove = 'Remove from the players';
   static const String adBlockNoFolder = 'No extension folder chosen.';
   static String adBlockFolder(String path) => 'Extension folder: $path';
@@ -731,9 +747,12 @@ abstract final class S {
       'soundcloud.com address.';
   static const String scNotALink = 'This is not a SoundCloud link.';
   static const String scLimits =
-      'No SoundCloud search in this version: the SoundCloud API needs '
-      'permitted access. NEXA never downloads, caches or mixes SoundCloud '
+      'No SoundCloud search inside NEXA: SoundCloud gives API keys only with '
+      'a paid Artist Pro plan, and its API terms forbid keeping or mixing '
+      'its results with other services. Search on soundcloud.com and paste '
+      'the link here. NEXA never downloads, caches or mixes SoundCloud '
       'audio - no crossfade, not in NEXA Wave.';
+  static const String scSearchOnSite = 'Search on soundcloud.com';
   static const String scOpenOnSoundCloud = 'Open on SoundCloud';
   static const String scClose = 'Close SoundCloud player';
 

@@ -12,6 +12,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:nexa_music/core/audio/audio_analyzer.dart';
 import 'package:path/path.dart' as p;
 
 File _wav(String path) {
@@ -145,12 +146,38 @@ void main() {
         print('ANALYSIS ${p.basename(input)}: $info | $sum');
         ok = ok || sum.startsWith('bytes=');
       }
+
+      // The production analyzer (what Smart Mix uses): decoder, measurement
+      // in an isolate and the cache file.
+      final analyzer = AudioAnalyzer(
+        decoder: const MpvPcmDecoder(),
+        cacheDir: () async => temp,
+      );
+      final sw = Stopwatch()..start();
+      for (final input in inputs.where((f) => File(f).existsSync())) {
+        analyzer.request(input);
+      }
+      await analyzer.idle;
+      for (final input in inputs.where((f) => File(f).existsSync())) {
+        final a = analyzer.cached(input);
+        // ignore: avoid_print
+        print('ANALYZER ${p.basename(input)}: ${a?.toJson()}');
+      }
+      // ignore: avoid_print
+      print('ANALYZER total ms=${sw.elapsedMilliseconds} cache='
+          '${File(p.join(temp.path, AudioAnalyzer.cacheName)).existsSync()}');
+      final probe = analyzer.cached(inputs.first);
+      await analyzer.dispose();
       try {
         temp.deleteSync(recursive: true);
       } on FileSystemException {
         // Removed later.
       }
       expect(ok, isTrue, reason: 'see the ANALYSIS lines');
+      expect(probe, isNotNull, reason: 'the analyzer measured nothing');
+      expect(probe!.soundStart.inMilliseconds, closeTo(2000, 100));
+      expect(probe.soundEnd.inMilliseconds, closeTo(8000, 150));
+      expect(probe.duration.inMilliseconds, closeTo(12000, 150));
     });
   });
 }

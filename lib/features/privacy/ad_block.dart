@@ -1,16 +1,21 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' show AppExitType;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
+import '../../core/app_paths.dart';
 import '../../core/settings/settings_provider.dart';
 import '../../ui/nexa_widgets.dart';
+import '../discover/catalog_providers.dart' show linkOpenerProvider;
 import '../library/library_dialogs.dart';
 
 // Optional ad blocking in NEXA's web players (owner decision D-026, from
@@ -30,6 +35,94 @@ const String _keyId = 'privacy.adBlock.id';
 
 /// Name fragment of the extension (manifest "name").
 const String adBlockNameHint = 'uBlock';
+
+/// The official release page of uBlock Origin Lite (its Chromium .zip).
+const String adBlockReleasesUrl =
+    'https://github.com/uBlockOrigin/uBOL-home/releases';
+
+/// Unpacks [zip] into the empty folder [dest].
+typedef ZipUnpacker = Future<void> Function(String zip, String dest);
+
+/// Windows' own PowerShell Expand-Archive (no extra library). The paths go
+/// in environment variables, never into the command text.
+Future<void> expandArchive(String zip, String dest) async {
+  final r = await Process.run(
+    'powershell',
+    const [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      r'Expand-Archive -LiteralPath $env:NEXA_ZIP -DestinationPath $env:NEXA_DEST -Force',
+    ],
+    environment: {'NEXA_ZIP': zip, 'NEXA_DEST': dest},
+  );
+  if (r.exitCode != 0) {
+    throw FileSystemException('${r.stderr}'.trim(), zip);
+  }
+}
+
+/// Where unpacked copies are kept (NEXA's data folder) and how.
+final adBlockStoreProvider =
+    Provider<({Future<Directory> Function() dir, ZipUnpacker unpack})>(
+      (ref) => (
+        dir: () async => Directory(
+          p.join((await appDataDirectory()).path, 'adblock'),
+        ).create(recursive: true),
+        unpack: expandArchive,
+      ),
+    );
+
+/// The folder in [root] (or one level below) with an extension manifest.
+String? findExtensionFolder(String root) {
+  if (File(p.join(root, 'manifest.json')).existsSync()) {
+    return root;
+  }
+  final dir = Directory(root);
+  if (!dir.existsSync()) {
+    return null;
+  }
+  for (final e in dir.listSync().whereType<Directory>()) {
+    if (File(p.join(e.path, 'manifest.json')).existsSync()) {
+      return e.path;
+    }
+  }
+  return null;
+}
+
+/// The extension's name from its manifest ('' when unreadable). A
+/// localized name ("__MSG_extName__") is read from its default locale.
+String extensionName(String folder) {
+  try {
+    final m = jsonDecode(
+      File(p.join(folder, 'manifest.json')).readAsStringSync(),
+    );
+    if (m is! Map) {
+      return '';
+    }
+    final name = '${m['name'] ?? ''}';
+    final msg = RegExp(r'^__MSG_(\w+)__$').firstMatch(name);
+    if (msg == null) {
+      return name;
+    }
+    final messages = jsonDecode(
+      File(
+        p.join(folder, '_locales', '${m['default_locale'] ?? 'en'}',
+            'messages.json'),
+      ).readAsStringSync(),
+    );
+    if (messages is Map) {
+      final key = msg.group(1)!.toLowerCase();
+      for (final MapEntry(key: k, :value) in messages.entries) {
+        if ('$k'.toLowerCase() == key && value is Map) {
+          return '${value['message'] ?? ''}';
+        }
+      }
+    }
+    return '';
+  } on Object {
+    return '';
+  }
+}
 
 @immutable
 class AdBlockState {
@@ -132,6 +225,34 @@ class AdBlockController extends Notifier<AdBlockState> {
     await _save(_keyPath, path);
   }
 
+  /// Unpacks the downloaded .zip into NEXA's data folder and uses it.
+  /// False (with a message) when it is not an unpacked extension.
+  Future<bool> installZip(String zip) async {
+    final store = ref.read(adBlockStoreProvider);
+    state = state.copyWith(status: S.adBlockUnpacking);
+    try {
+      final root = await store.dir();
+      final stamp = DateTime.now().toIso8601String().replaceAll(
+        RegExp('[^0-9]'),
+        '',
+      );
+      final dest = Directory(p.join(root.path, 'ubol_$stamp'));
+      await dest.create(recursive: true);
+      await store.unpack(zip, dest.path);
+      final folder = findExtensionFolder(dest.path);
+      if (folder == null) {
+        await dest.delete(recursive: true);
+        state = state.copyWith(status: S.adBlockNotExtension);
+        return false;
+      }
+      await setPath(folder);
+      return true;
+    } on Object catch (e) {
+      state = state.copyWith(status: S.adBlockUnpackFailed('$e'));
+      return false;
+    }
+  }
+
   /// Switches it off and takes the extension out of the web players'
   /// profile (when a player opens next).
   Future<void> remove() async {
@@ -213,7 +334,19 @@ class AdBlockControls extends ConsumerWidget {
         dialogTitle: S.adBlockChooseTitle,
       );
       if (dir != null) {
-        await ctl.setPath(dir);
+        await ctl.setPath(findExtensionFolder(dir) ?? dir);
+      }
+    }
+
+    Future<void> chooseZip() async {
+      final files = await FilePicker.pickFiles(
+        dialogTitle: S.adBlockChooseZipTitle,
+        type: FileType.custom,
+        allowedExtensions: const ['zip'],
+      );
+      final zip = files.firstOrNull?.path;
+      if (zip != null) {
+        await ctl.installZip(zip);
       }
     }
 
@@ -229,7 +362,8 @@ class AdBlockControls extends ConsumerWidget {
           return;
         }
         if (!ref.read(adBlockProvider).pathValid) {
-          await choose();
+          // The simplest way: the .zip from the official release page.
+          await chooseZip();
           if (!ref.read(adBlockProvider).pathValid) {
             return;
           }
@@ -244,13 +378,21 @@ class AdBlockControls extends ConsumerWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(S.adBlockTitle, style: NexaText.title),
-                  SizedBox(height: 4),
-                  Text(S.adBlockInfo, style: NexaText.caption),
+                  const Text(S.adBlockTitle, style: NexaText.title),
+                  const SizedBox(height: 4),
+                  const Text(S.adBlockInfo, style: NexaText.caption),
+                  if (!s.pathValid) ...[
+                    const SizedBox(height: 4),
+                    const Text(
+                      S.adBlockSteps,
+                      key: ValueKey('adblock-steps'),
+                      style: NexaText.caption,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -272,11 +414,25 @@ class AdBlockControls extends ConsumerWidget {
               s.path == null
                   ? S.adBlockNoFolder
                   : s.pathValid
-                  ? S.adBlockFolder(s.path!)
+                  ? S.adBlockFolder(_described(s.path!))
                   : S.adBlockBadFolder(s.path!),
               style: NexaText.caption.copyWith(
                 color: s.path != null && !s.pathValid ? NexaColors.coral : null,
               ),
+            ),
+            NexaTextLink(
+              key: const ValueKey('adblock-get'),
+              label: S.adBlockGet,
+              showArrow: false,
+              onTap: () => unawaited(
+                ref.read(linkOpenerProvider)(adBlockReleasesUrl),
+              ),
+            ),
+            NexaTextLink(
+              key: const ValueKey('adblock-zip'),
+              label: S.adBlockChooseZip,
+              showArrow: false,
+              onTap: () => unawaited(chooseZip()),
             ),
             NexaTextLink(
               key: const ValueKey('adblock-folder'),
@@ -301,7 +457,45 @@ class AdBlockControls extends ConsumerWidget {
             style: NexaText.caption.copyWith(color: NexaColors.sky),
           ),
         ],
+        if (s.status == S.adBlockRestart) ...[
+          const SizedBox(height: 6),
+          NexaTextLink(
+            key: const ValueKey('adblock-restart'),
+            label: S.adBlockRestartNow,
+            showArrow: false,
+            onTap: () => unawaited(restartNexa()),
+          ),
+        ],
       ],
     );
   }
+}
+
+/// "Name (folder)" for the Settings line.
+String _described(String folder) {
+  final name = extensionName(folder);
+  return name.isEmpty ? folder : '$name - $folder';
+}
+
+/// Starts NEXA again (WebView2 decides about extension support once per
+/// run): a new copy starts two seconds later, this one closes the normal
+/// way (players released first, see AppShell).
+Future<void> restartNexa() async {
+  if (!Platform.isWindows) {
+    return;
+  }
+  await Process.start(
+    'powershell',
+    const [
+      '-NoProfile',
+      '-NonInteractive',
+      '-WindowStyle',
+      'Hidden',
+      '-Command',
+      r'Start-Sleep -Seconds 2; Start-Process -FilePath $env:NEXA_EXE',
+    ],
+    environment: {'NEXA_EXE': Platform.resolvedExecutable},
+    mode: ProcessStartMode.detached,
+  );
+  await ServicesBinding.instance.exitApplication(AppExitType.cancelable);
 }

@@ -10,6 +10,8 @@ import 'package:nexa_music/features/library/library_providers.dart';
 import 'package:nexa_music/features/nexa_dna/dna_providers.dart';
 import 'package:nexa_music/features/player/playback_arbiter.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
+import 'package:nexa_music/features/soundcloud/soundcloud_discover.dart'
+    show soundCloudSearchUrl;
 import 'package:nexa_music/features/soundcloud/soundcloud_player_controller.dart';
 import 'package:nexa_music/features/youtube/youtube_player_controller.dart';
 import 'package:nexa_music/features/youtube/youtube_track.dart';
@@ -296,5 +298,17 @@ void main() {
       expect(container.read(playbackArbiterProvider), PlaybackOwner.nexa);
       expect(container.read(mediaOverlayOverrideProvider), isNull);
     });
+  });
+
+  test('no search inside NEXA: words go to SoundCloud\'s own search page', () {
+    expect(
+      soundCloudSearchUrl('  lo-fi beats '),
+      'https://soundcloud.com/search?q=lo-fi+beats',
+    );
+    expect(soundCloudSearchUrl(''), 'https://soundcloud.com/search');
+    expect(
+      soundCloudSearchUrl('https://soundcloud.com/artist/song'),
+      'https://soundcloud.com/search',
+    );
   });
 }
