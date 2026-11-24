@@ -1,30 +1,30 @@
 {
  "meta": {
-  "run": "20261123_210643",
-  "commit": "dd289e5",
+  "run": "20261124_212847",
+  "commit": "8f6a7fd",
   "uncommitted": false,
-  "appVersion": "1.0.0+8",
+  "appVersion": "1.1.0+9",
   "flutter": "Flutter 3.47.7 • channel stable • https://github.com/flutter/flutter.git",
   "windows": "Microsoft Windows 11 Pro",
-  "startedAt": "2026-11-23T21:06:43",
-  "finishedAt": "2026-11-23T21:14:43",
+  "startedAt": "2026-11-24T21:28:47",
+  "finishedAt": "2026-11-24T21:37:13",
   "loopback": true,
   "groups": "",
-  "exeSource": "",
+  "exeSource": "NEXA_Music_1.1.0_Windows_x64_8f6a7fd",
   "stages": {
    "unit": true,
    "integration": true,
-   "exe": false
+   "exe": true
   },
   "appSource": {
-   "fingerprint": "8314e95744fe",
-   "appCommit": "cb2e415",
+   "fingerprint": "f5e3ab386de1",
+   "appCommit": "8f6a7fd",
    "dirty": false,
    "changed": []
   },
   "audioBlocked": ""
  },
- "appCode": "8314e95744fe",
+ "appCode": "f5e3ab386de1",
  "statusLegend": [
   "FAIL",
   "BLOCKED",
@@ -34,45 +34,13 @@
  ],
  "sources": [
   {
-   "run": "20261123_210643",
-   "startedAt": "2026-11-23T21:06:43",
-   "commit": "dd289e5",
+   "run": "20261124_212847",
+   "startedAt": "2026-11-24T21:28:47",
+   "commit": "8f6a7fd",
    "uncommitted": false,
-   "appVersion": "1.0.0+8",
-   "appCode": "8314e95744fe",
+   "appVersion": "1.1.0+9",
+   "appCode": "f5e3ab386de1",
    "build": "B1",
-   "appCodeKnown": "измерен в начале прогона",
-   "groups": "",
-   "stages": {
-    "unit": true,
-    "integration": true,
-    "exe": false
-   }
-  },
-  {
-   "run": "20261123_210045",
-   "startedAt": "2026-11-23T21:00:45",
-   "commit": "cb2e415",
-   "uncommitted": false,
-   "appVersion": "1.0.0+8",
-   "appCode": "8314e95744fe",
-   "build": "B1",
-   "appCodeKnown": "измерен в начале прогона",
-   "groups": "",
-   "stages": {
-    "unit": true,
-    "integration": true,
-    "exe": false
-   }
-  },
-  {
-   "run": "20261026_181556",
-   "startedAt": "2026-10-26T18:15:56",
-   "commit": "b47f334",
-   "uncommitted": false,
-   "appVersion": "1.0.0+8",
-   "appCode": "0d8ac55eb9d2",
-   "build": "B2",
    "appCodeKnown": "измерен в начале прогона",
    "groups": "",
    "stages": {
@@ -80,21 +48,37 @@
     "integration": true,
     "exe": true
    }
+  },
+  {
+   "run": "20261123_210643",
+   "startedAt": "2026-11-23T21:06:43",
+   "commit": "dd289e5",
+   "uncommitted": false,
+   "appVersion": "1.0.0+8",
+   "appCode": "8314e95744fe",
+   "build": "B2",
+   "appCodeKnown": "измерен в начале прогона",
+   "groups": "",
+   "stages": {
+    "unit": true,
+    "integration": true,
+    "exe": false
+   }
   }
  ],
  "summary": {
   "ft": {
-   "FAIL": 1,
-   "BLOCKED": 8,
+   "FAIL": 3,
+   "BLOCKED": 0,
    "MANUAL REQUIRED": 0,
-   "PASS": 21,
+   "PASS": 27,
    "NOT RUN": 0
   },
   "checks": {
-   "FAIL": 1,
-   "BLOCKED": 15,
+   "FAIL": 3,
+   "BLOCKED": 1,
    "MANUAL REQUIRED": 0,
-   "PASS": 49,
+   "PASS": 62,
    "NOT RUN": 0
   }
  },
@@ -109,7 +93,7 @@
     "EX-01-version: PASS"
    ],
    "runs": [
-    "20261026_181556 (B2)"
+    "20261124_212847 (B1)"
    ],
    "manual": [
     "MAN-01: PASS"
@@ -129,8 +113,7 @@
     "EX-02-library: PASS"
    ],
    "runs": [
-    "20261026_181556 (B2)",
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": [
     "MAN-02: PASS"
@@ -144,8 +127,7 @@
     "EX-03-restart: PASS"
    ],
    "runs": [
-    "20261026_181556 (B2)",
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -156,7 +138,7 @@
     "AT-04-missing: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -168,33 +150,32 @@
     "EX-05-search: PASS"
    ],
    "runs": [
-    "20261026_181556 (B2)",
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-06": {
    "title": "20–30 треков подряд",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
     "AT-06-order: PASS",
-    "AT-06-audio: BLOCKED",
-    "AT-06-id3-flac: BLOCKED"
+    "AT-06-audio: PASS",
+    "AT-06-id3-flac: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-07": {
    "title": "Пауза, перемотка, назад / вперёд",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
     "AT-07-transport: PASS",
-    "AT-07-pause-silence: BLOCKED"
+    "AT-07-pause-silence: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -205,7 +186,7 @@
     "AT-08-queue: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -217,19 +198,19 @@
     "AT-09-repeat: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-10": {
    "title": "Громкость, Mute, устройство вывода",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
-    "AT-10-volume: BLOCKED",
+    "AT-10-volume: PASS",
     "AT-10-devices: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": [
     "MAN-10: PASS"
@@ -237,70 +218,70 @@
   },
   "FT-11": {
    "title": "Crossfade 6 с",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
-    "AT-11-crossfade-6: BLOCKED"
+    "AT-11-crossfade-6: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-12": {
    "title": "Crossfade 0 с и 12 с",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
-    "AT-12-crossfade-0: BLOCKED",
-    "AT-12-crossfade-12: BLOCKED"
+    "AT-12-crossfade-0: PASS",
+    "AT-12-crossfade-12: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-13": {
    "title": "Gapless внутри альбома",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
-    "AT-13-album-gapless: BLOCKED"
+    "AT-13-album-gapless: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-14": {
    "title": "Smart Mix",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
-    "AT-14-smart-mix: BLOCKED"
+    "AT-14-smart-mix: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-15": {
    "title": "Crossfade между форматами",
-   "status": "BLOCKED",
+   "status": "PASS",
    "automated": [
-    "AT-15-mp3-flac: BLOCKED",
-    "AT-15-flac-wav: BLOCKED"
+    "AT-15-mp3-flac: PASS",
+    "AT-15-flac-wav: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-16": {
    "title": "Медиаклавиши и медиапанель Windows",
-   "status": "PASS",
+   "status": "FAIL",
    "automated": [
-    "EX-16-session: PASS",
-    "EX-16-keys: PASS"
+    "EX-16-session: FAIL",
+    "EX-16-keys: BLOCKED"
    ],
    "runs": [
-    "20261026_181556 (B2)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -315,12 +296,12 @@
   },
   "FT-18": {
    "title": "Горячие клавиши",
-   "status": "PASS",
+   "status": "FAIL",
    "automated": [
-    "EX-18-keyboard: PASS"
+    "EX-18-keyboard: FAIL"
    ],
    "runs": [
-    "20261026_181556 (B2)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -331,7 +312,7 @@
     "AT-19-dna: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -342,7 +323,7 @@
     "AT-20-wave: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -353,18 +334,18 @@
     "AT-21-dislike: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-22": {
    "title": "Знакомое ↔ Открытия",
-   "status": "PASS",
+   "status": "FAIL",
    "automated": [
-    "AT-22-discovery: PASS"
+    "AT-22-discovery: FAIL"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -375,7 +356,7 @@
     "AT-23-privacy: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -386,7 +367,7 @@
     "AT-24-reset: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -398,20 +379,20 @@
     "AT-25-jamendo: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
   "FT-26": {
    "title": "Воспроизведение Audius / Jamendo",
-   "status": "FAIL",
+   "status": "PASS",
    "automated": [
     "AT-26-audius: PASS",
     "AT-26-jamendo: PASS",
-    "AT-26-no-mix: FAIL"
+    "AT-26-no-mix: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": []
   },
@@ -422,7 +403,7 @@
     "AT-27-unreachable: PASS"
    ],
    "runs": [
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": [
     "MAN-27: PASS"
@@ -437,8 +418,7 @@
     "EX-flutter-errors: PASS"
    ],
    "runs": [
-    "20261026_181556 (B2)",
-    "20261123_210643 (B1)"
+    "20261124_212847 (B1)"
    ],
    "manual": [
     "MAN-28: PASS"
@@ -452,7 +432,7 @@
     "EX-29-axtree-log: PASS"
    ],
    "runs": [
-    "20261026_181556 (B2)"
+    "20261124_212847 (B1)"
    ],
    "manual": [
     "MAN-29: PASS"
@@ -465,7 +445,7 @@
     "EX-30-minsize: PASS"
    ],
    "runs": [
-    "20261026_181556 (B2)"
+    "20261124_212847 (B1)"
    ],
    "manual": [
     "MAN-30: PASS"
@@ -480,9 +460,9 @@
    "status": "PASS",
    "detail": "36 tracks",
    "level": "Windows system",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "SYS-loopback",
@@ -491,20 +471,42 @@
    "status": "PASS",
    "detail": "exit 0",
    "level": "Windows system",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "SYS-audio",
    "ft": "-",
    "title": "Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available",
    "status": "PASS",
-   "detail": "device 'Digital Output (High Definition Audio Device)', mute off, volume 100 %, process loopback ok, system loopback ok",
+   "detail": "device 'Speakers (Logitech PRO X Gaming Headset)', mute off, volume 70 %, process loopback ok, system loopback ok",
    "level": "Windows system",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "SYS-portable-source",
+   "ft": "FT-01",
+   "title": "The tested Portable folder was built from the same app code as this run",
+   "status": "PASS",
+   "detail": "folder NEXA_Music_1.1.0_Windows_x64_8f6a7fd; built from commit 8f6a7fd42d3f5e5db83b67360b08406ea804f4ad, app code f5e3ab386de1; this run: app code f5e3ab386de1",
+   "level": "Windows system",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "SYS-package",
+   "ft": "FT-01",
+   "title": "Portable folder with every required file (NEXA_Music_1.1.0_Windows_x64_8f6a7fd)",
+   "status": "PASS",
+   "detail": "50.3 MB",
+   "level": "Windows system",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "SYS-eventlog",
@@ -513,9 +515,9 @@
    "status": "PASS",
    "detail": "0 crash records",
    "level": "Windows system",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "UNIT-analyze",
@@ -524,20 +526,31 @@
    "status": "PASS",
    "detail": "exit 0",
    "level": "static analysis",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "UNIT-tests",
    "ft": "-",
    "title": "Existing unit / widget tests (FakeEngine, in-memory database)",
    "status": "PASS",
-   "detail": "exit 0; +261: All tests passed!",
+   "detail": "exit 0; +293: All tests passed!",
    "level": "unit / widget tests",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "AT-library-output",
+   "ft": "-",
+   "title": "Group \"library\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-02-count",
@@ -546,9 +559,9 @@
    "status": "PASS",
    "detail": "library 36 / expected 36; problems: []",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-02-tags",
@@ -557,9 +570,9 @@
    "status": "PASS",
    "detail": "all tags as written",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-02-wav-cyrillic",
@@ -568,9 +581,9 @@
    "status": "PASS",
    "detail": "read correctly",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-02-durations",
@@ -579,9 +592,9 @@
    "status": "PASS",
    "detail": "largest deviation 0.071 s",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-02-cover",
@@ -590,9 +603,9 @@
    "status": "PASS",
    "detail": "4 of 4 tracks in meta/ have a cover",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-02-files-unchanged",
@@ -601,9 +614,9 @@
    "status": "PASS",
    "detail": "38 files compared by SHA-256",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-02-rescan",
@@ -612,9 +625,9 @@
    "status": "PASS",
    "detail": "36 tracks after rescan",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-03-restart",
@@ -623,9 +636,9 @@
    "status": "PASS",
    "detail": "tracks 36, playlist 3 songs, favorites 2, mode gapless, volume 0.6",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-04-missing",
@@ -634,9 +647,9 @@
    "status": "PASS",
    "detail": "while renamed: unavailable \"File not found\"; after: available; available tracks 36 (the renamed copy stays listed as missing by design)",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-05-search",
@@ -645,64 +658,79 @@
    "status": "PASS",
    "detail": "\"seq 0\" 11 (11), \"тестовая\" 1 (>=1), \"ТЕСТОВЫЙ\" 2 (>=2), \"live band\" 3 (3)",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "AT-playback-output",
+   "ft": "-",
+   "title": "Group \"playback\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-06-order",
    "ft": "FT-06",
    "title": "24 tracks in a row: each started once, in order (engine)",
    "status": "PASS",
-   "detail": "24 tracks started; engine errors: Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.",
+   "detail": "24 tracks started; engine errors: none",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-06-audio",
    "ft": "FT-06",
-   "title": "24 tracks in a row: audible order, no overlap, no gaps (loopback)",
-   "status": "BLOCKED",
-   "detail": "no sound captured - is the Windows output muted or at 0 %? The AutoTest needs audible output to measure (01_ft06_24_tracks.wav)",
+   "title": "24 tracks in a row: audible order, full length, never two at once, no gaps (loopback)",
+   "status": "PASS",
+   "detail": "heard 24 of 24 tones in the right order; largest overlap 0.000 s, largest gap 0.000 s, shortest song heard 5.96 s of 6.00 s",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "recordingSeconds": 148.0,
+    "outputDevice": "mode=process rate=48000 channels=2 float=1 bits=32 device=\"Speakers (Logitech PRO X Gaming Headset)\" endpoint_mute=0 endpoint_volume=0.700 session=0 session_mute=0 session_volume=-1.000"
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-06-id3-flac",
    "ft": "FT-06",
    "title": "Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible",
-   "status": "BLOCKED",
-   "detail": "no sound captured - is the Windows output muted or at 0 %? The AutoTest needs audible output to measure (02_ft06_id3_flac.wav)",
+   "status": "PASS",
+   "detail": "heard 520 Hz -> 2800 Hz -> 740 Hz (expected 520 Hz -> 2800 Hz -> 740 Hz)",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-07-transport",
    "ft": "FT-07",
    "title": "Pause holds the position, resume, seek, previous (restart / previous track), next",
    "status": "PASS",
-   "detail": "pause 1039->1039 ms, resume -> 2299 ms, seek 20 s -> 20434 ms, restart true, next true, previous true",
+   "detail": "pause 1040->1040 ms, resume -> 2300 ms, seek 20 s -> 20435 ms, restart true, next true, previous true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-07-pause-silence",
    "ft": "FT-07",
-   "title": "Silence while paused (loopback)",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n",
+   "title": "Silence while paused (loopback, tone of the paused song)",
+   "status": "PASS",
+   "detail": "440 Hz level while paused 0.00000 (playing at 100 %: about 0.12); other sound on the PC: peak 0.0000",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-08-queue",
@@ -711,9 +739,9 @@
    "status": "PASS",
    "detail": "play next/add true, remove true, engine played inserted true, clear true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-09-shuffle",
@@ -722,9 +750,9 @@
    "status": "PASS",
    "detail": "10 different files played; order restored true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-09-repeat",
@@ -733,20 +761,20 @@
    "status": "PASS",
    "detail": "repeat one true, repeat all wrap true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-10-volume",
    "ft": "FT-10",
    "title": "Volume and mute change the real output level (loopback)",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n",
+   "status": "PASS",
+   "detail": "440 Hz level at 100 %: 0.1059, 50 %: 0.0132, mute: 0.00000; recorder mode=process rate=48000 channels=2 float=1 bits=32 device=\"Speakers (Logitech PRO X Gaming Headset)\" endpoint_mute=0 endpoint_volume=0.700 session=1 session_mute=0 session_volume=1.000",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-10-devices",
@@ -755,86 +783,178 @@
    "status": "PASS",
    "detail": "5 devices reported by the engine",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "AT-mix-output",
+   "ft": "-",
+   "title": "Group \"mix\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-11-crossfade-6",
    "ft": "FT-11",
    "title": "Crossfade 6 s (WAV -> FLAC): smooth overlap, no dip, no clipping",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n; planned crossfade 6.0 s (\"Crossfade\"); engine moved on: false",
+   "status": "PASS",
+   "detail": "planned crossfade 6.0 s (\"Crossfade\"); measured overlap 5.72 s, gap 0.000 s, peak 0.143, level during overlap 0.96-1.03 x; player moved on: true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "found": true,
+    "overlapSeconds": 5.72,
+    "gapSeconds": 0.0,
+    "peak": 0.143,
+    "minLevelRatio": 0.964,
+    "maxLevelRatio": 1.026,
+    "lastA": 9.96,
+    "firstB": 4.26
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-12-crossfade-0",
    "ft": "FT-12",
    "title": "Crossfade 0 s: no overlap, no gap",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n; planned gapless 0.0 s (\"Crossfade off: no overlap\"); engine moved on: true",
+   "status": "PASS",
+   "detail": "planned gapless 0.0 s (\"Crossfade off: no overlap\"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "found": true,
+    "overlapSeconds": 0.0,
+    "gapSeconds": 0.0,
+    "peak": 0.106,
+    "minLevelRatio": 0.0,
+    "maxLevelRatio": 0.0,
+    "lastA": 4.0,
+    "firstB": 4.02
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-12-crossfade-12",
    "ft": "FT-12",
    "title": "Crossfade 12 s: long smooth overlap",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n; planned crossfade 12.0 s (\"Crossfade\"); engine moved on: false",
+   "status": "PASS",
+   "detail": "planned crossfade 12.0 s (\"Crossfade\"); measured overlap 11.50 s, gap 0.000 s, peak 0.145, level during overlap 0.96-1.03 x; player moved on: true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "found": true,
+    "overlapSeconds": 11.5,
+    "gapSeconds": 0.0,
+    "peak": 0.145,
+    "minLevelRatio": 0.963,
+    "maxLevelRatio": 1.026,
+    "lastA": 15.86,
+    "firstB": 4.36
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-13-album-gapless",
    "ft": "FT-13",
    "title": "Same album with Crossfade on: gapless, no overlap (FLAC)",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n; planned gapless 0.0 s (\"Same album: gapless\"); engine moved on: true",
+   "status": "PASS",
+   "detail": "planned gapless 0.0 s (\"Same album: gapless\"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "found": true,
+    "overlapSeconds": 0.0,
+    "gapSeconds": 0.0,
+    "peak": 0.106,
+    "minLevelRatio": 0.0,
+    "maxLevelRatio": 0.0,
+    "lastA": 4.0,
+    "firstB": 4.02
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-14-smart-mix",
    "ft": "FT-14",
    "title": "Smart Mix shortens the overlap for short tracks and says why",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n; planned crossfade 3.0 s (\"Smart Mix: shorter for a short track\"); engine moved on: false",
+   "status": "PASS",
+   "detail": "planned crossfade 3.0 s (\"Smart Mix: shorter for a short track\"); measured overlap 2.82 s, gap 0.000 s, peak 0.139, level during overlap 0.99-1.01 x; player moved on: true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "found": true,
+    "overlapSeconds": 2.82,
+    "gapSeconds": 0.0,
+    "peak": 0.139,
+    "minLevelRatio": 0.988,
+    "maxLevelRatio": 1.011,
+    "lastA": 7.98,
+    "firstB": 5.18
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-15-mp3-flac",
    "ft": "FT-15",
    "title": "Crossfade 6 s MP3 -> FLAC",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n; planned crossfade 6.0 s (\"Crossfade\"); engine moved on: false",
+   "status": "PASS",
+   "detail": "planned crossfade 6.0 s (\"Crossfade\"); measured overlap 5.70 s, gap 0.000 s, peak 0.144, level during overlap 0.98-1.07 x; player moved on: true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "found": true,
+    "overlapSeconds": 5.7,
+    "gapSeconds": 0.0,
+    "peak": 0.144,
+    "minLevelRatio": 0.983,
+    "maxLevelRatio": 1.072,
+    "lastA": 9.92,
+    "firstB": 4.22
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-15-flac-wav",
    "ft": "FT-15",
    "title": "Crossfade 6 s FLAC -> WAV",
-   "status": "BLOCKED",
-   "detail": "recorder did not start: ERROR Initialize render hr=0x887c001a\r\n; planned crossfade 6.0 s (\"Crossfade\"); engine moved on: false",
+   "status": "PASS",
+   "detail": "planned crossfade 6.0 s (\"Crossfade\"); measured overlap 5.68 s, gap 0.000 s, peak 0.142, level during overlap 0.99-1.01 x; player moved on: true",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "data": {
+    "found": true,
+    "overlapSeconds": 5.68,
+    "gapSeconds": 0.0,
+    "peak": 0.142,
+    "minLevelRatio": 0.987,
+    "maxLevelRatio": 1.011,
+    "lastA": 9.96,
+    "firstB": 4.3
+   },
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "AT-dna-output",
+   "ft": "-",
+   "title": "Group \"dna\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-19-dna",
@@ -843,9 +963,9 @@
    "status": "PASS",
    "detail": "genres Electronic, Rock, Поп, Ambient, Jazz; 2 choices stored",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-20-wave",
@@ -854,9 +974,9 @@
    "status": "PASS",
    "detail": "queue 8 (liked first true, excluded genre 0, reasons 8), refilled true to 16, history 0->3",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-21-dislike",
@@ -865,20 +985,20 @@
    "status": "PASS",
    "detail": "skipped true, suggested again false",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-22-discovery",
    "ft": "FT-22",
    "title": "Familiar picks played songs first; Discovery picks unplayed songs first",
-   "status": "PASS",
-   "detail": "familiar: 3 of top 4 known; discovery: 4 of top 4 new (4 known songs by different artists)",
+   "status": "FAIL",
+   "detail": "familiar: 3 of top 4 known; discovery: 0 of top 4 new (4 known songs by different artists)",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-23-privacy",
@@ -887,9 +1007,9 @@
    "status": "PASS",
    "detail": "added: private 0, paused 0, normal 2",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-24-reset",
@@ -898,9 +1018,20 @@
    "status": "PASS",
    "detail": "private after restart false, events 0, choices 0, dislikes 0, favorites 2->2, playlists 1, discovery 0.3",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "AT-online-output",
+   "ft": "-",
+   "title": "Group \"online\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-25-audius",
@@ -909,53 +1040,53 @@
    "status": "PASS",
    "detail": "\"lofi\": 10 results, 9 playable",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-25-jamendo",
    "ft": "FT-25",
    "title": "Jamendo: search returns results with source and playability",
    "status": "PASS",
-   "detail": "\"piano\": 10 results, 10 playable, licence CC BY-NC-ND 3.0",
+   "detail": "\"chill\": 10 results, 10 playable, licence CC BY 3.0",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-26-audius",
    "ft": "FT-26",
-   "title": "Audius: stream plays through the real engine",
+   "title": "Audius: stream plays through the real engine and is audible (loopback)",
    "status": "PASS",
-   "detail": "position > 3 s: true; loopback: recorder did not start: ERROR Initialize render hr=0x887c001a\r\n",
+   "detail": "position > 3 s: true; output RMS 0.0735",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-26-jamendo",
    "ft": "FT-26",
-   "title": "Jamendo: stream plays through the real engine",
+   "title": "Jamendo: stream plays through the real engine and is audible (loopback)",
    "status": "PASS",
-   "detail": "position > 3 s: true; loopback: recorder did not start: ERROR Initialize render hr=0x887c001a\r\n",
+   "detail": "position > 3 s: true; output RMS 0.1166",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-26-no-mix",
    "ft": "FT-26",
-   "title": "Catalog tracks are never crossfaded; not written to the history",
-   "status": "FAIL",
+   "title": "Catalog streams may be crossfaded (D-025, no \"no mix rights\" cut); not written to the history",
+   "status": "PASS",
    "detail": "plan crossfade \"Crossfade\"; history 0->0",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-27-unreachable",
@@ -964,9 +1095,152 @@
    "status": "PASS",
    "detail": "error kind offline; local playback true (simulated with an unreachable address, real network still on)",
    "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210643",
+   "run": "20261124_212847",
    "build": "B1",
-   "appCode": "8314e95744fe"
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-01-start",
+   "ft": "FT-01",
+   "title": "Portable exe starts with an isolated test profile; its accessibility tree is visible",
+   "status": "PASS",
+   "detail": "window 'NEXA Music', 59 named elements via MSAA; exe_app.log start: MSAA nodes 102, UI Automation elements 1",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-01-version",
+   "ft": "FT-01",
+   "title": "Settings - About shows version 1.1.0 (pubspec.yaml)",
+   "status": "PASS",
+   "detail": "NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo; YouTube and SoundCloud in their own official players.\nVersion 1.1.0",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-02-library",
+   "ft": "FT-02",
+   "title": "Release exe shows the imported test library from its database",
+   "status": "PASS",
+   "detail": "'Seq 01' visible in Library - Songs",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-16-session",
+   "ft": "FT-16",
+   "title": "Windows media overlay shows NEXA with song, artist and Playing",
+   "status": "FAIL",
+   "detail": "'Seq 01' / 'AutoTest Band' Paused (not the current session)",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-16-keys",
+   "ft": "FT-16",
+   "title": "Media keys control NEXA in the background",
+   "status": "BLOCKED",
+   "detail": "playback did not start",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-18-keyboard",
+   "ft": "FT-18",
+   "title": "Space toggles playback, Ctrl+Right plays the next song (Release exe)",
+   "status": "FAIL",
+   "detail": "space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 01'",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-28-a11y",
+   "ft": "FT-28",
+   "title": "With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash",
+   "status": "PASS",
+   "detail": "pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-29-resize",
+   "ft": "FT-29",
+   "title": "Resize / maximise with a UI Automation client: no crash, tree still updates",
+   "status": "PASS",
+   "detail": "sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-30-minsize",
+   "ft": "FT-30",
+   "title": "Window cannot be made smaller than 1024 x 640",
+   "status": "PASS",
+   "detail": "smallest window 1024x640 (dpi 96)",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-05-search",
+   "ft": "FT-05",
+   "title": "Release exe: the search field finds the Cyrillic song (typed in Cyrillic)",
+   "status": "PASS",
+   "detail": "search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08'",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-03-restart",
+   "ft": "FT-03",
+   "title": "Release exe restarted: library (and playlist, if the profile has one) still there",
+   "status": "PASS",
+   "detail": "restarted True, test song visible True, playlist before / after restart True / True",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-29-axtree-log",
+   "ft": "FT-29",
+   "title": "No \"Failed to update ui::AXTree\" messages after resizing (TD-02)",
+   "status": "PASS",
+   "detail": "0 messages in the app output",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
+  },
+  {
+   "id": "EX-flutter-errors",
+   "ft": "FT-28",
+   "title": "No Flutter exceptions in the Release exe output",
+   "status": "PASS",
+   "detail": "0 error blocks",
+   "level": "Windows Release exe (Portable build, UI Automation)",
+   "run": "20261124_212847",
+   "build": "B1",
+   "appCode": "f5e3ab386de1"
   },
   {
    "id": "AT-output",
@@ -976,217 +1250,8 @@
    "detail": "device: Digital Output (High Definition Audio Device)",
    "level": "integration (real media_kit, SQLite, files; debug build)",
    "run": "20261123_210643",
-   "build": "B1",
+   "build": "B2",
    "appCode": "8314e95744fe"
-  },
-  {
-   "id": "AT-playback-output",
-   "ft": "-",
-   "title": "Group \"playback\" not run",
-   "status": "BLOCKED",
-   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
-   "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210045",
-   "build": "B1",
-   "appCode": "8314e95744fe"
-  },
-  {
-   "id": "AT-mix-output",
-   "ft": "-",
-   "title": "Group \"mix\" not run",
-   "status": "BLOCKED",
-   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
-   "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210045",
-   "build": "B1",
-   "appCode": "8314e95744fe"
-  },
-  {
-   "id": "AT-dna-output",
-   "ft": "-",
-   "title": "Group \"dna\" not run",
-   "status": "BLOCKED",
-   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
-   "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210045",
-   "build": "B1",
-   "appCode": "8314e95744fe"
-  },
-  {
-   "id": "AT-online-output",
-   "ft": "-",
-   "title": "Group \"online\" not run",
-   "status": "BLOCKED",
-   "detail": "silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))",
-   "level": "integration (real media_kit, SQLite, files; debug build)",
-   "run": "20261123_210045",
-   "build": "B1",
-   "appCode": "8314e95744fe"
-  },
-  {
-   "id": "SYS-portable-source",
-   "ft": "FT-01",
-   "title": "The tested Portable folder was built from the same app code as this run",
-   "status": "PASS",
-   "detail": "folder NEXA_Music_1.0.0_Windows_x64_b47f334_2; built from commit b47f334357aa3167d2362e58456a048964e2d21a, app code 0d8ac55eb9d2; this run: app code 0d8ac55eb9d2",
-   "level": "Windows system",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "SYS-package",
-   "ft": "FT-01",
-   "title": "Portable folder with every required file (NEXA_Music_1.0.0_Windows_x64_b47f334_2)",
-   "status": "PASS",
-   "detail": "49.9 MB",
-   "level": "Windows system",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-01-start",
-   "ft": "FT-01",
-   "title": "Portable exe starts with an isolated test profile; its accessibility tree is visible",
-   "status": "PASS",
-   "detail": "window 'NEXA Music', 114 named elements via MSAA; exe_app.log start: MSAA nodes 166, UI Automation elements 1",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-01-version",
-   "ft": "FT-01",
-   "title": "Settings - About shows version 1.0.0 (pubspec.yaml)",
-   "status": "PASS",
-   "detail": "NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo.\nVersion 1.0.0",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-02-library",
-   "ft": "FT-02",
-   "title": "Release exe shows the imported test library from its database",
-   "status": "PASS",
-   "detail": "'Seq 01' visible in Library - Songs",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-16-session",
-   "ft": "FT-16",
-   "title": "Windows media overlay shows NEXA with song, artist and Playing",
-   "status": "PASS",
-   "detail": "'Seq 01' / 'AutoTest Band' Playing (current session)",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-16-keys",
-   "ft": "FT-16",
-   "title": "Media keys with NEXA minimised: Play/Pause, Next, Previous, Stop",
-   "status": "PASS",
-   "detail": "play/pause -> Paused -> Playing; next -> 'Seq 04'; previous -> 'Seq 01'; stop -> Paused",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-18-keyboard",
-   "ft": "FT-18",
-   "title": "Space toggles playback, Ctrl+Right plays the next song (Release exe)",
-   "status": "PASS",
-   "detail": "space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 04'",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-28-a11y",
-   "ft": "FT-28",
-   "title": "With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash",
-   "status": "PASS",
-   "detail": "pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-29-resize",
-   "ft": "FT-29",
-   "title": "Resize / maximise with a UI Automation client: no crash, tree still updates",
-   "status": "PASS",
-   "detail": "sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-30-minsize",
-   "ft": "FT-30",
-   "title": "Window cannot be made smaller than 1024 x 640",
-   "status": "PASS",
-   "detail": "smallest window 1024x640 (dpi 96)",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-05-search",
-   "ft": "FT-05",
-   "title": "Release exe: the search field finds the Cyrillic song (typed in Cyrillic)",
-   "status": "PASS",
-   "detail": "search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08'",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-03-restart",
-   "ft": "FT-03",
-   "title": "Release exe restarted: library (and playlist, if the profile has one) still there",
-   "status": "PASS",
-   "detail": "restarted True, test song visible True, playlist before / after restart True / True",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-29-axtree-log",
-   "ft": "FT-29",
-   "title": "No \"Failed to update ui::AXTree\" messages after resizing (TD-02)",
-   "status": "PASS",
-   "detail": "0 messages in the app output",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
-  },
-  {
-   "id": "EX-flutter-errors",
-   "ft": "FT-28",
-   "title": "No Flutter exceptions in the Release exe output",
-   "status": "PASS",
-   "detail": "0 error blocks",
-   "level": "Windows Release exe (Portable build, UI Automation)",
-   "run": "20261026_181556",
-   "build": "B2",
-   "appCode": "0d8ac55eb9d2"
   }
  ],
  "manual": [
@@ -1362,7 +1427,7 @@
     "FT-16",
     "FT-17"
    ],
-   "status": "PASS"
+   "status": "FAIL"
   },
   "TD-07": {
    "ft": [
@@ -1372,13 +1437,13 @@
     "FT-09",
     "FT-10"
    ],
-   "status": "BLOCKED"
+   "status": "PASS"
   },
   "TD-08": {
    "ft": [
     "FT-14"
    ],
-   "status": "BLOCKED"
+   "status": "PASS"
   },
   "TD-09": {
    "ft": [
@@ -1387,14 +1452,14 @@
     "FT-13",
     "FT-15"
    ],
-   "status": "BLOCKED"
+   "status": "PASS"
   },
   "TD-10": {
    "ft": [
     "FT-20",
     "FT-22"
    ],
-   "status": "PASS"
+   "status": "FAIL"
   },
   "TD-11": {
    "ft": [
@@ -1418,20 +1483,20 @@
    "ft": [
     "FT-26"
    ],
-   "status": "FAIL"
+   "status": "PASS"
   },
   "TD-15": {
    "ft": [
     "FT-26"
    ],
-   "status": "FAIL"
+   "status": "PASS"
   },
   "TD-16": {
    "ft": [
     "FT-16",
     "FT-17"
    ],
-   "status": "PASS"
+   "status": "FAIL"
   },
   "TD-17": {
    "ft": [
@@ -1443,7 +1508,7 @@
    "ft": [
     "FT-18"
    ],
-   "status": "PASS"
+   "status": "FAIL"
   }
  }
 }
