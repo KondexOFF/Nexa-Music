@@ -1,7 +1,7 @@
 # NEXA Music — FINAL AUTOTEST REPORT
 
-Последний прогон: `20261123_210643` (2026-11-23T21:06:43 … 2026-11-23T21:14:43)  
-Версия приложения: 1.0.0+8; код приложения (lib, windows, assets, pubspec) `8314e95744fe` — измерен в начале прогона  
+Последний прогон: `20261124_212847` (2026-11-24T21:28:47 … 2026-11-24T21:37:13)  
+Версия приложения: 1.1.0+9; код приложения (lib, windows, assets, pubspec) `f5e3ab386de1` — измерен в начале прогона  
 Среда: Microsoft Windows 11 Pro; Flutter 3.47.7 • channel stable • https://github.com/flutter/flutter.git  
 Запуск: `NEXA_AutoTest.cmd` (папки прогонов `<root>\_autotest_runs\<прогон>`)
 
@@ -15,56 +15,55 @@
 
 | Сборка | Код приложения | Что это |
 |---|---|---|
-| B1 | `8314e95744fe` | код коммита cb2e415 (код последнего прогона) |
-| B2 | `0d8ac55eb9d2` | код коммита b47f334 |
+| B1 | `f5e3ab386de1` | код коммита 8f6a7fd (код последнего прогона) |
+| B2 | `8314e95744fe` | код коммита cb2e415 |
 
 | Прогон | Начало | Коммит | Сборка | Код приложения установлен | Группы / этапы | Проверок взято |
 |---|---|---|---|---|---|---|
-| `20261123_210643` | 2026-11-23T21:06:43 | `dd289e5` | B1 | измерен в начале прогона | все группы; unit, integration | 46 |
-| `20261123_210045` | 2026-11-23T21:00:45 | `cb2e415` | B1 | измерен в начале прогона | все группы; unit, integration | 4 |
-| `20261026_181556` | 2026-10-26T18:15:56 | `b47f334` | B2 | измерен в начале прогона | все группы; unit, integration, exe | 15 |
+| `20261124_212847` | 2026-11-24T21:28:47 | `8f6a7fd` | B1 | измерен в начале прогона | все группы; unit, integration, exe | 65 |
+| `20261123_210643` | 2026-11-23T21:06:43 | `dd289e5` | B2 | измерен в начале прогона | все группы; unit, integration | 1 |
 
 ## Итог
 
 | | FAIL | BLOCKED | MANUAL REQUIRED | PASS | NOT RUN |
 |---|---|---|---|---|---|
-| Тесты FT (30) | 1 | 8 | 0 | 21 | 0 |
-| Отдельные проверки (65) | 1 | 15 | 0 | 49 | 0 |
+| Тесты FT (30) | 3 | 0 | 0 | 27 | 0 |
+| Отдельные проверки (66) | 3 | 1 | 0 | 62 | 0 |
 
 ## FT-01 – FT-30: автоматические и ручные проверки
 
 | FT | Сценарий | Статус | Автоматически | Прогон (сборка) | Вручную |
 |---|---|---|---|---|---|
-| FT-01 | Запуск Portable-сборки | **PASS** | SYS-portable-source: PASS<br>SYS-package: PASS<br>EX-01-start: PASS<br>EX-01-version: PASS | `20261026_181556 (B2)` | MAN-01: PASS |
-| FT-02 | Импорт библиотеки MP3 / FLAC / WAV | **PASS** | AT-02-count: PASS<br>AT-02-tags: PASS<br>AT-02-wav-cyrillic: PASS<br>AT-02-durations: PASS<br>AT-02-cover: PASS<br>AT-02-files-unchanged: PASS<br>AT-02-rescan: PASS<br>EX-02-library: PASS | `20261026_181556 (B2)`<br>`20261123_210643 (B1)` | MAN-02: PASS |
-| FT-03 | Сохранение после перезапуска | **PASS** | AT-03-restart: PASS<br>EX-03-restart: PASS | `20261026_181556 (B2)`<br>`20261123_210643 (B1)` |  |
-| FT-04 | Пропавший файл и Rescan | **PASS** | AT-04-missing: PASS | `20261123_210643 (B1)` |  |
-| FT-05 | Поиск, кириллица | **PASS** | AT-05-search: PASS<br>EX-05-search: PASS | `20261026_181556 (B2)`<br>`20261123_210643 (B1)` |  |
-| FT-06 | 20–30 треков подряд | **BLOCKED** | AT-06-order: PASS<br>AT-06-audio: BLOCKED<br>AT-06-id3-flac: BLOCKED | `20261123_210643 (B1)` |  |
-| FT-07 | Пауза, перемотка, назад / вперёд | **BLOCKED** | AT-07-transport: PASS<br>AT-07-pause-silence: BLOCKED | `20261123_210643 (B1)` |  |
-| FT-08 | Очередь | **PASS** | AT-08-queue: PASS | `20261123_210643 (B1)` |  |
-| FT-09 | Shuffle и Repeat | **PASS** | AT-09-shuffle: PASS<br>AT-09-repeat: PASS | `20261123_210643 (B1)` |  |
-| FT-10 | Громкость, Mute, устройство вывода | **BLOCKED** | AT-10-volume: BLOCKED<br>AT-10-devices: PASS | `20261123_210643 (B1)` | MAN-10: PASS |
-| FT-11 | Crossfade 6 с | **BLOCKED** | AT-11-crossfade-6: BLOCKED | `20261123_210643 (B1)` |  |
-| FT-12 | Crossfade 0 с и 12 с | **BLOCKED** | AT-12-crossfade-0: BLOCKED<br>AT-12-crossfade-12: BLOCKED | `20261123_210643 (B1)` |  |
-| FT-13 | Gapless внутри альбома | **BLOCKED** | AT-13-album-gapless: BLOCKED | `20261123_210643 (B1)` |  |
-| FT-14 | Smart Mix | **BLOCKED** | AT-14-smart-mix: BLOCKED | `20261123_210643 (B1)` |  |
-| FT-15 | Crossfade между форматами | **BLOCKED** | AT-15-mp3-flac: BLOCKED<br>AT-15-flac-wav: BLOCKED | `20261123_210643 (B1)` |  |
-| FT-16 | Медиаклавиши и медиапанель Windows | **PASS** | EX-16-session: PASS<br>EX-16-keys: PASS | `20261026_181556 (B2)` |  |
+| FT-01 | Запуск Portable-сборки | **PASS** | SYS-portable-source: PASS<br>SYS-package: PASS<br>EX-01-start: PASS<br>EX-01-version: PASS | `20261124_212847 (B1)` | MAN-01: PASS |
+| FT-02 | Импорт библиотеки MP3 / FLAC / WAV | **PASS** | AT-02-count: PASS<br>AT-02-tags: PASS<br>AT-02-wav-cyrillic: PASS<br>AT-02-durations: PASS<br>AT-02-cover: PASS<br>AT-02-files-unchanged: PASS<br>AT-02-rescan: PASS<br>EX-02-library: PASS | `20261124_212847 (B1)` | MAN-02: PASS |
+| FT-03 | Сохранение после перезапуска | **PASS** | AT-03-restart: PASS<br>EX-03-restart: PASS | `20261124_212847 (B1)` |  |
+| FT-04 | Пропавший файл и Rescan | **PASS** | AT-04-missing: PASS | `20261124_212847 (B1)` |  |
+| FT-05 | Поиск, кириллица | **PASS** | AT-05-search: PASS<br>EX-05-search: PASS | `20261124_212847 (B1)` |  |
+| FT-06 | 20–30 треков подряд | **PASS** | AT-06-order: PASS<br>AT-06-audio: PASS<br>AT-06-id3-flac: PASS | `20261124_212847 (B1)` |  |
+| FT-07 | Пауза, перемотка, назад / вперёд | **PASS** | AT-07-transport: PASS<br>AT-07-pause-silence: PASS | `20261124_212847 (B1)` |  |
+| FT-08 | Очередь | **PASS** | AT-08-queue: PASS | `20261124_212847 (B1)` |  |
+| FT-09 | Shuffle и Repeat | **PASS** | AT-09-shuffle: PASS<br>AT-09-repeat: PASS | `20261124_212847 (B1)` |  |
+| FT-10 | Громкость, Mute, устройство вывода | **PASS** | AT-10-volume: PASS<br>AT-10-devices: PASS | `20261124_212847 (B1)` | MAN-10: PASS |
+| FT-11 | Crossfade 6 с | **PASS** | AT-11-crossfade-6: PASS | `20261124_212847 (B1)` |  |
+| FT-12 | Crossfade 0 с и 12 с | **PASS** | AT-12-crossfade-0: PASS<br>AT-12-crossfade-12: PASS | `20261124_212847 (B1)` |  |
+| FT-13 | Gapless внутри альбома | **PASS** | AT-13-album-gapless: PASS | `20261124_212847 (B1)` |  |
+| FT-14 | Smart Mix | **PASS** | AT-14-smart-mix: PASS | `20261124_212847 (B1)` |  |
+| FT-15 | Crossfade между форматами | **PASS** | AT-15-mp3-flac: PASS<br>AT-15-flac-wav: PASS | `20261124_212847 (B1)` |  |
+| FT-16 | Медиаклавиши и медиапанель Windows | **FAIL** | EX-16-session: FAIL<br>EX-16-keys: BLOCKED | `20261124_212847 (B1)` |  |
 | FT-17 | Медиаклавиши рядом с другим плеером | **PASS** |  |  | MAN-17: PASS |
-| FT-18 | Горячие клавиши | **PASS** | EX-18-keyboard: PASS | `20261026_181556 (B2)` |  |
-| FT-19 | NEXA DNA | **PASS** | AT-19-dna: PASS | `20261123_210643 (B1)` |  |
-| FT-20 | NEXA Wave | **PASS** | AT-20-wave: PASS | `20261123_210643 (B1)` |  |
-| FT-21 | Дизлайк | **PASS** | AT-21-dislike: PASS | `20261123_210643 (B1)` |  |
-| FT-22 | Знакомое ↔ Открытия | **PASS** | AT-22-discovery: PASS | `20261123_210643 (B1)` |  |
-| FT-23 | Private session, Pause learning | **PASS** | AT-23-privacy: PASS | `20261123_210643 (B1)` |  |
-| FT-24 | Удаление истории, сброс DNA | **PASS** | AT-24-reset: PASS | `20261123_210643 (B1)` |  |
-| FT-25 | Поиск Audius / Jamendo | **PASS** | AT-25-audius: PASS<br>AT-25-jamendo: PASS | `20261123_210643 (B1)` |  |
-| FT-26 | Воспроизведение Audius / Jamendo | **FAIL** | AT-26-audius: PASS<br>AT-26-jamendo: PASS<br>AT-26-no-mix: FAIL | `20261123_210643 (B1)` |  |
-| FT-27 | Без интернета | **PASS** | AT-27-unreachable: PASS | `20261123_210643 (B1)` | MAN-27: PASS |
-| FT-28 | Доступность (UI Automation, Диктор) | **PASS** | SYS-eventlog: PASS<br>EX-28-a11y: PASS<br>EX-flutter-errors: PASS | `20261026_181556 (B2)`<br>`20261123_210643 (B1)` | MAN-28: PASS |
-| FT-29 | Изменение размера окна с клиентом доступности (TD-02) | **PASS** | EX-29-resize: PASS<br>EX-29-axtree-log: PASS | `20261026_181556 (B2)` | MAN-29: PASS |
-| FT-30 | Минимальный и максимальный размер окна | **PASS** | EX-30-minsize: PASS | `20261026_181556 (B2)` | MAN-30: PASS |
+| FT-18 | Горячие клавиши | **FAIL** | EX-18-keyboard: FAIL | `20261124_212847 (B1)` |  |
+| FT-19 | NEXA DNA | **PASS** | AT-19-dna: PASS | `20261124_212847 (B1)` |  |
+| FT-20 | NEXA Wave | **PASS** | AT-20-wave: PASS | `20261124_212847 (B1)` |  |
+| FT-21 | Дизлайк | **PASS** | AT-21-dislike: PASS | `20261124_212847 (B1)` |  |
+| FT-22 | Знакомое ↔ Открытия | **FAIL** | AT-22-discovery: FAIL | `20261124_212847 (B1)` |  |
+| FT-23 | Private session, Pause learning | **PASS** | AT-23-privacy: PASS | `20261124_212847 (B1)` |  |
+| FT-24 | Удаление истории, сброс DNA | **PASS** | AT-24-reset: PASS | `20261124_212847 (B1)` |  |
+| FT-25 | Поиск Audius / Jamendo | **PASS** | AT-25-audius: PASS<br>AT-25-jamendo: PASS | `20261124_212847 (B1)` |  |
+| FT-26 | Воспроизведение Audius / Jamendo | **PASS** | AT-26-audius: PASS<br>AT-26-jamendo: PASS<br>AT-26-no-mix: PASS | `20261124_212847 (B1)` |  |
+| FT-27 | Без интернета | **PASS** | AT-27-unreachable: PASS | `20261124_212847 (B1)` | MAN-27: PASS |
+| FT-28 | Доступность (UI Automation, Диктор) | **PASS** | SYS-eventlog: PASS<br>EX-28-a11y: PASS<br>EX-flutter-errors: PASS | `20261124_212847 (B1)` | MAN-28: PASS |
+| FT-29 | Изменение размера окна с клиентом доступности (TD-02) | **PASS** | EX-29-resize: PASS<br>EX-29-axtree-log: PASS | `20261124_212847 (B1)` | MAN-29: PASS |
+| FT-30 | Минимальный и максимальный размер окна | **PASS** | EX-30-minsize: PASS | `20261124_212847 (B1)` | MAN-30: PASS |
 
 ## Технический долг TD-01 – TD-18
 
@@ -75,47 +74,26 @@
 | TD-03 | FT-28 | PASS |
 | TD-04 | FT-02 | PASS |
 | TD-05 | FT-02 | PASS |
-| TD-06 | FT-16, FT-17 | PASS |
-| TD-07 | FT-06, FT-07, FT-08, FT-09, FT-10 | BLOCKED |
-| TD-08 | FT-14 | BLOCKED |
-| TD-09 | FT-11, FT-12, FT-13, FT-15 | BLOCKED |
-| TD-10 | FT-20, FT-22 | PASS |
+| TD-06 | FT-16, FT-17 | FAIL |
+| TD-07 | FT-06, FT-07, FT-08, FT-09, FT-10 | PASS |
+| TD-08 | FT-14 | PASS |
+| TD-09 | FT-11, FT-12, FT-13, FT-15 | PASS |
+| TD-10 | FT-20, FT-22 | FAIL |
 | TD-11 | FT-20 | PASS |
 | TD-12 | FT-19 | PASS |
 | TD-13 | FT-25 | PASS |
-| TD-14 | FT-26 | FAIL |
-| TD-15 | FT-26 | FAIL |
-| TD-16 | FT-16, FT-17 | PASS |
+| TD-14 | FT-26 | PASS |
+| TD-15 | FT-26 | PASS |
+| TD-16 | FT-16, FT-17 | FAIL |
 | TD-17 | FT-01 | PASS |
-| TD-18 | FT-18 | PASS |
+| TD-18 | FT-18 | FAIL |
 
 ## Ошибки и блокировки
 
-- **BLOCKED AT-06-audio** (FT-06, прогон `20261123_210643`, B1) 24 tracks in a row: audible order, no overlap, no gaps (loopback) — no sound captured - is the Windows output muted or at 0 %? The AutoTest needs audible output to measure (01_ft06_24_tracks.wav)
-- **BLOCKED AT-06-id3-flac** (FT-06, прогон `20261123_210643`, B1) Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible — no sound captured - is the Windows output muted or at 0 %? The AutoTest needs audible output to measure (02_ft06_id3_flac.wav)
-- **BLOCKED AT-07-pause-silence** (FT-07, прогон `20261123_210643`, B1) Silence while paused (loopback) — recorder did not start: ERROR Initialize render hr=0x887c001a
-
-- **BLOCKED AT-10-volume** (FT-10, прогон `20261123_210643`, B1) Volume and mute change the real output level (loopback) — recorder did not start: ERROR Initialize render hr=0x887c001a
-
-- **BLOCKED AT-11-crossfade-6** (FT-11, прогон `20261123_210643`, B1) Crossfade 6 s (WAV -> FLAC): smooth overlap, no dip, no clipping — recorder did not start: ERROR Initialize render hr=0x887c001a
-; planned crossfade 6.0 s ("Crossfade"); engine moved on: false
-- **BLOCKED AT-12-crossfade-0** (FT-12, прогон `20261123_210643`, B1) Crossfade 0 s: no overlap, no gap — recorder did not start: ERROR Initialize render hr=0x887c001a
-; planned gapless 0.0 s ("Crossfade off: no overlap"); engine moved on: true
-- **BLOCKED AT-12-crossfade-12** (FT-12, прогон `20261123_210643`, B1) Crossfade 12 s: long smooth overlap — recorder did not start: ERROR Initialize render hr=0x887c001a
-; planned crossfade 12.0 s ("Crossfade"); engine moved on: false
-- **BLOCKED AT-13-album-gapless** (FT-13, прогон `20261123_210643`, B1) Same album with Crossfade on: gapless, no overlap (FLAC) — recorder did not start: ERROR Initialize render hr=0x887c001a
-; planned gapless 0.0 s ("Same album: gapless"); engine moved on: true
-- **BLOCKED AT-14-smart-mix** (FT-14, прогон `20261123_210643`, B1) Smart Mix shortens the overlap for short tracks and says why — recorder did not start: ERROR Initialize render hr=0x887c001a
-; planned crossfade 3.0 s ("Smart Mix: shorter for a short track"); engine moved on: false
-- **BLOCKED AT-15-mp3-flac** (FT-15, прогон `20261123_210643`, B1) Crossfade 6 s MP3 -> FLAC — recorder did not start: ERROR Initialize render hr=0x887c001a
-; planned crossfade 6.0 s ("Crossfade"); engine moved on: false
-- **BLOCKED AT-15-flac-wav** (FT-15, прогон `20261123_210643`, B1) Crossfade 6 s FLAC -> WAV — recorder did not start: ERROR Initialize render hr=0x887c001a
-; planned crossfade 6.0 s ("Crossfade"); engine moved on: false
-- **FAIL AT-26-no-mix** (FT-26, прогон `20261123_210643`, B1) Catalog tracks are never crossfaded; not written to the history — plan crossfade "Crossfade"; history 0->0
-- **BLOCKED AT-playback-output** (-, прогон `20261123_210045`, B1) Group "playback" not run — silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))
-- **BLOCKED AT-mix-output** (-, прогон `20261123_210045`, B1) Group "mix" not run — silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))
-- **BLOCKED AT-dna-output** (-, прогон `20261123_210045`, B1) Group "dna" not run — silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))
-- **BLOCKED AT-online-output** (-, прогон `20261123_210045`, B1) Group "online" not run — silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal))
+- **FAIL AT-22-discovery** (FT-22, прогон `20261124_212847`, B1) Familiar picks played songs first; Discovery picks unplayed songs first — familiar: 3 of top 4 known; discovery: 0 of top 4 new (4 known songs by different artists)
+- **FAIL EX-16-session** (FT-16, прогон `20261124_212847`, B1) Windows media overlay shows NEXA with song, artist and Playing — 'Seq 01' / 'AutoTest Band' Paused (not the current session)
+- **BLOCKED EX-16-keys** (FT-16, прогон `20261124_212847`, B1) Media keys control NEXA in the background — playback did not start
+- **FAIL EX-18-keyboard** (FT-18, прогон `20261124_212847`, B1) Space toggles playback, Ctrl+Right plays the next song (Release exe) — space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 01'
 
 ## Ручные проверки — все подтверждены владельцем
 
@@ -138,71 +116,72 @@
 
 | ID | FT | Проверка | Уровень | Статус | Прогон | Сборка | Подробности |
 |---|---|---|---|---|---|---|---|
-| SYS-library | - | Test library present and unchanged (SHA-256) | Windows system | PASS | `20261123_210643` | B1 | 36 tracks |
-| SYS-loopback | - | WASAPI loopback recorder built | Windows system | PASS | `20261123_210643` | B1 | exit 0 |
-| SYS-audio | - | Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available | Windows system | PASS | `20261123_210643` | B1 | device 'Digital Output (High Definition Audio Device)', mute off, volume 100 %, process loopback ok, system loopback ok |
-| SYS-eventlog | FT-28 | Windows Event Log: no crash of nexa_music.exe during the whole run | Windows system | PASS | `20261123_210643` | B1 | 0 crash records |
-| UNIT-analyze | - | flutter analyze | static analysis | PASS | `20261123_210643` | B1 | exit 0 |
-| UNIT-tests | - | Existing unit / widget tests (FakeEngine, in-memory database) | unit / widget tests | PASS | `20261123_210643` | B1 | exit 0; +261: All tests passed! |
-| AT-02-count | FT-02 | Import: every test file is in the library once | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | library 36 / expected 36; problems: [] |
-| AT-02-tags | FT-02 | Import: titles, artists, albums incl. Cyrillic MP3 / FLAC | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | all tags as written |
-| AT-02-wav-cyrillic | FT-02 | Import: Cyrillic RIFF INFO tags in WAV (known issue TD-04) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | read correctly |
-| AT-02-durations | FT-02 | Import: durations within 0.3 s of the generated length | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | largest deviation 0.071 s |
-| AT-02-cover | FT-02 | Import: folder cover.jpg used as artwork | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | 4 of 4 tracks in meta/ have a cover |
-| AT-02-files-unchanged | FT-02 | Import never changes, moves or adds music files | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | 38 files compared by SHA-256 |
-| AT-02-rescan | FT-02 | Rescan adds no duplicates | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | 36 tracks after rescan |
-| AT-03-restart | FT-03 | After a restart: library, playlist, likes, Mix mode and volume restored | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | tracks 36, playlist 3 songs, favorites 2, mode gapless, volume 0.6 |
-| AT-04-missing | FT-04 | Renamed file: unavailable with a reason, available again after renaming back | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | while renamed: unavailable "File not found"; after: available; available tracks 36 (the renamed copy stays listed as missing by design) |
-| AT-05-search | FT-05 | Search: words, letter case and Cyrillic | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | "seq 0" 11 (11), "тестовая" 1 (>=1), "ТЕСТОВЫЙ" 2 (>=2), "live band" 3 (3) |
-| AT-06-order | FT-06 | 24 tracks in a row: each started once, in order (engine) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | 24 tracks started; engine errors: Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound.; Could not open/initialize audio device -> no sound. |
-| AT-06-audio | FT-06 | 24 tracks in a row: audible order, no overlap, no gaps (loopback) | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | no sound captured - is the Windows output muted or at 0 %? The AutoTest needs audible output to measure (01_ft06_24_tracks.wav) |
-| AT-06-id3-flac | FT-06 | Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | no sound captured - is the Windows output muted or at 0 %? The AutoTest needs audible output to measure (02_ft06_id3_flac.wav) |
-| AT-07-transport | FT-07 | Pause holds the position, resume, seek, previous (restart / previous track), next | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | pause 1039->1039 ms, resume -> 2299 ms, seek 20 s -> 20434 ms, restart true, next true, previous true |
-| AT-07-pause-silence | FT-07 | Silence while paused (loopback) | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a  |
-| AT-08-queue | FT-08 | Play next, Add to queue, Remove, Clear; the engine plays the inserted song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | play next/add true, remove true, engine played inserted true, clear true |
-| AT-09-shuffle | FT-09 | Shuffle plays each song once; switching it off restores the order | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | 10 different files played; order restored true |
-| AT-09-repeat | FT-09 | Repeat this song replays it; Repeat all wraps to the first song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | repeat one true, repeat all wrap true |
-| AT-10-volume | FT-10 | Volume and mute change the real output level (loopback) | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a  |
-| AT-10-devices | FT-10 | Output devices are listed; "System default" can be selected | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | 5 devices reported by the engine |
-| AT-11-crossfade-6 | FT-11 | Crossfade 6 s (WAV -> FLAC): smooth overlap, no dip, no clipping | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a ; planned crossfade 6.0 s ("Crossfade"); engine moved on: false |
-| AT-12-crossfade-0 | FT-12 | Crossfade 0 s: no overlap, no gap | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a ; planned gapless 0.0 s ("Crossfade off: no overlap"); engine moved on: true |
-| AT-12-crossfade-12 | FT-12 | Crossfade 12 s: long smooth overlap | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a ; planned crossfade 12.0 s ("Crossfade"); engine moved on: false |
-| AT-13-album-gapless | FT-13 | Same album with Crossfade on: gapless, no overlap (FLAC) | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a ; planned gapless 0.0 s ("Same album: gapless"); engine moved on: true |
-| AT-14-smart-mix | FT-14 | Smart Mix shortens the overlap for short tracks and says why | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a ; planned crossfade 3.0 s ("Smart Mix: shorter for a short track"); engine moved on: false |
-| AT-15-mp3-flac | FT-15 | Crossfade 6 s MP3 -> FLAC | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a ; planned crossfade 6.0 s ("Crossfade"); engine moved on: false |
-| AT-15-flac-wav | FT-15 | Crossfade 6 s FLAC -> WAV | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210643` | B1 | recorder did not start: ERROR Initialize render hr=0x887c001a ; planned crossfade 6.0 s ("Crossfade"); engine moved on: false |
-| AT-19-dna | FT-19 | NEXA DNA offers the library genres / artists and stores liked / excluded choices | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | genres Electronic, Rock, Поп, Ambient, Jazz; 2 choices stored |
-| AT-20-wave | FT-20 | Wave: liked artist among the first picks, reasons shown, excluded genre never, refills itself, skips recorded | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | queue 8 (liked first true, excluded genre 0, reasons 8), refilled true to 16, history 0->3 |
-| AT-21-dislike | FT-21 | Dislike skips the playing Wave song and excludes it | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | skipped true, suggested again false |
-| AT-22-discovery | FT-22 | Familiar picks played songs first; Discovery picks unplayed songs first | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | familiar: 3 of top 4 known; discovery: 4 of top 4 new (4 known songs by different artists) |
-| AT-23-privacy | FT-23 | Private session and Pause learning add nothing to the history; normal listening does | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | added: private 0, paused 0, normal 2 |
-| AT-24-reset | FT-24 | Delete history and Reset DNA; likes and playlists stay; private session ends with the app | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | private after restart false, events 0, choices 0, dislikes 0, favorites 2->2, playlists 1, discovery 0.3 |
-| AT-25-audius | FT-25 | Audius: search returns results with source and playability | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | "lofi": 10 results, 9 playable |
-| AT-25-jamendo | FT-25 | Jamendo: search returns results with source and playability | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | "piano": 10 results, 10 playable, licence CC BY-NC-ND 3.0 |
-| AT-26-audius | FT-26 | Audius: stream plays through the real engine | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | position > 3 s: true; loopback: recorder did not start: ERROR Initialize render hr=0x887c001a  |
-| AT-26-jamendo | FT-26 | Jamendo: stream plays through the real engine | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | position > 3 s: true; loopback: recorder did not start: ERROR Initialize render hr=0x887c001a  |
-| AT-26-no-mix | FT-26 | Catalog tracks are never crossfaded; not written to the history | integration (real media_kit, SQLite, files; debug build) | FAIL | `20261123_210643` | B1 | plan crossfade "Crossfade"; history 0->0 |
-| AT-27-unreachable | FT-27 | Unreachable catalog gives the "offline" message; the local library still plays | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | error kind offline; local playback true (simulated with an unreachable address, real network still on) |
-| AT-output | - | Test tones played on the silent output device (not on the speakers / headset) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B1 | device: Digital Output (High Definition Audio Device) |
-| AT-playback-output | - | Group "playback" not run | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210045` | B1 | silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal)) |
-| AT-mix-output | - | Group "mix" not run | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210045` | B1 | silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal)) |
-| AT-dna-output | - | Group "dna" not run | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210045` | B1 | silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal)) |
-| AT-online-output | - | Group "online" not run | integration (real media_kit, SQLite, files; debug build) | BLOCKED | `20261123_210045` | B1 | silent output device: the audio engine does not offer the silent output device (System default, Speakers (Logitech PRO X Gaming Headset), Digital Output (High Definition Audio Device), 24G4 (NVIDIA High Definition Audio), Default (openal)) |
-| SYS-portable-source | FT-01 | The tested Portable folder was built from the same app code as this run | Windows system | PASS | `20261026_181556` | B2 | folder NEXA_Music_1.0.0_Windows_x64_b47f334_2; built from commit b47f334357aa3167d2362e58456a048964e2d21a, app code 0d8ac55eb9d2; this run: app code 0d8ac55eb9d2 |
-| SYS-package | FT-01 | Portable folder with every required file (NEXA_Music_1.0.0_Windows_x64_b47f334_2) | Windows system | PASS | `20261026_181556` | B2 | 49.9 MB |
-| EX-01-start | FT-01 | Portable exe starts with an isolated test profile; its accessibility tree is visible | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | window 'NEXA Music', 114 named elements via MSAA; exe_app.log start: MSAA nodes 166, UI Automation elements 1 |
-| EX-01-version | FT-01 | Settings - About shows version 1.0.0 (pubspec.yaml) | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo. Version 1.0.0 |
-| EX-02-library | FT-02 | Release exe shows the imported test library from its database | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | 'Seq 01' visible in Library - Songs |
-| EX-16-session | FT-16 | Windows media overlay shows NEXA with song, artist and Playing | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | 'Seq 01' / 'AutoTest Band' Playing (current session) |
-| EX-16-keys | FT-16 | Media keys with NEXA minimised: Play/Pause, Next, Previous, Stop | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | play/pause -> Paused -> Playing; next -> 'Seq 04'; previous -> 'Seq 01'; stop -> Paused |
-| EX-18-keyboard | FT-18 | Space toggles playback, Ctrl+Right plays the next song (Release exe) | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 04' |
-| EX-28-a11y | FT-28 | With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True |
-| EX-29-resize | FT-29 | Resize / maximise with a UI Automation client: no crash, tree still updates | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True |
-| EX-30-minsize | FT-30 | Window cannot be made smaller than 1024 x 640 | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | smallest window 1024x640 (dpi 96) |
-| EX-05-search | FT-05 | Release exe: the search field finds the Cyrillic song (typed in Cyrillic) | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08' |
-| EX-03-restart | FT-03 | Release exe restarted: library (and playlist, if the profile has one) still there | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | restarted True, test song visible True, playlist before / after restart True / True |
-| EX-29-axtree-log | FT-29 | No "Failed to update ui::AXTree" messages after resizing (TD-02) | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | 0 messages in the app output |
-| EX-flutter-errors | FT-28 | No Flutter exceptions in the Release exe output | Windows Release exe (Portable build, UI Automation) | PASS | `20261026_181556` | B2 | 0 error blocks |
+| SYS-library | - | Test library present and unchanged (SHA-256) | Windows system | PASS | `20261124_212847` | B1 | 36 tracks |
+| SYS-loopback | - | WASAPI loopback recorder built | Windows system | PASS | `20261124_212847` | B1 | exit 0 |
+| SYS-audio | - | Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available | Windows system | PASS | `20261124_212847` | B1 | device 'Speakers (Logitech PRO X Gaming Headset)', mute off, volume 70 %, process loopback ok, system loopback ok |
+| SYS-portable-source | FT-01 | The tested Portable folder was built from the same app code as this run | Windows system | PASS | `20261124_212847` | B1 | folder NEXA_Music_1.1.0_Windows_x64_8f6a7fd; built from commit 8f6a7fd42d3f5e5db83b67360b08406ea804f4ad, app code f5e3ab386de1; this run: app code f5e3ab386de1 |
+| SYS-package | FT-01 | Portable folder with every required file (NEXA_Music_1.1.0_Windows_x64_8f6a7fd) | Windows system | PASS | `20261124_212847` | B1 | 50.3 MB |
+| SYS-eventlog | FT-28 | Windows Event Log: no crash of nexa_music.exe during the whole run | Windows system | PASS | `20261124_212847` | B1 | 0 crash records |
+| UNIT-analyze | - | flutter analyze | static analysis | PASS | `20261124_212847` | B1 | exit 0 |
+| UNIT-tests | - | Existing unit / widget tests (FakeEngine, in-memory database) | unit / widget tests | PASS | `20261124_212847` | B1 | exit 0; +293: All tests passed! |
+| AT-library-output | - | Group "library" run on the chosen output device | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | Windows default output device |
+| AT-02-count | FT-02 | Import: every test file is in the library once | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | library 36 / expected 36; problems: [] |
+| AT-02-tags | FT-02 | Import: titles, artists, albums incl. Cyrillic MP3 / FLAC | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | all tags as written |
+| AT-02-wav-cyrillic | FT-02 | Import: Cyrillic RIFF INFO tags in WAV (known issue TD-04) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | read correctly |
+| AT-02-durations | FT-02 | Import: durations within 0.3 s of the generated length | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | largest deviation 0.071 s |
+| AT-02-cover | FT-02 | Import: folder cover.jpg used as artwork | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 4 of 4 tracks in meta/ have a cover |
+| AT-02-files-unchanged | FT-02 | Import never changes, moves or adds music files | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 38 files compared by SHA-256 |
+| AT-02-rescan | FT-02 | Rescan adds no duplicates | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 36 tracks after rescan |
+| AT-03-restart | FT-03 | After a restart: library, playlist, likes, Mix mode and volume restored | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | tracks 36, playlist 3 songs, favorites 2, mode gapless, volume 0.6 |
+| AT-04-missing | FT-04 | Renamed file: unavailable with a reason, available again after renaming back | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | while renamed: unavailable "File not found"; after: available; available tracks 36 (the renamed copy stays listed as missing by design) |
+| AT-05-search | FT-05 | Search: words, letter case and Cyrillic | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | "seq 0" 11 (11), "тестовая" 1 (>=1), "ТЕСТОВЫЙ" 2 (>=2), "live band" 3 (3) |
+| AT-playback-output | - | Group "playback" run on the chosen output device | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | Windows default output device |
+| AT-06-order | FT-06 | 24 tracks in a row: each started once, in order (engine) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 24 tracks started; engine errors: none |
+| AT-06-audio | FT-06 | 24 tracks in a row: audible order, full length, never two at once, no gaps (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | heard 24 of 24 tones in the right order; largest overlap 0.000 s, largest gap 0.000 s, shortest song heard 5.96 s of 6.00 s |
+| AT-06-id3-flac | FT-06 | Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | heard 520 Hz -> 2800 Hz -> 740 Hz (expected 520 Hz -> 2800 Hz -> 740 Hz) |
+| AT-07-transport | FT-07 | Pause holds the position, resume, seek, previous (restart / previous track), next | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | pause 1040->1040 ms, resume -> 2300 ms, seek 20 s -> 20435 ms, restart true, next true, previous true |
+| AT-07-pause-silence | FT-07 | Silence while paused (loopback, tone of the paused song) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 440 Hz level while paused 0.00000 (playing at 100 %: about 0.12); other sound on the PC: peak 0.0000 |
+| AT-08-queue | FT-08 | Play next, Add to queue, Remove, Clear; the engine plays the inserted song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | play next/add true, remove true, engine played inserted true, clear true |
+| AT-09-shuffle | FT-09 | Shuffle plays each song once; switching it off restores the order | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 10 different files played; order restored true |
+| AT-09-repeat | FT-09 | Repeat this song replays it; Repeat all wraps to the first song | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | repeat one true, repeat all wrap true |
+| AT-10-volume | FT-10 | Volume and mute change the real output level (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 440 Hz level at 100 %: 0.1059, 50 %: 0.0132, mute: 0.00000; recorder mode=process rate=48000 channels=2 float=1 bits=32 device="Speakers (Logitech PRO X Gaming Headset)" endpoint_mute=0 endpoint_volume=0.700 session=1 session_mute=0 session_volume=1.000 |
+| AT-10-devices | FT-10 | Output devices are listed; "System default" can be selected | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | 5 devices reported by the engine |
+| AT-mix-output | - | Group "mix" run on the chosen output device | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | Windows default output device |
+| AT-11-crossfade-6 | FT-11 | Crossfade 6 s (WAV -> FLAC): smooth overlap, no dip, no clipping | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.72 s, gap 0.000 s, peak 0.143, level during overlap 0.96-1.03 x; player moved on: true |
+| AT-12-crossfade-0 | FT-12 | Crossfade 0 s: no overlap, no gap | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | planned gapless 0.0 s ("Crossfade off: no overlap"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true |
+| AT-12-crossfade-12 | FT-12 | Crossfade 12 s: long smooth overlap | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | planned crossfade 12.0 s ("Crossfade"); measured overlap 11.50 s, gap 0.000 s, peak 0.145, level during overlap 0.96-1.03 x; player moved on: true |
+| AT-13-album-gapless | FT-13 | Same album with Crossfade on: gapless, no overlap (FLAC) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | planned gapless 0.0 s ("Same album: gapless"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true |
+| AT-14-smart-mix | FT-14 | Smart Mix shortens the overlap for short tracks and says why | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | planned crossfade 3.0 s ("Smart Mix: shorter for a short track"); measured overlap 2.82 s, gap 0.000 s, peak 0.139, level during overlap 0.99-1.01 x; player moved on: true |
+| AT-15-mp3-flac | FT-15 | Crossfade 6 s MP3 -> FLAC | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.70 s, gap 0.000 s, peak 0.144, level during overlap 0.98-1.07 x; player moved on: true |
+| AT-15-flac-wav | FT-15 | Crossfade 6 s FLAC -> WAV | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | planned crossfade 6.0 s ("Crossfade"); measured overlap 5.68 s, gap 0.000 s, peak 0.142, level during overlap 0.99-1.01 x; player moved on: true |
+| AT-dna-output | - | Group "dna" run on the chosen output device | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | Windows default output device |
+| AT-19-dna | FT-19 | NEXA DNA offers the library genres / artists and stores liked / excluded choices | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | genres Electronic, Rock, Поп, Ambient, Jazz; 2 choices stored |
+| AT-20-wave | FT-20 | Wave: liked artist among the first picks, reasons shown, excluded genre never, refills itself, skips recorded | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | queue 8 (liked first true, excluded genre 0, reasons 8), refilled true to 16, history 0->3 |
+| AT-21-dislike | FT-21 | Dislike skips the playing Wave song and excludes it | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | skipped true, suggested again false |
+| AT-22-discovery | FT-22 | Familiar picks played songs first; Discovery picks unplayed songs first | integration (real media_kit, SQLite, files; debug build) | FAIL | `20261124_212847` | B1 | familiar: 3 of top 4 known; discovery: 0 of top 4 new (4 known songs by different artists) |
+| AT-23-privacy | FT-23 | Private session and Pause learning add nothing to the history; normal listening does | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | added: private 0, paused 0, normal 2 |
+| AT-24-reset | FT-24 | Delete history and Reset DNA; likes and playlists stay; private session ends with the app | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | private after restart false, events 0, choices 0, dislikes 0, favorites 2->2, playlists 1, discovery 0.3 |
+| AT-online-output | - | Group "online" run on the chosen output device | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | Windows default output device |
+| AT-25-audius | FT-25 | Audius: search returns results with source and playability | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | "lofi": 10 results, 9 playable |
+| AT-25-jamendo | FT-25 | Jamendo: search returns results with source and playability | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | "chill": 10 results, 10 playable, licence CC BY 3.0 |
+| AT-26-audius | FT-26 | Audius: stream plays through the real engine and is audible (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | position > 3 s: true; output RMS 0.0735 |
+| AT-26-jamendo | FT-26 | Jamendo: stream plays through the real engine and is audible (loopback) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | position > 3 s: true; output RMS 0.1166 |
+| AT-26-no-mix | FT-26 | Catalog streams may be crossfaded (D-025, no "no mix rights" cut); not written to the history | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | plan crossfade "Crossfade"; history 0->0 |
+| AT-27-unreachable | FT-27 | Unreachable catalog gives the "offline" message; the local library still plays | integration (real media_kit, SQLite, files; debug build) | PASS | `20261124_212847` | B1 | error kind offline; local playback true (simulated with an unreachable address, real network still on) |
+| EX-01-start | FT-01 | Portable exe starts with an isolated test profile; its accessibility tree is visible | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | window 'NEXA Music', 59 named elements via MSAA; exe_app.log start: MSAA nodes 102, UI Automation elements 1 |
+| EX-01-version | FT-01 | Settings - About shows version 1.1.0 (pubspec.yaml) | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo; YouTube and SoundCloud in their own official players. Version 1.1.0 |
+| EX-02-library | FT-02 | Release exe shows the imported test library from its database | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | 'Seq 01' visible in Library - Songs |
+| EX-16-session | FT-16 | Windows media overlay shows NEXA with song, artist and Playing | Windows Release exe (Portable build, UI Automation) | FAIL | `20261124_212847` | B1 | 'Seq 01' / 'AutoTest Band' Paused (not the current session) |
+| EX-16-keys | FT-16 | Media keys control NEXA in the background | Windows Release exe (Portable build, UI Automation) | BLOCKED | `20261124_212847` | B1 | playback did not start |
+| EX-18-keyboard | FT-18 | Space toggles playback, Ctrl+Right plays the next song (Release exe) | Windows Release exe (Portable build, UI Automation) | FAIL | `20261124_212847` | B1 | space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 01' |
+| EX-28-a11y | FT-28 | With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True |
+| EX-29-resize | FT-29 | Resize / maximise with a UI Automation client: no crash, tree still updates | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True |
+| EX-30-minsize | FT-30 | Window cannot be made smaller than 1024 x 640 | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | smallest window 1024x640 (dpi 96) |
+| EX-05-search | FT-05 | Release exe: the search field finds the Cyrillic song (typed in Cyrillic) | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08' |
+| EX-03-restart | FT-03 | Release exe restarted: library (and playlist, if the profile has one) still there | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | restarted True, test song visible True, playlist before / after restart True / True |
+| EX-29-axtree-log | FT-29 | No "Failed to update ui::AXTree" messages after resizing (TD-02) | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | 0 messages in the app output |
+| EX-flutter-errors | FT-28 | No Flutter exceptions in the Release exe output | Windows Release exe (Portable build, UI Automation) | PASS | `20261124_212847` | B1 | 0 error blocks |
+| AT-output | - | Test tones played on the silent output device (not on the speakers / headset) | integration (real media_kit, SQLite, files; debug build) | PASS | `20261123_210643` | B2 | device: Digital Output (High Definition Audio Device) |
 
 ## Артефакты прогонов (вне репозитория)
 

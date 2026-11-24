@@ -420,7 +420,10 @@ if (-not $started) {
     $null = Click-Text 'Songs'
 
     # ------------------------------------------- 2. playback + media keys
-    $seq = Find-El 'Seq 01' -Contains -TimeoutSec 6
+    # The library row itself (its label has "Play Seq 01"): since 1.1.0 the queue
+    # of the last run comes back, so "Seq 01" can also be the title in the player
+    # bar, which opens Now Playing instead of playing the list (D-028).
+    $seq = Find-El 'Play Seq 01' -Contains -TimeoutSec 6
     $null = Click-El $seq
     $m = Wait-Media { param($x) $x.found -and $x.status -eq 'Playing' } 8
     Check 'EX-16-session' 'FT-16' 'Windows media overlay shows NEXA with song, artist and Playing' `

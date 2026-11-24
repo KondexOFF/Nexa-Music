@@ -13,7 +13,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +26,7 @@ import 'package:nexa_music/core/database/app_database.dart';
 import 'package:nexa_music/core/models/track.dart';
 import 'package:nexa_music/core/settings/settings_repository.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
+import 'package:nexa_music/features/library/library_repository.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
 import 'package:nexa_music/features/soundcloud/soundcloud_player_controller.dart';
 import 'package:nexa_music/features/youtube/youtube_player_controller.dart';
@@ -57,24 +58,34 @@ void main() {
     final profile = Directory(p.join(temp.path, 'profile'))..createSync();
     final dbFile = File(p.join(profile.path, 'nexa_library.sqlite'));
     final result = <String, Object?>{};
-    Track tone(int id, String name) {
+    var db = AppDatabase(NativeDatabase(dbFile));
+
+    /// A short tone as a real library song (in the database, as after an
+    /// import), so the queue can restore it after a restart.
+    Future<Track> tone(String name) async {
       final path = p.join(temp.path, '$name.wav');
       writeWav(path, title: name, seconds: 4, frequency: 440, sampleRate: 22050);
-      return Track(
-        id: id,
-        source: TrackSource.local,
-        sourceTrackId: path,
-        path: path,
-        title: name,
-        artist: 'Test',
-        album: name,
-        duration: const Duration(seconds: 4),
-        addedAt: DateTime(2026),
-      );
+      final id = await db
+          .into(db.tracks)
+          .insert(
+            TracksCompanion.insert(
+              pathKey: p.normalize(path).toLowerCase(),
+              path: path,
+              title: name,
+              artist: 'Test',
+              album: name,
+              fileSize: File(path).lengthSync(),
+              fileModified: DateTime(2026),
+              searchText: name.toLowerCase(),
+              addedAt: DateTime(2026),
+              durationMs: const Value(4000),
+            ),
+          );
+      return (await LibraryRepository(db).getTrack(id))!;
     }
 
-    final first = tone(910001, 'First');
-    final last = tone(910002, 'Last');
+    final first = (await tester.runAsync(() => tone('First')))!;
+    final last = (await tester.runAsync(() => tone('Last')))!;
     final video = youtubeTrack(videoId: shortVideo, title: 'Me at the zoo');
     final sound = soundcloudTrack(url: scTrack, title: 'Flickermood');
 
@@ -96,7 +107,6 @@ void main() {
       ),
     ];
 
-    var db = AppDatabase(NativeDatabase(dbFile));
     await tester.runAsync(
       () => SettingsRepository(db).setBool(SettingKeys.youtubeEnabled, true),
     );

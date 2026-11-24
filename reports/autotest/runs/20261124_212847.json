@@ -1,0 +1,614 @@
+{
+ "run": {
+  "run": "20261124_212847",
+  "startedAt": "2026-11-24T21:28:47",
+  "commit": "8f6a7fd",
+  "uncommitted": false,
+  "appVersion": "1.1.0+9",
+  "appCode": "f5e3ab386de1",
+  "build": "B1",
+  "appCodeKnown": "измерен в начале прогона",
+  "groups": "",
+  "stages": {
+   "unit": true,
+   "integration": true,
+   "exe": true
+  }
+ },
+ "checks": [
+  {
+   "id": "SYS-library",
+   "ft": "-",
+   "title": "Test library present and unchanged (SHA-256)",
+   "status": "PASS",
+   "detail": "36 tracks",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-loopback",
+   "ft": "-",
+   "title": "WASAPI loopback recorder built",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-audio",
+   "ft": "-",
+   "title": "Sound can be measured: output device present, not muted, volume above 0 %, loopback capture available",
+   "status": "PASS",
+   "detail": "device 'Speakers (Logitech PRO X Gaming Headset)', mute off, volume 70 %, process loopback ok, system loopback ok",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-portable-source",
+   "ft": "FT-01",
+   "title": "The tested Portable folder was built from the same app code as this run",
+   "status": "PASS",
+   "detail": "folder NEXA_Music_1.1.0_Windows_x64_8f6a7fd; built from commit 8f6a7fd42d3f5e5db83b67360b08406ea804f4ad, app code f5e3ab386de1; this run: app code f5e3ab386de1",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-package",
+   "ft": "FT-01",
+   "title": "Portable folder with every required file (NEXA_Music_1.1.0_Windows_x64_8f6a7fd)",
+   "status": "PASS",
+   "detail": "50.3 MB",
+   "level": "Windows system"
+  },
+  {
+   "id": "SYS-eventlog",
+   "ft": "FT-28",
+   "title": "Windows Event Log: no crash of nexa_music.exe during the whole run",
+   "status": "PASS",
+   "detail": "0 crash records",
+   "level": "Windows system"
+  },
+  {
+   "id": "UNIT-analyze",
+   "ft": "-",
+   "title": "flutter analyze",
+   "status": "PASS",
+   "detail": "exit 0",
+   "level": "static analysis"
+  },
+  {
+   "id": "UNIT-tests",
+   "ft": "-",
+   "title": "Existing unit / widget tests (FakeEngine, in-memory database)",
+   "status": "PASS",
+   "detail": "exit 0; +293: All tests passed!",
+   "level": "unit / widget tests"
+  },
+  {
+   "id": "AT-library-output",
+   "ft": "-",
+   "title": "Group \"library\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-count",
+   "ft": "FT-02",
+   "title": "Import: every test file is in the library once",
+   "status": "PASS",
+   "detail": "library 36 / expected 36; problems: []",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-tags",
+   "ft": "FT-02",
+   "title": "Import: titles, artists, albums incl. Cyrillic MP3 / FLAC",
+   "status": "PASS",
+   "detail": "all tags as written",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-wav-cyrillic",
+   "ft": "FT-02",
+   "title": "Import: Cyrillic RIFF INFO tags in WAV (known issue TD-04)",
+   "status": "PASS",
+   "detail": "read correctly",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-durations",
+   "ft": "FT-02",
+   "title": "Import: durations within 0.3 s of the generated length",
+   "status": "PASS",
+   "detail": "largest deviation 0.071 s",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-cover",
+   "ft": "FT-02",
+   "title": "Import: folder cover.jpg used as artwork",
+   "status": "PASS",
+   "detail": "4 of 4 tracks in meta/ have a cover",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-files-unchanged",
+   "ft": "FT-02",
+   "title": "Import never changes, moves or adds music files",
+   "status": "PASS",
+   "detail": "38 files compared by SHA-256",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-02-rescan",
+   "ft": "FT-02",
+   "title": "Rescan adds no duplicates",
+   "status": "PASS",
+   "detail": "36 tracks after rescan",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-03-restart",
+   "ft": "FT-03",
+   "title": "After a restart: library, playlist, likes, Mix mode and volume restored",
+   "status": "PASS",
+   "detail": "tracks 36, playlist 3 songs, favorites 2, mode gapless, volume 0.6",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-04-missing",
+   "ft": "FT-04",
+   "title": "Renamed file: unavailable with a reason, available again after renaming back",
+   "status": "PASS",
+   "detail": "while renamed: unavailable \"File not found\"; after: available; available tracks 36 (the renamed copy stays listed as missing by design)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-05-search",
+   "ft": "FT-05",
+   "title": "Search: words, letter case and Cyrillic",
+   "status": "PASS",
+   "detail": "\"seq 0\" 11 (11), \"тестовая\" 1 (>=1), \"ТЕСТОВЫЙ\" 2 (>=2), \"live band\" 3 (3)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-playback-output",
+   "ft": "-",
+   "title": "Group \"playback\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-06-order",
+   "ft": "FT-06",
+   "title": "24 tracks in a row: each started once, in order (engine)",
+   "status": "PASS",
+   "detail": "24 tracks started; engine errors: none",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-06-audio",
+   "ft": "FT-06",
+   "title": "24 tracks in a row: audible order, full length, never two at once, no gaps (loopback)",
+   "status": "PASS",
+   "detail": "heard 24 of 24 tones in the right order; largest overlap 0.000 s, largest gap 0.000 s, shortest song heard 5.96 s of 6.00 s",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "recordingSeconds": 148.0,
+    "outputDevice": "mode=process rate=48000 channels=2 float=1 bits=32 device=\"Speakers (Logitech PRO X Gaming Headset)\" endpoint_mute=0 endpoint_volume=0.700 session=0 session_mute=0 session_volume=-1.000"
+   }
+  },
+  {
+   "id": "AT-06-id3-flac",
+   "ft": "FT-06",
+   "title": "Gapless: MP3 -> FLAC with ID3 tag in front -> WAV, all audible",
+   "status": "PASS",
+   "detail": "heard 520 Hz -> 2800 Hz -> 740 Hz (expected 520 Hz -> 2800 Hz -> 740 Hz)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-07-transport",
+   "ft": "FT-07",
+   "title": "Pause holds the position, resume, seek, previous (restart / previous track), next",
+   "status": "PASS",
+   "detail": "pause 1040->1040 ms, resume -> 2300 ms, seek 20 s -> 20435 ms, restart true, next true, previous true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-07-pause-silence",
+   "ft": "FT-07",
+   "title": "Silence while paused (loopback, tone of the paused song)",
+   "status": "PASS",
+   "detail": "440 Hz level while paused 0.00000 (playing at 100 %: about 0.12); other sound on the PC: peak 0.0000",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-08-queue",
+   "ft": "FT-08",
+   "title": "Play next, Add to queue, Remove, Clear; the engine plays the inserted song",
+   "status": "PASS",
+   "detail": "play next/add true, remove true, engine played inserted true, clear true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-09-shuffle",
+   "ft": "FT-09",
+   "title": "Shuffle plays each song once; switching it off restores the order",
+   "status": "PASS",
+   "detail": "10 different files played; order restored true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-09-repeat",
+   "ft": "FT-09",
+   "title": "Repeat this song replays it; Repeat all wraps to the first song",
+   "status": "PASS",
+   "detail": "repeat one true, repeat all wrap true",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-10-volume",
+   "ft": "FT-10",
+   "title": "Volume and mute change the real output level (loopback)",
+   "status": "PASS",
+   "detail": "440 Hz level at 100 %: 0.1059, 50 %: 0.0132, mute: 0.00000; recorder mode=process rate=48000 channels=2 float=1 bits=32 device=\"Speakers (Logitech PRO X Gaming Headset)\" endpoint_mute=0 endpoint_volume=0.700 session=1 session_mute=0 session_volume=1.000",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-10-devices",
+   "ft": "FT-10",
+   "title": "Output devices are listed; \"System default\" can be selected",
+   "status": "PASS",
+   "detail": "5 devices reported by the engine",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-mix-output",
+   "ft": "-",
+   "title": "Group \"mix\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-11-crossfade-6",
+   "ft": "FT-11",
+   "title": "Crossfade 6 s (WAV -> FLAC): smooth overlap, no dip, no clipping",
+   "status": "PASS",
+   "detail": "planned crossfade 6.0 s (\"Crossfade\"); measured overlap 5.72 s, gap 0.000 s, peak 0.143, level during overlap 0.96-1.03 x; player moved on: true",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "found": true,
+    "overlapSeconds": 5.72,
+    "gapSeconds": 0.0,
+    "peak": 0.143,
+    "minLevelRatio": 0.964,
+    "maxLevelRatio": 1.026,
+    "lastA": 9.96,
+    "firstB": 4.26
+   }
+  },
+  {
+   "id": "AT-12-crossfade-0",
+   "ft": "FT-12",
+   "title": "Crossfade 0 s: no overlap, no gap",
+   "status": "PASS",
+   "detail": "planned gapless 0.0 s (\"Crossfade off: no overlap\"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "found": true,
+    "overlapSeconds": 0.0,
+    "gapSeconds": 0.0,
+    "peak": 0.106,
+    "minLevelRatio": 0.0,
+    "maxLevelRatio": 0.0,
+    "lastA": 4.0,
+    "firstB": 4.02
+   }
+  },
+  {
+   "id": "AT-12-crossfade-12",
+   "ft": "FT-12",
+   "title": "Crossfade 12 s: long smooth overlap",
+   "status": "PASS",
+   "detail": "planned crossfade 12.0 s (\"Crossfade\"); measured overlap 11.50 s, gap 0.000 s, peak 0.145, level during overlap 0.96-1.03 x; player moved on: true",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "found": true,
+    "overlapSeconds": 11.5,
+    "gapSeconds": 0.0,
+    "peak": 0.145,
+    "minLevelRatio": 0.963,
+    "maxLevelRatio": 1.026,
+    "lastA": 15.86,
+    "firstB": 4.36
+   }
+  },
+  {
+   "id": "AT-13-album-gapless",
+   "ft": "FT-13",
+   "title": "Same album with Crossfade on: gapless, no overlap (FLAC)",
+   "status": "PASS",
+   "detail": "planned gapless 0.0 s (\"Same album: gapless\"); measured overlap 0.00 s, gap 0.000 s, peak 0.106, level during overlap 0.00-0.00 x; player moved on: true",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "found": true,
+    "overlapSeconds": 0.0,
+    "gapSeconds": 0.0,
+    "peak": 0.106,
+    "minLevelRatio": 0.0,
+    "maxLevelRatio": 0.0,
+    "lastA": 4.0,
+    "firstB": 4.02
+   }
+  },
+  {
+   "id": "AT-14-smart-mix",
+   "ft": "FT-14",
+   "title": "Smart Mix shortens the overlap for short tracks and says why",
+   "status": "PASS",
+   "detail": "planned crossfade 3.0 s (\"Smart Mix: shorter for a short track\"); measured overlap 2.82 s, gap 0.000 s, peak 0.139, level during overlap 0.99-1.01 x; player moved on: true",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "found": true,
+    "overlapSeconds": 2.82,
+    "gapSeconds": 0.0,
+    "peak": 0.139,
+    "minLevelRatio": 0.988,
+    "maxLevelRatio": 1.011,
+    "lastA": 7.98,
+    "firstB": 5.18
+   }
+  },
+  {
+   "id": "AT-15-mp3-flac",
+   "ft": "FT-15",
+   "title": "Crossfade 6 s MP3 -> FLAC",
+   "status": "PASS",
+   "detail": "planned crossfade 6.0 s (\"Crossfade\"); measured overlap 5.70 s, gap 0.000 s, peak 0.144, level during overlap 0.98-1.07 x; player moved on: true",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "found": true,
+    "overlapSeconds": 5.7,
+    "gapSeconds": 0.0,
+    "peak": 0.144,
+    "minLevelRatio": 0.983,
+    "maxLevelRatio": 1.072,
+    "lastA": 9.92,
+    "firstB": 4.22
+   }
+  },
+  {
+   "id": "AT-15-flac-wav",
+   "ft": "FT-15",
+   "title": "Crossfade 6 s FLAC -> WAV",
+   "status": "PASS",
+   "detail": "planned crossfade 6.0 s (\"Crossfade\"); measured overlap 5.68 s, gap 0.000 s, peak 0.142, level during overlap 0.99-1.01 x; player moved on: true",
+   "level": "integration (real media_kit, SQLite, files; debug build)",
+   "data": {
+    "found": true,
+    "overlapSeconds": 5.68,
+    "gapSeconds": 0.0,
+    "peak": 0.142,
+    "minLevelRatio": 0.987,
+    "maxLevelRatio": 1.011,
+    "lastA": 9.96,
+    "firstB": 4.3
+   }
+  },
+  {
+   "id": "AT-dna-output",
+   "ft": "-",
+   "title": "Group \"dna\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-19-dna",
+   "ft": "FT-19",
+   "title": "NEXA DNA offers the library genres / artists and stores liked / excluded choices",
+   "status": "PASS",
+   "detail": "genres Electronic, Rock, Поп, Ambient, Jazz; 2 choices stored",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-20-wave",
+   "ft": "FT-20",
+   "title": "Wave: liked artist among the first picks, reasons shown, excluded genre never, refills itself, skips recorded",
+   "status": "PASS",
+   "detail": "queue 8 (liked first true, excluded genre 0, reasons 8), refilled true to 16, history 0->3",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-21-dislike",
+   "ft": "FT-21",
+   "title": "Dislike skips the playing Wave song and excludes it",
+   "status": "PASS",
+   "detail": "skipped true, suggested again false",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-22-discovery",
+   "ft": "FT-22",
+   "title": "Familiar picks played songs first; Discovery picks unplayed songs first",
+   "status": "FAIL",
+   "detail": "familiar: 3 of top 4 known; discovery: 0 of top 4 new (4 known songs by different artists)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-23-privacy",
+   "ft": "FT-23",
+   "title": "Private session and Pause learning add nothing to the history; normal listening does",
+   "status": "PASS",
+   "detail": "added: private 0, paused 0, normal 2",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-24-reset",
+   "ft": "FT-24",
+   "title": "Delete history and Reset DNA; likes and playlists stay; private session ends with the app",
+   "status": "PASS",
+   "detail": "private after restart false, events 0, choices 0, dislikes 0, favorites 2->2, playlists 1, discovery 0.3",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-online-output",
+   "ft": "-",
+   "title": "Group \"online\" run on the chosen output device",
+   "status": "PASS",
+   "detail": "Windows default output device",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-25-audius",
+   "ft": "FT-25",
+   "title": "Audius: search returns results with source and playability",
+   "status": "PASS",
+   "detail": "\"lofi\": 10 results, 9 playable",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-25-jamendo",
+   "ft": "FT-25",
+   "title": "Jamendo: search returns results with source and playability",
+   "status": "PASS",
+   "detail": "\"chill\": 10 results, 10 playable, licence CC BY 3.0",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-26-audius",
+   "ft": "FT-26",
+   "title": "Audius: stream plays through the real engine and is audible (loopback)",
+   "status": "PASS",
+   "detail": "position > 3 s: true; output RMS 0.0735",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-26-jamendo",
+   "ft": "FT-26",
+   "title": "Jamendo: stream plays through the real engine and is audible (loopback)",
+   "status": "PASS",
+   "detail": "position > 3 s: true; output RMS 0.1166",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-26-no-mix",
+   "ft": "FT-26",
+   "title": "Catalog streams may be crossfaded (D-025, no \"no mix rights\" cut); not written to the history",
+   "status": "PASS",
+   "detail": "plan crossfade \"Crossfade\"; history 0->0",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "AT-27-unreachable",
+   "ft": "FT-27",
+   "title": "Unreachable catalog gives the \"offline\" message; the local library still plays",
+   "status": "PASS",
+   "detail": "error kind offline; local playback true (simulated with an unreachable address, real network still on)",
+   "level": "integration (real media_kit, SQLite, files; debug build)"
+  },
+  {
+   "id": "EX-01-start",
+   "ft": "FT-01",
+   "title": "Portable exe starts with an isolated test profile; its accessibility tree is visible",
+   "status": "PASS",
+   "detail": "window 'NEXA Music', 59 named elements via MSAA; exe_app.log start: MSAA nodes 102, UI Automation elements 1",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-01-version",
+   "ft": "FT-01",
+   "title": "Settings - About shows version 1.1.0 (pubspec.yaml)",
+   "status": "PASS",
+   "detail": "NEXA Music - personal Windows music player. Local library, playback, NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo; YouTube and SoundCloud in their own official players.\nVersion 1.1.0",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-02-library",
+   "ft": "FT-02",
+   "title": "Release exe shows the imported test library from its database",
+   "status": "PASS",
+   "detail": "'Seq 01' visible in Library - Songs",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-16-session",
+   "ft": "FT-16",
+   "title": "Windows media overlay shows NEXA with song, artist and Playing",
+   "status": "FAIL",
+   "detail": "'Seq 01' / 'AutoTest Band' Paused (not the current session)",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-16-keys",
+   "ft": "FT-16",
+   "title": "Media keys control NEXA in the background",
+   "status": "BLOCKED",
+   "detail": "playback did not start",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-18-keyboard",
+   "ft": "FT-18",
+   "title": "Space toggles playback, Ctrl+Right plays the next song (Release exe)",
+   "status": "FAIL",
+   "detail": "space: Paused -> Playing -> Paused; ctrl+right: 'Seq 01' -> 'Seq 01'",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-28-a11y",
+   "ft": "FT-28",
+   "title": "With a UI Automation client attached: all pages, Now Playing, Play/Pause hover, queue button, audio test and back - no crash",
+   "status": "PASS",
+   "detail": "pages Home:ok, Wave:ok, Discover:ok, Library:ok, Settings:ok; now playing True; hover tooltip True; queue True/True; audio test True, back True, returned True; alive True",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-29-resize",
+   "ft": "FT-29",
+   "title": "Resize / maximise with a UI Automation client: no crash, tree still updates",
+   "status": "PASS",
+   "detail": "sizes min 1024x640, max 1936x1048; tree follows navigation after resizing True; alive True",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-30-minsize",
+   "ft": "FT-30",
+   "title": "Window cannot be made smaller than 1024 x 640",
+   "status": "PASS",
+   "detail": "smallest window 1024x640 (dpi 96)",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-05-search",
+   "ft": "FT-05",
+   "title": "Release exe: the search field finds the Cyrillic song (typed in Cyrillic)",
+   "status": "PASS",
+   "detail": "search 'тестовая': found '1 / Play Тестовая песня / Тестовая песня / Тестовый исполнитель / Тестовый альбом / 0:08'",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-03-restart",
+   "ft": "FT-03",
+   "title": "Release exe restarted: library (and playlist, if the profile has one) still there",
+   "status": "PASS",
+   "detail": "restarted True, test song visible True, playlist before / after restart True / True",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-29-axtree-log",
+   "ft": "FT-29",
+   "title": "No \"Failed to update ui::AXTree\" messages after resizing (TD-02)",
+   "status": "PASS",
+   "detail": "0 messages in the app output",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  },
+  {
+   "id": "EX-flutter-errors",
+   "ft": "FT-28",
+   "title": "No Flutter exceptions in the Release exe output",
+   "status": "PASS",
+   "detail": "0 error blocks",
+   "level": "Windows Release exe (Portable build, UI Automation)"
+  }
+ ]
+}

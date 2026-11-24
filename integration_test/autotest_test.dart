@@ -836,7 +836,10 @@ Future<void> _dna(AutoTestResults r, LibraryManifest m) async {
     await dna.setDiscovery(0);
     await wave.refresh();
     final familiarTop = c.read(waveProvider).items.take(4).where((i) => !i.fresh).length;
-    await dna.setDiscovery(1);
+    // Discovery from the library: just below the right end, which plays
+    // online picks only since D-026 Final ("Online only"; online picks are
+    // off in this profile).
+    await dna.setDiscovery(0.99);
     await wave.refresh();
     final discoveryTop = c.read(waveProvider).items.take(4).where((i) => i.fresh).length;
     r.check(
