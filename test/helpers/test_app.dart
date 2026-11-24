@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/app.dart';
+import 'package:nexa_music/core/audio/audio_analyzer.dart';
 import 'package:nexa_music/core/database/app_database.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
@@ -29,6 +30,12 @@ List<Override> testOverrides({AppDatabase? database, FakeEngine? engine}) {
     }),
     artworkDirProvider.overrideWith((ref) async => ''),
     autoRescanProvider.overrideWithValue(false),
+    // Smart Mix analysis: no decoder (no media_kit player in widget tests).
+    audioAnalyzerProvider.overrideWith((ref) {
+      final a = AudioAnalyzer(decoder: null);
+      ref.onDispose(a.dispose);
+      return a;
+    }),
     playbackEngineProvider.overrideWith((ref) {
       final e = engine ?? FakeEngine();
       ref.onDispose(e.dispose);

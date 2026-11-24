@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/strings.dart';
+import '../../core/app_paths.dart';
+import '../../core/audio/audio_analyzer.dart';
 import '../../core/audio/media_kit_engine.dart';
 import '../../core/audio/mixing_engine.dart';
 import '../../core/audio/playback_engine.dart';
@@ -143,6 +145,50 @@ final playbackEngineProvider = Provider<PlaybackEngine>((ref) {
   return engine;
 });
 
+/// Smart Mix file analysis (D-026): its own silent decoder, never the
+/// playback decks. Tests override it with one that measures nothing.
+final audioAnalyzerProvider = Provider<AudioAnalyzer>((ref) {
+  final analyzer = AudioAnalyzer(
+    decoder: const MpvPcmDecoder(),
+    cacheDir: appDataDirectory,
+  );
+  ref.onDispose(analyzer.dispose);
+  return analyzer;
+});
+
+/// Changes whenever a Smart Mix analysis finishes (for the Mix panel).
+final audioAnalysisUpdatesProvider = StreamProvider<String>(
+  (ref) => ref.watch(audioAnalyzerProvider).updates,
+);
+
+/// The transition plan for [current] -> [next], with the Smart Mix file
+/// measurements when they are known. [request] asks for missing ones.
+TransitionPlan planWithAnalysis(
+  AudioAnalyzer analyzer,
+  MixSettings settings,
+  Track current,
+  Track next, {
+  bool request = false,
+}) {
+  if (settings.mode != TransitionMode.smartMix ||
+      !settings.allowSmartAdjust ||
+      current.source != TrackSource.local ||
+      next.source != TrackSource.local) {
+    return planTransition(settings, current, next);
+  }
+  final from = analyzer.cached(current.path);
+  final to = analyzer.cached(next.path);
+  if (request) {
+    if (from == null) {
+      analyzer.request(current.path, duration: current.duration);
+    }
+    if (to == null) {
+      analyzer.request(next.path, duration: next.duration);
+    }
+  }
+  return planTransition(settings, current, next, from: from, to: to);
+}
+
 /// Engine position / duration (separate so that only progress widgets
 /// rebuild several times per second).
 final engineStateProvider = StreamProvider<EngineState>((ref) {
@@ -200,6 +246,15 @@ class PlayerController extends Notifier<PlayerState> {
       ..add(_engine.completed.listen((_) => _onCompleted()))
       ..add(_engine.errors.listen(_onError))
       ..add(_engine.advanced.listen(_onAdvanced))
+      ..add(
+        ref.read(audioAnalyzerProvider).updates.listen((path) {
+          // A Smart Mix measurement arrived: plan the transition again.
+          if (path == state.current?.path ||
+              path == state.nextEntry?.track.path) {
+            unawaited(_prepareNext());
+          }
+        }),
+      )
       ..add(
         _engine.states.listen((s) {
           final listening = _listenTrack;
@@ -322,7 +377,13 @@ class PlayerController extends Notifier<PlayerState> {
     }
     await _engine.prepareNext(
       next.path,
-      planTransition(ref.read(mixSettingsProvider), current, next),
+      planWithAnalysis(
+        ref.read(audioAnalyzerProvider),
+        ref.read(mixSettingsProvider),
+        current,
+        next,
+        request: true,
+      ),
     );
   }
 

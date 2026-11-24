@@ -156,9 +156,15 @@ class MixingEngine implements PlaybackEngine {
     if (!s.playing || s.duration <= Duration.zero) {
       return;
     }
-    final fade = _nextPlan.fade < s.duration ? _nextPlan.fade : s.duration;
-    if (s.duration - s.position <= fade) {
-      unawaited(_startFade(s.duration - s.position));
+    // Smart Mix may end the current file early (silent tail, faded outro).
+    final planEnd = _nextPlan.endAt;
+    final end = planEnd != null && planEnd > Duration.zero && planEnd < s.duration
+        ? planEnd
+        : s.duration;
+    final fade = _nextPlan.fade < end ? _nextPlan.fade : end;
+    if (end - s.position <= fade) {
+      final left = end - s.position;
+      unawaited(_startFade(left > Duration.zero ? left : Duration.zero));
     }
   }
 
@@ -166,6 +172,12 @@ class MixingEngine implements PlaybackEngine {
     _fadeStart = _clock();
     _fadeLength = remaining > Duration.zero ? remaining : Duration.zero;
     await _applyFadeGains(0);
+    // Smart Mix: the next file starts after its silent intro (sought here:
+    // by now the preloaded file is open).
+    final start = _nextPlan.startAt;
+    if (start != null && start > Duration.zero) {
+      await idleDeck.seek(start);
+    }
     await idleDeck.play();
   }
 

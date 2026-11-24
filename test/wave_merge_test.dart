@@ -77,31 +77,43 @@ void main() {
     int unplayedIn(List<WaveItem> m) =>
         m.where((i) => !i.track.isOnline && i.fresh).length;
 
-    test('New to you 100 %: no song you already know (Full Discover)', () {
+    test('right end = online only: no library song at all (Full Discover)',
+        () {
       final m = WaveRanker.compose(
         [...known, ...unplayed],
         catalog,
         discovery: 1,
+        onlineShare: 0,
         limit: 8,
       );
       expect(m, hasLength(8));
-      expect(knownIn(m), 0);
-      expect(onlineIn(m), 4); // default share 50 %
-      expect(unplayedIn(m), 4);
+      expect(onlineIn(m), 8);
+      expect(
+        WaveRanker.compose(
+          [...known, ...unplayed],
+          const [],
+          discovery: 1,
+          limit: 8,
+        ),
+        isEmpty,
+        reason: 'no catalog songs: empty (the controller explains), not '
+            'library songs',
+      );
     });
 
     test('the share decides library vs online among new songs', () {
       List<WaveItem> at(double share) => WaveRanker.compose(
         [...known, ...unplayed],
         catalog,
-        discovery: 1,
+        discovery: 0.75,
         onlineShare: share,
         limit: 8,
       );
       expect(onlineIn(at(0)), 0);
-      expect(onlineIn(at(0.25)), 2);
-      expect(onlineIn(at(1)), 8);
-      expect(knownIn(at(1)), 0);
+      expect(unplayedIn(at(0)), 6);
+      expect(onlineIn(at(0.5)), 3);
+      expect(onlineIn(at(1)), 6);
+      expect(knownIn(at(1)), 2);
     });
 
     test('Familiar 0 %: only known songs, catalogs never fill in', () {
@@ -129,17 +141,18 @@ void main() {
       expect(onlineIn(m), 2);
     });
 
-    test('without online songs the library fills in (offline, no catalog)',
+    test('below the right end without online songs the library fills in',
         () {
       final m = WaveRanker.compose(
         [...known, ...unplayed],
         const [],
-        discovery: 1,
+        discovery: 0.75,
         onlineShare: 1,
         limit: 8,
       );
       expect(m, hasLength(8));
-      expect(unplayedIn(m), 8);
+      expect(unplayedIn(m), 6);
+      expect(knownIn(m), 2);
       expect(onlineIn(m), 0);
     });
 
@@ -148,17 +161,17 @@ void main() {
       final fewUnplayed = WaveRanker.compose(
         [...known, ...unplayed.take(1)],
         catalog,
-        discovery: 1,
+        discovery: 0.75,
         limit: 8,
       );
       expect(unplayedIn(fewUnplayed), 1);
-      expect(onlineIn(fewUnplayed), 7);
-      expect(knownIn(fewUnplayed), 0);
+      expect(onlineIn(fewUnplayed), 5);
+      expect(knownIn(fewUnplayed), 2);
 
       final nothingNew = WaveRanker.compose(
         [...known, ...unplayed.take(1)],
         catalog.take(1).toList(),
-        discovery: 1,
+        discovery: 0.75,
         limit: 8,
       );
       expect(nothingNew, hasLength(8));
@@ -170,7 +183,8 @@ void main() {
       final m = WaveRanker.compose(
         [...known, ...unplayed],
         catalog,
-        discovery: 1,
+        discovery: 0.5,
+        onlineShare: 1,
         limit: 8,
       );
       expect([for (final i in m) i.track.isOnline], [

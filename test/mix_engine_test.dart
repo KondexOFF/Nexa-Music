@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/strings.dart';
+import 'package:nexa_music/core/audio/audio_analysis.dart';
 import 'package:nexa_music/core/audio/mixing_engine.dart';
 import 'package:nexa_music/core/audio/playback_engine.dart';
 import 'package:nexa_music/core/models/track.dart';
@@ -118,6 +119,150 @@ void main() {
     });
   });
 
+  group('Smart Mix with file measurements (D-026)', () {
+    const smart = MixSettings(
+      mode: TransitionMode.smartMix,
+      crossfadeSeconds: 6,
+    );
+    AudioAnalysis analysis({
+      Duration duration = const Duration(minutes: 3),
+      Duration soundStart = Duration.zero,
+      Duration? soundEnd,
+      Duration? quietEnd,
+    }) => AudioAnalysis(
+      duration: duration,
+      soundStart: soundStart,
+      soundEnd: soundEnd ?? duration,
+      quietEnd: quietEnd ?? soundEnd ?? duration,
+      loudnessDb: -14,
+      peakDb: -3,
+    );
+    final a = track(1, album: 'One');
+    final b = track(2, album: 'Two');
+
+    test('a silent tail is skipped', () {
+      final plan = planTransition(
+        smart,
+        a,
+        b,
+        from: analysis(soundEnd: const Duration(minutes: 2, seconds: 52)),
+      );
+      expect(plan.kind, TransitionKind.crossfade);
+      expect(plan.endAt, const Duration(minutes: 2, seconds: 52));
+      expect(plan.reason, S.planSmartSilentTail);
+    });
+
+    test('a faded outro: the fade starts where it has become quiet', () {
+      final plan = planTransition(
+        smart,
+        a,
+        b,
+        from: analysis(
+          soundEnd: const Duration(minutes: 2, seconds: 58),
+          quietEnd: const Duration(minutes: 2, seconds: 40),
+        ),
+      );
+      expect(plan.endAt, const Duration(minutes: 2, seconds: 46));
+      expect(plan.reason, S.planSmartQuietOutro);
+    });
+
+    test('a silent intro of the next song is skipped', () {
+      final plan = planTransition(
+        smart,
+        a,
+        b,
+        to: analysis(soundStart: const Duration(seconds: 3)),
+      );
+      expect(plan.startAt, const Duration(seconds: 2, milliseconds: 900));
+      expect(plan.endAt, isNull);
+      expect(plan.reason, S.planSmartSilentIntro);
+    });
+
+    test('limits: long quiet parts, the first half, short silences', () {
+      // A quiet part of 60 s (a hidden track) is kept.
+      expect(
+        planTransition(
+          smart,
+          a,
+          b,
+          from: analysis(quietEnd: const Duration(minutes: 2)),
+        ).endAt,
+        isNull,
+      );
+      // Under half a second: nothing to skip.
+      expect(
+        planTransition(
+          smart,
+          a,
+          b,
+          from: analysis(
+            soundEnd: const Duration(minutes: 2, seconds: 59, milliseconds: 700),
+          ),
+        ).endAt,
+        isNull,
+      );
+      // Never in the first half of a song.
+      expect(
+        planTransition(
+          smart,
+          a,
+          b,
+          from: analysis(
+            duration: const Duration(seconds: 50),
+            soundEnd: const Duration(seconds: 20),
+          ),
+        ).endAt,
+        isNull,
+      );
+      // A long silent intro (over 10 s) is kept.
+      expect(
+        planTransition(
+          smart,
+          a,
+          b,
+          to: analysis(soundStart: const Duration(seconds: 12)),
+        ).startAt,
+        isNull,
+      );
+    });
+
+    test('only Smart Mix with "allow" on, only library files', () {
+      final from = analysis(soundEnd: const Duration(minutes: 2, seconds: 50));
+      expect(
+        planTransition(
+          smart.copyWith(mode: TransitionMode.crossfade),
+          a,
+          b,
+          from: from,
+        ).endAt,
+        isNull,
+      );
+      expect(
+        planTransition(
+          smart.copyWith(allowSmartAdjust: false),
+          a,
+          b,
+          from: from,
+        ).endAt,
+        isNull,
+      );
+      final online = Track(
+        id: 9,
+        source: TrackSource.audius,
+        sourceTrackId: 'x',
+        path: 'https://example.invalid/stream',
+        title: 'Online',
+        artist: 'Artist',
+        album: 'Other',
+        duration: const Duration(minutes: 3),
+        addedAt: DateTime(2026),
+      );
+      final plan = planTransition(smart, a, online, from: from);
+      expect(plan.endAt, isNull, reason: 'online: the normal crossfade');
+      expect(plan.startAt, isNull);
+    });
+  });
+
   group('MixingEngine (two decks, equal-power crossfade)', () {
     late List<FakeEngine> decks;
     late MixingEngine engine;
@@ -194,6 +339,33 @@ void main() {
       expect(playingDecks(), 1);
       expect(engine.state.path, 'b.mp3');
       expect(decks[1].volume, 1);
+    });
+
+    test('Smart Mix: the fade ends at the planned end and the next file '
+        'starts after its intro', () async {
+      await engine.load('a.mp3');
+      await engine.prepareNext(
+        'b.mp3',
+        const TransitionPlan(
+          TransitionKind.crossfade,
+          fade: Duration(seconds: 6),
+          endAt: Duration(minutes: 2, seconds: 40),
+          startAt: Duration(seconds: 2),
+        ),
+      );
+      decks[0].setPosition(const Duration(minutes: 2, seconds: 30));
+      engine.onTick();
+      expect(engine.isFading, isFalse, reason: 'too early');
+      decks[0].setPosition(const Duration(minutes: 2, seconds: 35));
+      engine.onTick();
+      await Future<void>.delayed(Duration.zero);
+      expect(engine.isFading, isTrue, reason: '6 s before the planned end');
+      expect(decks[1].state.playing, isTrue);
+      expect(decks[1].state.position, const Duration(seconds: 2));
+      now = now.add(const Duration(seconds: 5, milliseconds: 100));
+      engine.onTick();
+      await Future<void>.delayed(Duration.zero);
+      expect(advanced, ['b.mp3'], reason: 'the silent tail is skipped');
     });
 
     test('gapless is prepared on the playing deck, no second file', () async {

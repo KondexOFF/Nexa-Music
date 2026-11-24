@@ -176,16 +176,21 @@ class WaveRanker {
   /// user changes it on the Wave page; D-026 replaced the fixed 50 % limit).
   static const double defaultOnlineShare = 0.5;
 
+  /// From here on (the slider's right end) the Wave is online only.
+  static const double onlineOnlyFrom = 0.995;
+
   /// One Wave batch (D-026).
   ///
-  /// Familiar <-> New to you decides how many picks are new to the user:
-  /// at 100 % only new songs, at 0 % only songs already played. The new
-  /// part comes from the library songs not played yet and - with online
-  /// picks on - from the catalogs, by [onlineShare] (0 = library only,
-  /// 1 = catalogs only). When one kind runs out the other fills in; only
-  /// when nothing new is left at all, familiar songs fill the batch (the
-  /// Wave never stops, and the controller says why). Catalog songs are
-  /// spread evenly over the batch.
+  /// Familiar <-> New to you decides how many picks are new to the user.
+  /// At the right end ([discovery] 1) the Wave is **online only**: new
+  /// catalog recommendations (Audius / Jamendo) and nothing from the
+  /// library - with none, the batch is empty and the controller says why.
+  /// Below it, the new part comes from the library songs not played yet
+  /// and - with online picks on - from the catalogs, by [onlineShare]
+  /// (0 = library only, 1 = catalogs only); the rest are songs already
+  /// played (Familiar 0 % = known songs). When one kind runs out the other
+  /// fills in; familiar songs fill in only when nothing new is left. Catalog
+  /// songs are spread evenly over the batch.
   static List<WaveItem> compose(
     List<WaveItem> local,
     List<WaveItem> online, {
@@ -197,6 +202,9 @@ class WaveRanker {
       return const [];
     }
     final d = discovery.clamp(0.0, 1.0).toDouble();
+    if (d >= onlineOnlyFrom) {
+      return online.take(limit).toList();
+    }
     final share = online.isEmpty ? 0.0 : onlineShare.clamp(0.0, 1.0).toDouble();
     final fresh = [for (final i in local) if (i.fresh) i];
     final known = [for (final i in local) if (!i.fresh) i];

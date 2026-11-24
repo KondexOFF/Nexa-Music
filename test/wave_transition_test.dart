@@ -64,9 +64,13 @@ void main() {
     expect(transitions(0), {TransitionKind.crossfade: 5});
   });
 
-  test('Discovery 100 % with online picks: local and catalog songs alternate '
-      'and every transition crossfades 12 s (D-025)', () {
-    expect(transitions(1), {TransitionKind.crossfade: 11});
+  test('half new with online picks: local and catalog songs alternate and '
+      'every transition crossfades 12 s (D-025)', () {
+    expect(transitions(0.5), {TransitionKind.crossfade: 11});
+  });
+
+  test('online only (right end): catalog songs only, all crossfaded', () {
+    expect(transitions(1), {TransitionKind.crossfade: 9});
   });
 
   test('two local songs without album tags crossfade 12 s (not gapless)', () {

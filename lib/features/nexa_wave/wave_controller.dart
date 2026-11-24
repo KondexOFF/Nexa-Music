@@ -302,15 +302,18 @@ class WaveController extends Notifier<WaveState> {
       onlineShare: settings.onlineShare,
       limit: limit,
     );
-    // At "New to you" 100 % familiar songs only come in when nothing new
-    // is left - say so instead of looking like a mistake.
-    final noNewLeft =
-        settings.discovery >= 0.999 && items.any((i) => !i.fresh);
-    state = items.isEmpty
-        ? state.copyWith(message: S.waveNothingLeft)
-        : noNewLeft
-        ? state.copyWith(message: S.waveNoNewLeft)
-        : state.copyWith(clearMessage: true);
+    // Online only (slider at the right end): never library songs instead -
+    // say why it is empty.
+    final onlineOnly = settings.discovery >= WaveRanker.onlineOnlyFrom;
+    state = items.isNotEmpty
+        ? state.copyWith(clearMessage: true)
+        : onlineOnly
+        ? state.copyWith(
+            message: settings.waveOnline
+                ? S.waveOnlineOnlyNone
+                : S.waveOnlineOnlyOff,
+          )
+        : state.copyWith(message: S.waveNothingLeft);
     return items;
   }
 

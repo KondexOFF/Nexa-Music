@@ -178,7 +178,9 @@ void main() {
     await taste.setItem(TasteKind.artist, 'Never Me', excluded: true);
     await taste.setItem(TasteKind.genre, 'Polka', excluded: true);
     await dna().setWaveOnline(true);
-    await dna().setDiscovery(1);
+    // Half new songs, all of them from the catalogs (D-026).
+    await dna().setDiscovery(0.5);
+    await dna().setOnlineShare(1);
     await startWave();
 
     for (final source in [audius, jamendo]) {
@@ -206,6 +208,33 @@ void main() {
     );
   });
 
+  test('online only (right end): only catalog songs, never the library',
+      () async {
+    await dna().setWaveOnline(true);
+    await dna().setDiscovery(1);
+    await startWave();
+    final queue = player().queue;
+    expect(queue, hasLength(WaveController.batchSize));
+    expect(queue.every((e) => e.track.isOnline), isTrue);
+    expect(container.read(waveProvider).message, isNull);
+  });
+
+  test('online only without catalog songs: a clear message, no library songs '
+      'mixed in', () async {
+    await dna().setDiscovery(1);
+    await startWave();
+    expect(player().queue.where((e) => !e.track.isOnline), isEmpty);
+    expect(container.read(waveProvider).message, S.waveOnlineOnlyOff);
+
+    audius.error = const CatalogException(CatalogErrorKind.offline);
+    jamendo.error = const CatalogException(CatalogErrorKind.offline);
+    await dna().setWaveOnline(true);
+    await wave().refresh();
+    await pumpEventQueue();
+    expect(container.read(waveProvider).items, isEmpty);
+    expect(container.read(waveProvider).message, S.waveOnlineOnlyNone);
+  });
+
   test('Familiar: online picks switched on but none in the queue', () async {
     await dna().setWaveOnline(true);
     await dna().setDiscovery(0);
@@ -218,7 +247,9 @@ void main() {
     audius.error = const CatalogException(CatalogErrorKind.offline);
     jamendo.error = const CatalogException(CatalogErrorKind.offline);
     await dna().setWaveOnline(true);
-    await dna().setDiscovery(1);
+    // Half new songs, all of them from the catalogs (D-026).
+    await dna().setDiscovery(0.5);
+    await dna().setOnlineShare(1);
     await startWave();
     expect(player().queue, hasLength(WaveController.batchSize));
     expect(onlineIn(player().queue), isEmpty);
@@ -232,7 +263,9 @@ void main() {
   test('one catalog failing: the other still adds songs', () async {
     jamendo.error = const CatalogException(CatalogErrorKind.rateLimited);
     await dna().setWaveOnline(true);
-    await dna().setDiscovery(1);
+    // Half new songs, all of them from the catalogs (D-026).
+    await dna().setDiscovery(0.5);
+    await dna().setOnlineShare(1);
     await startWave();
     final online = onlineIn(player().queue);
     expect(online, isNotEmpty);
@@ -246,7 +279,9 @@ void main() {
   test('"Not for me" hides a catalog song for the session, saves nothing',
       () async {
     await dna().setWaveOnline(true);
-    await dna().setDiscovery(1);
+    // Half new songs, all of them from the catalogs (D-026).
+    await dna().setDiscovery(0.5);
+    await dna().setOnlineShare(1);
     await startWave();
     final hidden = onlineIn(player().upNext).first.track;
     await wave().dislike(hidden);
@@ -268,7 +303,9 @@ void main() {
       () async {
     await dna().setHistoryConsent(true);
     await dna().setWaveOnline(true);
-    await dna().setDiscovery(1);
+    // Half new songs, all of them from the catalogs (D-026).
+    await dna().setDiscovery(0.5);
+    await dna().setOnlineShare(1);
     await startWave();
     // Pattern: local, online, local, ...
     expect(player().current!.isOnline, isFalse);
@@ -295,7 +332,9 @@ void main() {
   test('a dead stream is skipped once (not twice when the engine also '
       'reports the end)', () async {
     await dna().setWaveOnline(true);
-    await dna().setDiscovery(1);
+    // Half new songs, all of them from the catalogs (D-026).
+    await dna().setDiscovery(0.5);
+    await dna().setOnlineShare(1);
     await startWave();
     await container.read(playerProvider.notifier).jumpTo(1);
     await pumpEventQueue();

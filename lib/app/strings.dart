@@ -106,8 +106,9 @@ abstract final class S {
   // Mix Engine
   static const String mixEngine = 'NEXA MIX ENGINE';
   static const String mixNote =
-      'Applied to playback and saved. Smart Mix v1 uses track length and '
-      'albums; it does not analyse silence or loudness.';
+      'Applied to playback and saved. Smart Mix measures your library files '
+      '(silence and level) in the background; online songs get a normal '
+      'crossfade.';
   static const String albumGaplessTitle = 'Keep albums gapless';
   static const String albumGaplessInfo =
       'The next track of the same album always follows without overlap, so '
@@ -121,14 +122,21 @@ abstract final class S {
   static const String planCrossfadeOff = 'Crossfade off: no overlap';
   static const String planCrossfade = 'Crossfade';
   static const String planSmartDefault = 'Smart Mix: your crossfade length';
+  static const String planSmartSilentTail =
+      'Smart Mix: skips the silent end of the song';
+  static const String planSmartQuietOutro =
+      'Smart Mix: mixes in where the outro has faded';
+  static const String planSmartSilentIntro =
+      'Smart Mix: next song starts after its silent intro';
   static const String planSmartShortTrack = 'Smart Mix: shorter for a short track';
   static const String planLimitedByLength = 'Limited by track length';
   static const String planTooShort = 'Too short to overlap: gapless';
   static const String transitions = 'Transitions';
   static const String transitionsInfo =
       'Crossfade overlaps the end of one track with the start of the next. '
-      'Gapless removes extra silence without overlap. Smart Mix v1 shortens '
-      'the overlap for short tracks.';
+      'Gapless removes extra silence without overlap. Smart Mix skips silent '
+      'ends and intros of library files and shortens the overlap for short '
+      'tracks.';
   static const String modeCrossfade = 'Crossfade';
   static const String modeSmartMix = 'Smart Mix';
   static const String modeGapless = 'Gapless';
@@ -138,11 +146,14 @@ abstract final class S {
   static const String gaplessNote = 'No overlap in Gapless';
   static const String smartMixTitle = 'Smart Mix';
   static const String smartMixDescription =
-      'Lets NEXA shorten the overlap for short tracks, based on track '
-      'length. Tempo and key matching are not part of v1.';
+      'Lets NEXA adjust transitions of library files: skip silent ends and '
+      'intros, mix in where an outro has faded, shorten the overlap for '
+      'short tracks. Tempo and key matching are not part of it.';
   static const String smartMixInfo =
-      'Smart Mix v1 only uses simple, explainable signals: track length and '
-      'album order. It never lengthens your crossfade.';
+      'Smart Mix only uses simple, explainable signals: track length, album '
+      'order and a measurement of each library file (where its sound starts '
+      'and ends, how loud it is), made once in the background and kept. It '
+      'never lengthens your crossfade and never mixes online songs.';
 
   // Pages
   static const String waveHeading = 'Your Wave';
@@ -283,13 +294,20 @@ abstract final class S {
   static const String discovery = 'New to you';
   static const String familiarDiscovery = 'Familiar - New to you';
   static const String familiarDiscoveryInfo =
-      'How many picks are new to you. Left: only songs you already know. '
-      'Right: only new songs - library songs you have not played yet and, '
-      'with online picks on, catalog songs. Searching the catalogs is the '
-      'Discover page.';
-  static const String waveNoNewLeft =
-      'Nothing new left to discover - familiar songs fill the Wave. Switch '
-      'on online picks or add music to hear new songs.';
+      'How many picks are new to you. Left: mostly songs you already know. '
+      'In between: new songs by the share below - library songs you have not '
+      'played yet and, with online picks on, catalog songs. Right end: online '
+      'only - new Audius and Jamendo recommendations, no library songs. '
+      'Searching the catalogs is the Discover page.';
+  static const String waveOnlineOnlyEnd = 'Online only';
+  static const String waveOnlineOnlyOff =
+      'At the right end the Wave plays only new online recommendations '
+      '(Audius, Jamendo). Switch on "Online picks" below - or move the slider '
+      'left to hear your library.';
+  static const String waveOnlineOnlyNone =
+      'No new online recommendations right now (offline, the catalogs did '
+      'not answer, or all were heard). Try again later, or move the slider '
+      'left to hear your library.';
   static const String fresh = 'NEW';
   static const String privateSession = 'Private session';
   static const String privateSessionInfo =

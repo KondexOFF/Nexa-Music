@@ -255,7 +255,7 @@ class _TuningPanel extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(S.familiar, style: NexaText.caption),
-            Text(S.discovery, style: NexaText.caption),
+            Text(S.waveOnlineOnlyEnd, style: NexaText.caption),
           ],
         ),
       ],

@@ -1,4 +1,5 @@
 import '../../app/strings.dart';
+import '../../core/audio/audio_analysis.dart';
 import '../../core/audio/transition.dart';
 import '../../core/models/track.dart';
 import '../library/tag_reader.dart' show unknownAlbum;
@@ -15,9 +16,21 @@ import 'mix_settings.dart';
 ///    track; under 1 s it falls back to gapless.
 /// 5. Smart Mix v1: like Crossfade, but with the "allow" switch on it
 ///    shortens the overlap from the track lengths it knows: 3 s for tracks
-///    under one minute, at most a quarter of the shorter track. Silence and
-///    signal-level analysis are not implemented yet (TD-07).
-TransitionPlan planTransition(MixSettings s, Track current, Track next) {
+///    under one minute, at most a quarter of the shorter track.
+/// 6. Smart Mix with a measurement of the files ([from] / [to], D-026; only
+///    library files are measured): the crossfade ends where the current
+///    song's sound ends (a silent tail is skipped) or - for an outro that
+///    fades out - one fade after it has become quiet; the next song starts
+///    after a silent intro. Never more than [maxSkippedTail] of a song is
+///    skipped, never a quiet part in its first half. Without a measurement
+///    (not done yet, online sources): the normal crossfade.
+TransitionPlan planTransition(
+  MixSettings s,
+  Track current,
+  Track next, {
+  AudioAnalysis? from,
+  AudioAnalysis? to,
+}) {
   if (!current.rights.mix || !next.rights.mix) {
     return const TransitionPlan(TransitionKind.cut, reason: S.planNoMixRights);
   }
@@ -70,8 +83,52 @@ TransitionPlan planTransition(MixSettings s, Track current, Track next) {
       reason: S.planTooShort,
     );
   }
-  return TransitionPlan(TransitionKind.crossfade, fade: fade, reason: reason);
+  Duration? endAt;
+  Duration? startAt;
+  if (s.mode == TransitionMode.smartMix &&
+      s.allowSmartAdjust &&
+      current.source == TrackSource.local &&
+      next.source == TrackSource.local) {
+    if (from != null && from.duration > Duration.zero) {
+      var end = from.soundEnd;
+      final outro = from.quietEnd + fade;
+      if (outro < end) {
+        end = outro;
+      }
+      final skipped = from.duration - end;
+      final limit = from.duration * 0.15 > maxSkippedTail
+          ? from.duration * 0.15
+          : maxSkippedTail;
+      if (skipped >= const Duration(milliseconds: 500) &&
+          skipped <= limit &&
+          end >= from.duration ~/ 2) {
+        endAt = end;
+        reason = end == from.soundEnd
+            ? S.planSmartSilentTail
+            : S.planSmartQuietOutro;
+      }
+    }
+    if (to != null &&
+        to.soundStart >= const Duration(milliseconds: 300) &&
+        to.soundStart <= maxSkippedIntro) {
+      startAt = to.soundStart - const Duration(milliseconds: 100);
+      reason = endAt == null ? S.planSmartSilentIntro : reason;
+    }
+  }
+  return TransitionPlan(
+    TransitionKind.crossfade,
+    fade: fade,
+    reason: reason,
+    endAt: endAt,
+    startAt: startAt,
+  );
 }
+
+/// Smart Mix skips at most this much of a song's end (or 15 % of it).
+const Duration maxSkippedTail = Duration(seconds: 30);
+
+/// Smart Mix skips a silent intro of at most this length.
+const Duration maxSkippedIntro = Duration(seconds: 10);
 
 const Duration _smartShort = Duration(seconds: 3);
 

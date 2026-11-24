@@ -7,8 +7,9 @@
 // on the owner's PC (2026-11-23, log 261): the libmpv of
 // media_kit_libs_windows_audio accepts none of them ("Audio filter
 // initialized failed!", "lavfi-silencedetect doesn't exist") - playback
-// stops. So Smart Mix v1 cannot analyse silence or level in the engine; it
-// stays LIMITED to track length and albums (reports/FEATURE_COMPLETE_REPORT.md).
+// stops. So Smart Mix does not measure in the playback engine; it measures
+// files beforehand with a separate silent decoder instead
+// (lib/core/audio/audio_analyzer.dart, integration_test/audio_analysis_probe_test.dart).
 // The test passes when the plain file plays; it prints what each filter did.
 import 'dart:io';
 import 'dart:math' as math;

@@ -11,7 +11,6 @@ import '../../ui/nexa_widgets.dart';
 import '../../core/audio/transition.dart';
 import '../player/player_controller.dart';
 import 'mix_settings.dart';
-import 'transition_planner.dart';
 
 /// NEXA Mix Engine panel (Phase 4): the settings are applied to playback and
 /// saved; the panel also explains the next transition.
@@ -239,12 +238,18 @@ class _MixNote extends StatelessWidget {
 final _nextTransitionProvider = Provider<TransitionPlan?>((ref) {
   final player = ref.watch(playerProvider);
   final settings = ref.watch(mixSettingsProvider);
+  ref.watch(audioAnalysisUpdatesProvider);
   final current = player.current;
   final next = player.nextEntry?.track;
   if (current == null || next == null) {
     return null;
   }
-  return planTransition(settings, current, next);
+  return planWithAnalysis(
+    ref.read(audioAnalyzerProvider),
+    settings,
+    current,
+    next,
+  );
 });
 
 class _NextTransition extends ConsumerWidget {
