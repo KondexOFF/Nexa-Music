@@ -41,6 +41,12 @@ class MiniWindowController extends Notifier<bool> {
     if (on == state) {
       return;
     }
+    // Into the mini window: the small layout first, then the window shrinks
+    // (the full layout is never drawn in the small window - M-01, D-028).
+    // Back: the window grows first, then the full layout returns.
+    if (on) {
+      state = true;
+    }
     if (Platform.isWindows && Platform.environment['FLUTTER_TEST'] != 'true') {
       try {
         await _channel.invokeMethod<bool>('setMini', {
@@ -49,10 +55,16 @@ class MiniWindowController extends Notifier<bool> {
           'height': youtubeMiniWindow.height.round(),
         });
       } on Object {
-        return; // Window could not be changed: stay as it is.
+        // Window could not be changed: stay as it is.
+        if (on && ref.mounted) {
+          state = false;
+        }
+        return;
       }
     }
-    state = on;
+    if (ref.mounted) {
+      state = on;
+    }
   }
 }
 
