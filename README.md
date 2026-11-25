@@ -1,6 +1,6 @@
 # NEXA Music
 
-**Status (2026-10-25):** Windows version **1.0.0** — phases 0–7 and the final stage done; the owner's final acceptance passed (30 of 30 scenarios, NEXA AutoTest 60 / 60) on the 0.9.0 acceptance build. The 1.0.0 build is prepared; publishing it is the owner's separate decision. What is new and known limitations: [RELEASE_NOTES.md](RELEASE_NOTES.md); progress and decisions: [docs/PROGRESS.md](docs/PROGRESS.md).
+**Status (2026-11-25):** Windows version **1.1.0** published as a private GitHub release (tag `v1.1.0`); all mandatory checks passed, including the owner's checks M-01–M-07 and NEXA AutoTest (30 / 30 scenarios, 66 / 66 checks) on the release build. What is new and known limitations: [RELEASE_NOTES.md](RELEASE_NOTES.md); checks: [reports/RELEASE_1.1.0_READINESS.md](reports/RELEASE_1.1.0_READINESS.md); progress and decisions: [docs/PROGRESS.md](docs/PROGRESS.md).
 
 NEXA Music is a **private, Windows-first music player** for personal use:
 - local library (MP3 / FLAC / WAV), playlists, favorites, search — works offline;
@@ -56,8 +56,18 @@ Only some groups: `NEXA_AutoTest.cmd -Groups playback,mix` (groups: library, pla
 
 - Plan: [NEXA_Music_Master_Plan_Claude.md](NEXA_Music_Master_Plan_Claude.md); agent rules: [CLAUDE.md](CLAUDE.md); decisions: [docs/DECISIONS.md](docs/DECISIONS.md); change requests: [docs/CHANGE_REQUESTS.md](docs/CHANGE_REQUESTS.md); reports: [reports/](reports/).
 - Never commit music files, databases, listening history, keys / client ids, tokens or personal paths. The repository is private; the app is for personal use.
-- Spotify is not an audio source. YouTube / SoundCloud only through their official visible players (approved extension, not implemented yet).
+- Spotify is not an audio source. YouTube / SoundCloud only through their official visible players.
 - Every push to GitHub needs the owner's permission.
+
+## People
+
+| Who | Role |
+|---|---|
+| **KondexOFF** | Project owner: idea, plan, decisions, acceptance and releases |
+| **Claude** (AI by Anthropic) | Implementer and tester: code, tests, NEXA AutoTest and the Windows checks; assistant to the owner |
+| **ChatGPT** (AI by OpenAI) | Design and technical reviewer of the phase reports |
+
+Claude works only on the owner's instructions; every phase, push and release is the owner's decision ([CLAUDE.md](CLAUDE.md)).
 
 ## Design references
 
