@@ -1,0 +1,37 @@
+NEXA Music
+Copyright (c) 2026 KondexOFF. All rights reserved.
+
+This software, its source code, design, documentation and build files
+("the Software") are the exclusive property of the copyright holder.
+
+No licence is granted. Without the prior written permission of the copyright
+holder you may not use, copy, modify, merge, publish, distribute, sublicense,
+sell, translate, decompile, or create derivative works of the Software or any
+part of it, in source or binary form, nor use it to train or evaluate machine
+learning models. Access to this repository does not grant any such right.
+
+Third-party components keep their own licences and are not covered by this
+notice: the Flutter engine and packages, media_kit and libmpv, SQLite, the
+fork of webview_flutter_windows in third_party/ (its own LICENSE file), the
+Manrope font (SIL Open Font License), the Microsoft Visual C++ runtime and
+others. NEXA Music lists them in Settings -> Open-source licences.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+---
+
+NEXA Music
+Авторское право (c) 2026 KondexOFF. Все права защищены.
+
+Программа, её исходный код, дизайн, документация и файлы сборки являются
+исключительной собственностью правообладателя. Лицензия не предоставляется.
+Без предварительного письменного разрешения правообладателя запрещено
+использовать, копировать, изменять, публиковать, распространять, продавать,
+переводить, декомпилировать программу или любую её часть, создавать на её
+основе производные работы, а также использовать её для обучения или оценки
+моделей машинного обучения. Доступ к репозиторию не даёт таких прав.
+
+Сторонние компоненты распространяются по своим лицензиям (перечень — в
+программе: Settings -> Open-source licences).

@@ -69,6 +69,8 @@ Only some groups: `NEXA_AutoTest.cmd -Groups playback,mix` (groups: library, pla
 
 Claude works only on the owner's instructions; every phase, push and release is the owner's decision ([CLAUDE.md](CLAUDE.md)).
 
+**Copyright (c) 2026 KondexOFF. All rights reserved.** No licence is granted: copying, distributing or reusing the code needs the owner's written permission. Details: [LICENSE](LICENSE).
+
 ## Design references
 
 NEXA Design 04 (Home and Player) in `assets/design/` — references only, not bundled. The app icon is original, drawn for NEXA (Phase 7).
