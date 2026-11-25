@@ -58,4 +58,7 @@ abstract final class SettingKeys {
   static const String jamendoClientId = 'catalog.jamendo.clientId';
   static const String youtubeEnabled = 'youtube.enabled';
   static const String youtubeApiKey = 'youtube.apiKey';
+  static const String updateAutoCheck = 'update.autoCheck';
+  static const String updateLastCheck = 'update.lastCheck';
+  static const String updateSkipped = 'update.skipped';
 }

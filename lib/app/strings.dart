@@ -768,4 +768,103 @@ abstract final class S {
       'Where your music comes from besides your own files.';
   static const String discoverYouTubeTitle = 'YouTube in NEXA';
   static const String discoverSoundCloudTitle = 'SoundCloud in NEXA';
+
+  // D-030: NEXA Update Center
+  static const String updTitle = 'Updates';
+  static const String updCheck = 'Check for updates';
+  static const String updChecking = 'Checking for updates...';
+  static const String updAuto = 'Check automatically (at most once a day)';
+  static String updLastCheck(String when) => 'Last check: $when';
+  static String updUpToDate(String v) => 'NEXA Music $v is the newest version.';
+  static String updAvailableTitle(String v) => 'NEXA Music $v is available';
+  static String updAvailableBody(String current, String size, String date) =>
+      'You have $current. Download: $size$date. Your library, playlists, '
+      'history and settings stay as they are.';
+  static String updSkippedNote(String v) =>
+      'Version $v is skipped - it is not offered automatically.';
+  static const String updNow = 'Update now';
+  static const String updWhatsNew = "What's new";
+  static const String updLater = 'Later';
+  static const String updSkip = 'Skip this version';
+  static const String updClose = 'Close';
+  static const String updRetry = 'Try again';
+  static const String updDownloading = 'Downloading';
+  static const String updUnpacking = 'Checking and unpacking';
+  static String updReadyBody(String v) =>
+      'NEXA Music $v is downloaded and checked (SHA-256). NEXA closes, the '
+      'updater replaces the program and starts the new version. The '
+      'current version is kept for a rollback.';
+  static const String updRestartNow = 'Restart and install';
+  static const String updOnExit = 'Install when I close NEXA';
+  static const String updOnExitSet =
+      'The update is installed when you close NEXA.';
+  static const String updInstalling = 'Closing NEXA to install the update...';
+  static String updDone(String v) => 'Updated to NEXA Music $v.';
+  static String updRolledBack(String v) =>
+      'The new version did not start, so NEXA Music $v was put back.';
+  static String updRollbackDone(String v) => 'Rolled back to NEXA Music $v.';
+  static String updFailedResult(String detail) =>
+      'The update could not be finished: $detail';
+  static const String updNotClosed =
+      'NEXA did not close in time, so nothing was changed.';
+  static String updRollback(String v) => 'Roll back to $v';
+  static String updRollbackTitle(String v) => 'Roll back to NEXA Music $v?';
+  static String updRollbackBody(String v) =>
+      'NEXA closes, NEXA Music $v is put back and started. Your library, '
+      'playlists, history and settings stay.';
+  static String updRollbackDbBody(String v, String copy) =>
+      'This version has upgraded your library, and $v cannot read it. NEXA '
+      'puts back the copy made before the upgrade ($copy). The current '
+      'library is saved first as a backup that is never removed '
+      'automatically - after updating again you can restore it in '
+      'Settings > Library backups, so nothing you added is lost.';
+  static String updRollbackNoCopy(String v) =>
+      'Version $v cannot read the upgraded library and no copy from before '
+      'the upgrade exists, so a rollback is not possible.';
+  static const String updRollbackConfirm = 'Roll back';
+  static const String updCancel = 'Cancel';
+  static const String updPortableOnly =
+      'This copy of NEXA cannot replace its own folder (no write access). '
+      'Download the new version from GitHub instead.';
+  static const String updOpenRelease = 'Open the release page';
+
+  static String updProblem(String problem, String detail) {
+    final text = switch (problem) {
+      'offline' => 'No connection to GitHub. Check the internet connection.',
+      'noGitHubCli' =>
+        'The repository is private: install GitHub CLI and sign in with '
+            '"gh auth login" - NEXA never stores a token itself.',
+      'notLoggedIn' =>
+        'GitHub CLI is not signed in. Run "gh auth login" once.',
+      'accessDenied' =>
+        'GitHub refused access to the releases (private repository).',
+      'rateLimited' => 'GitHub asks to wait (rate limit). Try again later.',
+      'notFound' => 'No releases were found.',
+      'badResponse' => 'GitHub sent an unexpected answer.',
+      'missingChecksum' =>
+        'The release has no SHA-256 checksum, so it is not installed.',
+      'checksumMismatch' =>
+        'The download does not match its SHA-256 checksum - it was deleted.',
+      'corruptPackage' => 'The update package is damaged.',
+      'unsafePackage' => 'The update package is not safe to unpack.',
+      'noDiskSpace' => 'Not enough free disk space for the update.',
+      'installFailed' => 'The update could not be prepared.',
+      'startFailed' => 'The new version did not start.',
+      _ => 'The update failed.',
+    };
+    return detail.isEmpty ? text : '$text ($detail)';
+  }
+
+  // D-030: a library saved by a newer NEXA
+  static const String dbNewerTitle = 'This library is from a newer NEXA';
+  static String dbNewerBody(int found, int mine) =>
+      'Your library was upgraded by a newer NEXA Music (schema $found), and '
+      'this version reads schema $mine. It was not opened, so nothing was '
+      'changed. Start the newer version, or put back the copy made before '
+      'the upgrade - the current library is kept as a backup first.';
+  static String dbNewerRestore(String copy) => 'Put back $copy';
+  static const String dbNewerNoCopy =
+      'No copy that this version can open was found.';
+  static const String dbNewerRestored =
+      'The copy was put back. Close this window and start NEXA again.';
 }

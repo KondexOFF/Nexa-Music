@@ -61,6 +61,7 @@ Future<void> main() async {
       child: const NexaApp(),
     ),
   );
+  reportHealthToUpdater();
   // Saved YouTube videos: data from YouTube refreshed or removed within
   // 30 days (YouTube Developer Policies III.E.4), in the background.
   final client = http.Client();
@@ -69,4 +70,22 @@ Future<void> main() async {
         .then<void>((_) {}, onError: (Object _) {})
         .whenComplete(client.close),
   );
+}
+
+/// NEXA Update Center: the updater starts a new (or the previous) version
+/// with `NEXA_UPDATE_HEALTH` and waits until that version writes its number
+/// there - after its database opened and its first frame. Without it the
+/// updater puts the previous program back.
+void reportHealthToUpdater() {
+  final file = Platform.environment['NEXA_UPDATE_HEALTH']?.trim() ?? '';
+  if (file.isEmpty) {
+    return;
+  }
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    try {
+      File(file).writeAsStringSync(kAppVersion, flush: true);
+    } on FileSystemException {
+      // The updater then reports a failed start.
+    }
+  });
 }

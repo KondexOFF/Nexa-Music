@@ -21,6 +21,8 @@ import '../../features/soundcloud/soundcloud_dock.dart';
 import '../../features/soundcloud/soundcloud_player_controller.dart';
 import '../../features/youtube/youtube_dock.dart';
 import '../../features/youtube/youtube_player_controller.dart';
+import '../../features/update/update_controller.dart';
+import '../../features/update/update_ui.dart';
 import '../../features/youtube/youtube_watch_page.dart';
 import '../navigation.dart';
 import '../theme/tokens.dart';
@@ -50,6 +52,15 @@ class _AppShellState extends ConsumerState<AppShell> {
   /// crash the process on exit (access violation seen 2026-10-29 when NEXA
   /// was closed while a song played).
   Future<AppExitResponse> _beforeExit() async {
+    try {
+      // "Install when I close NEXA": the updater starts and waits for this
+      // process to end.
+      await ref.read(updateProvider.notifier).onExit().timeout(
+        const Duration(seconds: 5),
+      );
+    } on Object {
+      // The update is offered again at the next start.
+    }
     try {
       await ref
           .read(youtubePlayerProvider.notifier)
@@ -109,6 +120,24 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final nav = ref.watch(navigationProvider);
     final panelWanted = ref.watch(rightPanelVisibleProvider);
+    // NEXA Update Center: the daily check found a version to offer.
+    ref.listen(updateProvider.select((u) => u.promptId), (previous, next) {
+      if (next > (previous ?? 0) && mounted) {
+        unawaited(showUpdateDialog(context));
+      }
+    });
+    // What the updater did last time, once.
+    ref.listen(updateProvider.select((u) => u.lastResult), (previous, next) {
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (next != null && previous == null && messenger != null) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(resultText(next) ?? ''),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
+    });
     // Player notices (skipped missing file, playback error) as a snack bar.
     ref.listen(playerProvider.select((p) => p.noticeId), (previous, next) {
       final text = ref.read(playerProvider).notice;

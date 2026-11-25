@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' show DatabaseConnection, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
@@ -9,8 +11,11 @@ import 'package:nexa_music/core/audio/audio_analyzer.dart';
 import 'package:nexa_music/core/database/app_database.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
 import 'package:nexa_music/features/player/player_controller.dart';
+import 'package:nexa_music/features/update/update_controller.dart';
+import 'package:nexa_music/features/update/update_installer.dart';
 
 import 'fake_engine.dart';
+import 'fake_update_source.dart';
 
 /// In-memory database for widget tests. Streams close synchronously, so no
 /// drift timer is left pending when a test ends.
@@ -41,6 +46,21 @@ List<Override> testOverrides({AppDatabase? database, FakeEngine? engine}) {
       ref.onDispose(e.dispose);
       return e;
     }),
+    // NEXA Update Center: no network, no real update folder.
+    updateSourceProvider.overrideWithValue(const NoReleasesSource()),
+    updatePathsProvider.overrideWith(
+      (ref) async {
+        final dir = Directory.systemTemp.createTempSync('nexa_updates_test');
+        ref.onDispose(() {
+          try {
+            dir.deleteSync(recursive: true);
+          } on FileSystemException {
+            // Left for the system to clean.
+          }
+        });
+        return UpdatePaths(dir);
+      },
+    ),
   ];
 }
 

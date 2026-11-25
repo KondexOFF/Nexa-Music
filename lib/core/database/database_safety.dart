@@ -86,15 +86,23 @@ class DatabaseSafety {
 
   /// Settings - "Back up now": a consistent copy of the open database
   /// (SQLite VACUUM INTO), while NEXA runs.
-  Future<File> backupNow(AppDatabase db) async {
-    final target = _newCopy('manual');
+  Future<File> backupNow(AppDatabase db, {String reason = 'manual'}) async {
+    final target = _newCopy(reason);
     await db.customStatement('VACUUM INTO ?', [target.path]);
     _prune();
     return target;
   }
 
+  /// Copies that hold the user's newest data when an older copy was put
+  /// back (a restore, a rollback of NEXA): never removed automatically.
+  static bool isProtected(File copy) {
+    final name = p.basename(copy.path);
+    return name.contains('_before_restore_') ||
+        name.contains('_before_rollback_');
+  }
+
   void _prune() {
-    final copies = list();
+    final copies = list().where((f) => !isProtected(f)).toList();
     for (final old in copies.skip(keep)) {
       for (final suffix in const ['', '-wal', '-shm']) {
         final f = File('${old.path}$suffix');
@@ -181,6 +189,22 @@ class DatabaseSafety {
 
   /// A migration failed: the copy made by [beforeOpen] goes back.
   void undo(File copy) => restore(copy);
+
+  /// The newest copy this build can open, for a library saved by a newer
+  /// NEXA (schema above [schema]): a copy of exactly [schema] first.
+  File? newestCopyFor(int schema) {
+    File? fallback;
+    for (final f in list()) {
+      final v = schemaOf(f);
+      if (v == schema) {
+        return f;
+      }
+      if (v != null && v < schema) {
+        fallback ??= f;
+      }
+    }
+    return fallback;
+  }
 }
 
 /// Opens the app database safely (main.dart): backup before a migration,
@@ -192,6 +216,18 @@ Future<AppDatabase> openDatabaseSafely({
 }) async {
   safety ??= await DatabaseSafety.forApp();
   final copy = safety.beforeOpen();
+  // A library saved by a newer NEXA (an update was rolled back, or an older
+  // program folder was started): never opened - Drift would mark it as the
+  // older schema and the newer version could not upgrade it again.
+  final found = DatabaseSafety.schemaOf(safety.database);
+  if (found != null && found > AppDatabase.currentSchemaVersion) {
+    throw DatabaseOpenFailed(
+      'The library was saved by a newer NEXA Music (schema $found; this '
+      'version reads ${AppDatabase.currentSchemaVersion}).',
+      newerSchema: found,
+      safety: safety,
+    );
+  }
   final db = (open ?? AppDatabase.open)();
   try {
     // Opens the file and runs any migration.
@@ -211,10 +247,19 @@ Future<AppDatabase> openDatabaseSafely({
 }
 
 class DatabaseOpenFailed implements Exception {
-  const DatabaseOpenFailed(this.reason, {this.restoredFrom});
+  const DatabaseOpenFailed(
+    this.reason, {
+    this.restoredFrom,
+    this.newerSchema,
+    this.safety,
+  });
 
   final String reason;
   final String? restoredFrom;
+
+  /// Set when the file is newer than this build.
+  final int? newerSchema;
+  final DatabaseSafety? safety;
 
   @override
   String toString() => reason;

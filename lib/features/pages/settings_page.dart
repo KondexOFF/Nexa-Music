@@ -11,6 +11,7 @@ import '../discover/catalog_settings.dart';
 import '../nexa_dna/privacy_controls.dart';
 import '../player/player_controller.dart';
 import '../privacy/ad_block.dart';
+import '../update/update_ui.dart';
 import '../youtube/youtube_settings.dart';
 import 'database_backup_controls.dart';
 import '../../ui/nexa_widgets.dart';
@@ -49,16 +50,25 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.info_outline_rounded,
             title: S.settingsAbout,
             body: '${S.settingsAboutBody}\n${S.versionLine(kAppVersion)}',
-            action: NexaPillButton(
-              label: S.licences,
-              icon: Icons.description_outlined,
-              variant: PillVariant.secondary,
-              height: 42,
-              onPressed: () => showLicensePage(
-                context: context,
-                applicationName: S.appTitle,
-                applicationVersion: kAppVersion,
-              ),
+            action: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                NexaPillButton(
+                  label: S.licences,
+                  icon: Icons.description_outlined,
+                  variant: PillVariant.secondary,
+                  height: 42,
+                  onPressed: () => showLicensePage(
+                    context: context,
+                    applicationName: S.appTitle,
+                    applicationVersion: kAppVersion,
+                  ),
+                ),
+                const Divider(height: 32),
+                const Text(S.updTitle, style: NexaText.h3),
+                const SizedBox(height: 10),
+                const UpdateControls(),
+              ],
             ),
           ),
           const _SettingsCard(

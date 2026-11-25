@@ -14,5 +14,10 @@ const String kProbeLogDir = String.fromEnvironment('NEXA_PROBE_LOG_DIR');
 /// folder and exits (Phase 1 visual evidence).
 const String kCaptureDir = String.fromEnvironment('NEXA_CAPTURE_DIR');
 
-/// App version shown in Settings (keep equal to `version:` in pubspec.yaml).
-const String kAppVersion = '1.1.0';
+/// App version shown in Settings and compared by NEXA Update Center (keep
+/// the default equal to `version:` in pubspec.yaml). `NEXA_APP_VERSION`
+/// gives the second build of the update-chain test another version.
+const String kAppVersion = String.fromEnvironment(
+  'NEXA_APP_VERSION',
+  defaultValue: '1.1.1',
+);

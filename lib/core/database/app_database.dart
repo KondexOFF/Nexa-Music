@@ -179,7 +179,14 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => currentSchemaVersion;
 
   /// Schema of this build (database_safety.dart backs up older files).
-  static const int currentSchemaVersion = 4;
+  static const int currentSchemaVersion = 4 + _testSchemaBump;
+
+  /// Only the second build of the D-030 update-chain test sets this
+  /// (`--dart-define=NEXA_TEST_SCHEMA_BUMP=1`), to test a rollback after a
+  /// migration. Always 0 in NEXA releases.
+  static const int _testSchemaBump = int.fromEnvironment(
+    'NEXA_TEST_SCHEMA_BUMP',
+  );
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -195,6 +202,10 @@ class AppDatabase extends _$AppDatabase {
       await _createHistoryIndex();
     },
     onUpgrade: (m, from, to) async {
+      if (from > to) {
+        // openDatabaseSafely refuses newer files before this point.
+        throw StateError('database schema $from is newer than $to');
+      }
       // One step per schema version; never edit a released step.
       if (from < 2) {
         // v2 (Phase 3): player settings.
@@ -236,6 +247,13 @@ class AppDatabase extends _$AppDatabase {
             throw StateError('Migration v4 changed saved data: $before -> $after');
           }
         });
+      }
+      if (_testSchemaBump > 0 && from < 4 + _testSchemaBump) {
+        // Test builds only (see _testSchemaBump): a migration that the
+        // released version cannot read.
+        await customStatement(
+          'CREATE TABLE IF NOT EXISTS d030_test_marker (id INTEGER PRIMARY KEY)',
+        );
       }
     },
     beforeOpen: (details) async {
