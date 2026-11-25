@@ -32,6 +32,8 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 
 Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITECTURE.md`.
 
+| D-030 — Update Center (owner 2026-11-25) | **Planned / branch opened**: private GitHub Releases, daily check with opt-out, notification with Update now / What's new / Later / Skip this version; SHA-256, secure staging, rollback, safe auth. Target **1.1.1 before 1.2 Nocturne**. No app build or Windows validation yet; no release permission | `feature/d030-update-center` |
+
 ## Technical debt / known problems
 
 | ID | Found | Severity | Problem | State |
