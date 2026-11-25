@@ -1,65 +1,191 @@
-# NEXA Music
+<p align="center">
+  <img src="docs/readme/banner.webp" alt="NEXA Music — Your sound, in motion." width="100%">
+</p>
 
-**Status (2026-11-25):** Windows version **1.1.0** published as a private GitHub release (tag `v1.1.0`); all mandatory checks passed, including the owner's checks M-01–M-07 and NEXA AutoTest (30 / 30 scenarios, 66 / 66 checks) on the release build. What is new and known limitations: [RELEASE_NOTES.md](RELEASE_NOTES.md); checks: [reports/RELEASE_1.1.0_READINESS.md](reports/RELEASE_1.1.0_READINESS.md); progress and decisions: [docs/PROGRESS.md](docs/PROGRESS.md).
+<p align="center">
+  <a href="https://github.com/KondexOFF/Nexa-Music/releases/tag/v1.1.0"><img src="https://img.shields.io/badge/release-v1.1.0-ad9aff?style=for-the-badge&labelColor=161922" alt="Release v1.1.0"></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-86a8ff?style=for-the-badge&logo=windows&logoColor=white&labelColor=161922" alt="Windows 10 / 11 x64">
+  <img src="https://img.shields.io/badge/Flutter-3.47-ff7e6e?style=for-the-badge&logo=flutter&logoColor=white&labelColor=161922" alt="Flutter 3.47">
+  <img src="https://img.shields.io/badge/AutoTest-66%2F66%20passed-ffa15c?style=for-the-badge&labelColor=161922" alt="NEXA AutoTest 66 of 66 passed">
+  <img src="https://img.shields.io/badge/license-all%20rights%20reserved-6f7282?style=for-the-badge&labelColor=161922" alt="All rights reserved">
+</p>
 
-NEXA Music is a **private, Windows-first music player** for personal use:
-- local library (MP3 / FLAC / WAV), playlists, favorites, search — works offline;
-- playback with queue, shuffle / repeat, output device, Windows media keys and media overlay;
-- **NEXA Mix Engine**: gapless, crossfade 0–12 s, Smart Mix v1 (local files only);
-- **NEXA DNA** (explicit taste, likes / dislikes, consent-based local history) and **NEXA Wave** (local recommendation queue with "why this song");
-- **Discover**: Audius and Jamendo through their official APIs (streaming only, source and licence shown).
+<p align="center">
+  <b>A private, beautiful music player for Windows.</b><br>
+  Your own library, mixed like a DJ set — plus Audius, Jamendo, YouTube and SoundCloud in one queue.
+</p>
 
-Approved extension (D-017): NEXA Wave across catalogs, YouTube and SoundCloud official embedded players, macOS / Linux / Android / iOS / Web ports — after the Windows version, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+<p align="center">
+  <a href="#-download">Download</a> ·
+  <a href="#-highlights">Highlights</a> ·
+  <a href="#-a-closer-look">Screenshots</a> ·
+  <a href="#-sources">Sources</a> ·
+  <a href="#-privacy">Privacy</a> ·
+  <a href="#-build-from-source">Build</a> ·
+  <a href="#-quality">Quality</a>
+</p>
 
-## Running the Windows build (no Flutter SDK needed)
+<br>
 
-The build is a self-contained folder: `NEXA_Music_1.0.0_Windows_x64` (created by the build steps below; it is not stored in the repository). `BUILD_INFO.txt` in the folder names the commit and the app-code fingerprint; `SHA256SUMS.txt` lists the SHA-256 of every file.
+<p align="center">
+  <img src="docs/readme/home.webp" alt="NEXA Music — Home" width="100%">
+</p>
 
-1. Copy the whole folder anywhere (e.g. a folder `NEXA Music` in your Documents). Keep all files together — the `.dll` files and the `data` folder are part of the program.
-2. Start `nexa_music.exe`. Windows SmartScreen may warn because the exe is not signed (personal build): "More info" → "Run anyway".
-3. First start: **Library → Add folder** with your music. Files are read where they are; nothing is copied, moved or deleted.
-4. Optional: **Settings → Online catalogs** — Audius works without a key; Jamendo needs your own free client id from devportal.jamendo.com (stored only on this PC).
+## ✦ Highlights
 
-Requirements: Windows 10/11 x64. The Microsoft Visual C++ runtime is included in the folder. Your library database, settings and listening history live in `%APPDATA%\com.kondexoff\nexa_music` (not in the program folder), so replacing the program folder keeps your data.
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>🎚️ NEXA Mix Engine</h3>
+      Gapless playback and equal-power crossfades from 0 to 12 seconds. <b>Smart Mix</b> measures every song of your library once, in the background, and mixes past silent tails and faded outros.
+    </td>
+    <td width="33%" valign="top">
+      <h3>🌊 NEXA Wave</h3>
+      An endless queue shaped by your taste — from <i>Familiar</i> to <i>Online only</i>. Every pick tells you why it is there; a disliked song leaves your Wave.
+    </td>
+    <td width="33%" valign="top">
+      <h3>🧬 NEXA DNA</h3>
+      Pick genres and artists you love, like and dislike songs. Your taste profile is explicit, editable and stays on your PC.
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <h3>🔗 One queue for everything</h3>
+      Library songs, Audius and Jamendo streams, YouTube videos and SoundCloud tracks — one after another, in one queue that survives a restart.
+    </td>
+    <td width="33%" valign="top">
+      <h3>📚 Your library, untouched</h3>
+      MP3, FLAC and WAV from your own folders. Tags, covers, albums, artists, playlists and favorites. Files are never copied, moved or deleted.
+    </td>
+    <td width="33%" valign="top">
+      <h3>🪟 Made for Windows</h3>
+      Media keys and the Windows media overlay, output-device choice, mini player on top of other windows, keyboard shortcuts, remembered window size.
+    </td>
+  </tr>
+</table>
 
-Keyboard: Space play / pause · Ctrl + → / ← next / previous · Ctrl + ↑ / ↓ volume · Ctrl + M mute · Esc leaves a text field. Media keys work through the Windows media controls and do not take the keys away from other players.
+## ✦ A closer look
 
-## Building it yourself
+<table>
+  <tr>
+    <td width="50%"><img src="docs/readme/now_playing.webp" alt="Now Playing with the NEXA Mix Engine panel"></td>
+    <td width="50%"><img src="docs/readme/wave.webp" alt="NEXA Wave"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Now Playing</b> · the Mix Engine explains every transition</td>
+    <td align="center"><b>NEXA Wave</b> · from familiar to brand-new, with “why this song”</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/readme/library.webp" alt="Library"></td>
+    <td width="50%"><img src="docs/readme/settings.webp" alt="Settings"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Library</b> · songs, favorites, albums, artists, folders</td>
+    <td align="center"><b>Settings</b> · output device, media keys, privacy, backups</td>
+  </tr>
+</table>
 
-Environment (verified): Windows 11 x64, Flutter 3.47.7 stable / Dart 3.13.5, Visual Studio 2022 17.14 with "Desktop development with C++" and Windows 10 SDK 10.0.26100.0, Windows Developer Mode on (plugin symlinks).
+<sub>Screenshots of the real app with a demo library — song and artist names are invented.</sub>
+
+## ✦ Sources
+
+Every source is used the way its owner allows — through official APIs and official players.
+
+| Source | Plays in NEXA | Search | Crossfade | NEXA Wave | Likes & playlists |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Your files** (MP3 · FLAC · WAV) | ✅ | ✅ | ✅ Smart Mix | ✅ | ✅ |
+| **Audius** | ✅ stream | ✅ | ✅ | ✅ | ✅ |
+| **Jamendo** (your free client id) | ✅ stream | ✅ | ✅ | ✅ | ✅ |
+| **YouTube** — official player | ✅ visible player | 🔑 own API key | — | — | ✅ |
+| **SoundCloud** — official widget | ✅ tracks, sets, profiles | ↗ soundcloud.com | — | — | ✅ |
+
+Spotify is not an audio source. YouTube and SoundCloud audio stays inside their own players: no downloads, no background tricks, no mixing — that is their rule, and NEXA keeps it. Details and every known limit: [RELEASE_NOTES.md](RELEASE_NOTES.md) and [reports/FEATURE_COMPLETE_REPORT.md](reports/FEATURE_COMPLETE_REPORT.md).
+
+## ✦ Download
+
+1. Download **`NEXA_Music_1.1.0_Windows_x64.zip`** from the [v1.1.0 release](https://github.com/KondexOFF/Nexa-Music/releases/tag/v1.1.0) and check it against `SHA256SUMS.txt`.
+2. Unpack the folder anywhere and start **`nexa_music.exe`** — no installer, the Visual C++ runtime is included.
+3. **Library → Add folder** with your music. That's it.
+
+> [!NOTE]
+> The exe is not code-signed, so Windows SmartScreen may ask once: *More info → Run anyway*.
+> Your library, playlists and settings live in `%APPDATA%\com.kondexoff\nexa_music`, not in the program folder — updating NEXA keeps them, and the database is backed up before every upgrade.
+
+<details>
+<summary><b>Keyboard shortcuts</b></summary>
+<br>
+
+| Keys | Action |
+|---|---|
+| <kbd>Space</kbd> | Play / pause |
+| <kbd>Ctrl</kbd> + <kbd>→</kbd> / <kbd>←</kbd> | Next / previous song |
+| <kbd>Ctrl</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd> | Volume up / down |
+| <kbd>Ctrl</kbd> + <kbd>M</kbd> | Mute |
+| <kbd>Alt</kbd> + <kbd>←</kbd> / <kbd>→</kbd>, mouse back / forward | Previous / next page |
+| Media keys | Work in the background, without taking the keys from other players |
+
+</details>
+
+## ✦ Privacy
+
+- **Your data stays on your PC.** Library, history, taste profile and keys are stored only locally; only your searches go to the catalogs you use.
+- **History only with your consent** — pause learning or use a private session at any time; delete it in one click.
+- **Online picks send only words** — your liked genres and artists, never your files or history.
+- **Optional ad blocking** in the web players (off by default, your own uBlock Origin Lite, removable in one click — no guarantees, and it goes against YouTube's API policies).
+
+## ✦ Build from source
+
+Verified environment: Windows 11 x64 · Flutter 3.47.7 / Dart 3.13.5 · Visual Studio 2022 with *Desktop development with C++* · Windows Developer Mode on.
 
 ```powershell
 flutter pub get
 flutter analyze
 flutter test
-flutter build windows --release
-# Result: build\windows\x64\runner\Release\  (copy this whole folder)
+flutter build windows --release   # → build\windows\x64\runner\Release\ (copy the whole folder)
 ```
 
-Developer tools (all outputs must stay outside the repository):
+<details>
+<summary><b>Under the hood</b></summary>
+<br>
 
-```powershell
-flutter run -d windows                                   # debug run
-flutter test test/online/audius_live.dart                # live Audius check (network)
-flutter test test/online/jamendo_live.dart               # live Jamendo check (client id file outside the repo)
-flutter run -d windows "--dart-define=NEXA_CAPTURE_DIR=<folder>"   # screenshots of the Phase 1 layouts
-flutter run -d windows --dart-define=NEXA_SELFTEST=true "--dart-define=NEXA_TEST_AUDIO=<own file>" "--dart-define=NEXA_PROBE_LOG_DIR=<folder>"
+| Layer | Technology |
+|---|---|
+| UI | Flutter (Windows), Manrope, own design system (NEXA Design 04) |
+| State | Riverpod 3 |
+| Data | Drift / SQLite, safe migrations with automatic backups |
+| Audio | media_kit / libmpv — two decks for gapless and crossfade, a separate silent decoder for Smart Mix analysis |
+| Web players | Microsoft Edge WebView2 (official YouTube IFrame Player, SoundCloud widget) |
+| Windows | Media controls (SMTC), native mini window, window placement |
+
+```
+lib/
+├─ app/            shell, navigation, theme, strings
+├─ core/           audio engine, database, models, settings
+├─ features/       home · library · player · mix_engine · nexa_dna · nexa_wave
+│                  discover · youtube · soundcloud · privacy
+├─ integrations/   Audius, Jamendo, YouTube, SoundCloud adapters
+└─ ui/             shared widgets
 ```
 
-## Automatic final test (NEXA AutoTest)
+</details>
 
-Double-click `NEXA_AutoTest.cmd` (about 15 minutes; test tones are played). It never touches your own library or settings: everything runs in a separate test profile with a generated test library (`tools/autotest/library/make_test_library.py`, kept outside the repository). Results: `reports/FINAL_AUTOTEST_REPORT.md`, `reports/autotest/results.json`; logs, recordings and screenshots in the run folder `_autotest_runs/<date>` next to the repository. What still needs a person (Narrator, listening impressions, a real network outage, your own music folder) is listed at the end of the report.
+## ✦ Quality
 
-Only some groups: `NEXA_AutoTest.cmd -Groups playback,mix` (groups: library, playback, mix, dna, online; the exe stage only with `-WithExe`). The sound must be on: before and during every recording the run checks Windows mute and volume; with no sound the sound checks are reported BLOCKED, not FAIL. The report names the run and the build (app-code fingerprint) of every result.
+| | |
+|---|---|
+| **Unit & widget tests** | 293 passing (`flutter test`) |
+| **Integration tests** | real media_kit / libmpv, SQLite, WebView2, YouTube and SoundCloud players |
+| **NEXA AutoTest** | 30 / 30 scenarios, 66 / 66 checks on the 1.1.0 release build — sound measured through WASAPI loopback, the Release exe driven through UI Automation, media keys, migration, crash log |
+| **Release check** | the published ZIP was downloaded again and compared file by file with the tested build |
 
-## Rules for this repository
+Run it yourself: double-click `NEXA_AutoTest.cmd` (test tones are played; your own library is never touched). Reports: [RELEASE_1.1.0_READINESS.md](reports/RELEASE_1.1.0_READINESS.md) · [FINAL_AUTOTEST_REPORT.md](reports/FINAL_AUTOTEST_REPORT.md).
 
-- Plan: [NEXA_Music_Master_Plan_Claude.md](NEXA_Music_Master_Plan_Claude.md); agent rules: [CLAUDE.md](CLAUDE.md); decisions: [docs/DECISIONS.md](docs/DECISIONS.md); change requests: [docs/CHANGE_REQUESTS.md](docs/CHANGE_REQUESTS.md); reports: [reports/](reports/).
-- Never commit music files, databases, listening history, keys / client ids, tokens or personal paths. The repository is private; the app is for personal use.
-- Spotify is not an audio source. YouTube / SoundCloud only through their official visible players.
-- Every push to GitHub needs the owner's permission.
+## ✦ Roadmap
 
-## People
+- **Windows 1.1** — released ✔
+- **Ports** — macOS, Linux, Android, iOS / iPadOS and Web, behind the same adapters ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md))
+
+## ✦ People
 
 | Who | Role |
 |---|---|
@@ -69,8 +195,19 @@ Only some groups: `NEXA_AutoTest.cmd -Groups playback,mix` (groups: library, pla
 
 Claude works only on the owner's instructions; every phase, push and release is the owner's decision ([CLAUDE.md](CLAUDE.md)).
 
-**Copyright (c) 2026 KondexOFF. All rights reserved.** No licence is granted: copying, distributing or reusing the code needs the owner's written permission. Details: [LICENSE](LICENSE).
+<details>
+<summary><b>Rules for this repository</b></summary>
+<br>
 
-## Design references
+- Plan: [NEXA_Music_Master_Plan_Claude.md](NEXA_Music_Master_Plan_Claude.md) · agent rules: [CLAUDE.md](CLAUDE.md) · decisions: [docs/DECISIONS.md](docs/DECISIONS.md) · change requests: [docs/CHANGE_REQUESTS.md](docs/CHANGE_REQUESTS.md) · progress: [docs/PROGRESS.md](docs/PROGRESS.md) · reports: [reports/](reports/)
+- Never commit music files, databases, listening history, keys / client ids, tokens or personal paths.
+- Every push to GitHub needs the owner's permission.
 
-NEXA Design 04 (Home and Player) in `assets/design/` — references only, not bundled. The app icon is original, drawn for NEXA (Phase 7).
+</details>
+
+## ✦ License
+
+**Copyright © 2026 KondexOFF. All rights reserved.**
+No licence is granted — copying, distributing or reusing this code needs the owner's written permission. Third-party components keep their own licences (listed in the app under *Settings → Open-source licences*). See [LICENSE](LICENSE).
+
+<p align="center"><sub>NEXA Music · made for listening, not for scrolling.</sub></p>
