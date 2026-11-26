@@ -32,7 +32,7 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 
 Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITECTURE.md`.
 
-| D-030 — Update Center (owner 2026-11-25) | **IN PROGRESS (WIP)**: update mechanism **verified on Windows** - update-chain run 4 on Release builds of `dece3e8`: **32 / 32 PASS** (install after close, failed start -> automatic rollback, rollback after a migration with the pre-migration copy and the newer library kept, data kept, damaged / unsigned / `../` packages refused, daily throttle, skip, real account through GitHub CLI, no token sent or logged); report `reports/D030_UPDATE_CENTER_REPORT.md`. Next: 1.1.1 Portable internal Development Candidate (**not built yet**) | `feature/d030-update-center` |
+| D-030 — Update Center (owner 2026-11-25) | **Functionally complete (Development, D-031)**: update chain on Windows **32 / 32 PASS** (Release builds of `dece3e8`); **1.1.1 Portable internal Development Candidate built and checked** (`2ae87cf`, 38 files, exe `266200ff…d469`, package `NEXA_Music_1.1.1_Windows_x64.zip` SHA-256 `138fa857…368e` passes NEXA's own update checks; real exe started on a test profile, 0 crashes). **Not published** (no tag, release or merge); installed 1.1.0 not replaced. Full regression of other features: Full Debugging stage (D-031). Report `reports/D030_UPDATE_CENTER_REPORT.md` | `feature/d030-update-center` |
 
 ## Technical debt / known problems
 
@@ -62,6 +62,8 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
 
 ## Log
+
+- 2026-11-26 — **D-030 functionally complete**: 1.1.1 Portable internal Development Candidate built from `2ae87cf` (analyze 0, 354 tests, Release build, smoke start, 0 crashes) and packed into `_dev_candidate_v1.1.1` on the PC; the package passes NEXA's own update checks. Not published. Next under D-031: NEXA Nocturne.
 
 - 2026-11-26 — **D-030 debugging**: Windows update chain 16 / 29 -> 30 / 32 -> **32 / 32 PASS**. Fixed: the updater never started (a detached PowerShell from Dart ends at once - now Start-Process with -EncodedCommand; same bug fixed in the AdBlock restart), What's new readable by screen readers, health answer read safely after a failed start. Pushed as WIP (`564adaa`, `3ddc46d`, `dece3e8`).
 
