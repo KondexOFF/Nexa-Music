@@ -32,7 +32,7 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 
 Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITECTURE.md`.
 
-| D-030 — Update Center (owner 2026-11-25) | **IN PROGRESS (WIP)**: implemented and unit-tested (`67e3e8f`: check, daily throttle, 4-action notification, anonymous GitHub API + GitHub CLI, SHA-256 digest + SHA256SUMS, ZIP checks, staging, Windows updater, rollback with DB copy, refusal of newer schema; analyze 0, 352 / 352 tests). Windows update-chain run 1 (2026-11-25) **not valid**: the local GitHub stand-in of the test crashed on its first request (test-tool bug, fixed); rerun pending. **Not complete** until the whole update chain (install, failed start, rollback, data kept) passes on Windows. 1.1.1 Portable candidate: **not built yet** | `feature/d030-update-center` |
+| D-030 — Update Center (owner 2026-11-25) | **IN PROGRESS (WIP)**: update mechanism **verified on Windows** - update-chain run 4 on Release builds of `dece3e8`: **32 / 32 PASS** (install after close, failed start -> automatic rollback, rollback after a migration with the pre-migration copy and the newer library kept, data kept, damaged / unsigned / `../` packages refused, daily throttle, skip, real account through GitHub CLI, no token sent or logged); report `reports/D030_UPDATE_CENTER_REPORT.md`. Next: 1.1.1 Portable internal Development Candidate (**not built yet**) | `feature/d030-update-center` |
 
 ## Technical debt / known problems
 
@@ -62,6 +62,8 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
 
 ## Log
+
+- 2026-11-26 — **D-030 debugging**: Windows update chain 16 / 29 -> 30 / 32 -> **32 / 32 PASS**. Fixed: the updater never started (a detached PowerShell from Dart ends at once - now Start-Process with -EncodedCommand; same bug fixed in the AdBlock restart), What's new readable by screen readers, health answer read safely after a failed start. Pushed as WIP (`564adaa`, `3ddc46d`, `dece3e8`).
 
 - 2026-11-26 — **D-030 WIP** (D-031 order, D-032 incremental push): Update Center code committed and pushed as work in progress. Debugging: first Windows update-chain run invalid (fake GitHub server set the HTTP status after the body - `Bad state: Header already sent` - so every later scenario ran without a server); server fixed; updater now starts outside the program folder (a current folder inside it blocks the folder swap). Package check for the release kit (`test/update/package_check_test.dart`). Next: rerun the chain, then the 1.1.1 Development Candidate.
 
