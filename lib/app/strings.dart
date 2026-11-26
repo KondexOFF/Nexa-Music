@@ -1,9 +1,10 @@
 /// All user-visible strings in one place (Master Plan v1.0 §1: English first,
 /// stored centrally for a later Russian translation).
 abstract final class S {
-  static const String appTitle = 'NEXA Music';
-  static const String brandNexa = 'NEXA';
-  static const String brandMusic = 'MUSIC';
+  // D-034: NEXARYVE (formerly NEXARYVE). Only names the user reads change;
+  // folders, settings keys, the exe name and the update source stay.
+  static const String appTitle = 'NEXARYVE';
+  static const String brandName = 'NEXARYVE';
 
   // Navigation
   static const String navHome = 'Home';
@@ -41,7 +42,7 @@ abstract final class S {
   static const String greetingSubtitle = 'Personal library';
 
   // Wave hero
-  static const String waveOverline = 'NEXA WAVE';
+  static const String waveOverline = 'NEXARYVE WAVE';
   static const String waveTitle = 'Your sound, in motion';
   static const String waveSubtitle =
       'A personal mix of familiar favorites and fresh discoveries, shaped by '
@@ -83,7 +84,7 @@ abstract final class S {
   static const String myTaste = 'My Taste';
   static const String myTasteNote = 'Demo values';
   static const String myTasteTooltip =
-      'NEXA DNA builds your taste profile in Phase 5, only with your consent.';
+      'NEXARYVE DNA builds your taste profile in Phase 5, only with your consent.';
   static const String discoverMore = 'Discover More';
 
   // Player
@@ -91,8 +92,8 @@ abstract final class S {
   static const String openNowPlaying = 'Open Now Playing';
   static const String closeNowPlaying = 'Close Now Playing';
   static const String toggleQueue = 'Show or hide Up Next';
-  static const String waveChip = 'NEXA Wave';
-  static const String waveChipTooltip = 'Open NEXA Wave';
+  static const String waveChip = 'NEXARYVE Wave';
+  static const String waveChipTooltip = 'Open NEXARYVE Wave';
   static const String addToPlaylist = 'Add to playlist';
   static const String shuffleLabel = 'Shuffle';
   static const String previous = 'Previous';
@@ -101,10 +102,10 @@ abstract final class S {
   static const String repeat = 'Repeat';
   static const String volume = 'Volume';
   static const String queueTab = 'Queue';
-  static const String mixChipTooltip = 'Open NEXA Mix Engine';
+  static const String mixChipTooltip = 'Open NEXARYVE Mix Engine';
 
   // Mix Engine
-  static const String mixEngine = 'NEXA MIX ENGINE';
+  static const String mixEngine = 'NEXARYVE MIX ENGINE';
   static const String mixNote =
       'Applied to playback and saved. Smart Mix measures your library files '
       '(silence and level) in the background; online songs get a normal '
@@ -146,7 +147,7 @@ abstract final class S {
   static const String gaplessNote = 'No overlap in Gapless';
   static const String smartMixTitle = 'Smart Mix';
   static const String smartMixDescription =
-      'Lets NEXA adjust transitions of library files: skip silent ends and '
+      'Lets NEXARYVE adjust transitions of library files: skip silent ends and '
       'intros, mix in where an outro has faded, shorten the overlap for '
       'short tracks. Tempo and key matching are not part of it.';
   static const String smartMixInfo =
@@ -160,19 +161,19 @@ abstract final class S {
   static const String settingsHeading = 'Settings';
   static const String settingsAbout = 'About';
   static const String settingsAboutBody =
-      'NEXA Music - personal Windows music player. Local library, playback, '
-      'NEXA Mix Engine, NEXA DNA, NEXA Wave, Audius and Jamendo; YouTube and '
+      'NEXARYVE - personal Windows music player. Local library, playback, '
+      'NEXARYVE Mix Engine, NEXARYVE DNA, NEXARYVE Wave, Audius and Jamendo; YouTube and '
       'SoundCloud in their own official players.';
   static const String licences = 'Open-source licences';
   static String versionLine(String version) => 'Version $version';
   static const String settingsPrivacy = 'Privacy and learning';
   static const String settingsPrivacyBody =
       'Your listening history stays on this PC and is only kept with your '
-      'consent. Likes, dislikes and NEXA DNA choices always stay local too.';
+      'consent. Likes, dislikes and NEXARYVE DNA choices always stay local too.';
   static const String settingsMix = 'Mix Engine defaults';
   static const String settingsMixBody =
       'Transition mode, crossfade length and the album rule are saved and '
-      'used on every start. Change them in the NEXA Mix Engine panel on Home '
+      'used on every start. Change them in the NEXARYVE Mix Engine panel on Home '
       'and on Now Playing.';
   static const String settingsDev = 'Developer tools';
   static const String settingsDevBody =
@@ -193,7 +194,7 @@ abstract final class S {
   static const String likedSongs = 'Liked Songs';
   static const String libraryEmptyTitle = 'Your library is empty';
   static const String libraryEmptyBody =
-      'Add a folder with MP3, FLAC or WAV files. NEXA reads the files where '
+      'Add a folder with MP3, FLAC or WAV files. NEXARYVE reads the files where '
       'they are - nothing is copied, moved or deleted.';
   static const String noResults = 'Nothing in your library matches';
   static const String favoritesEmpty =
@@ -201,7 +202,7 @@ abstract final class S {
   static const String foldersEmpty = 'No folders added yet.';
   static const String removeFolder = 'Remove from library';
   static const String removeFolderBody =
-      'The folder and its songs are removed from NEXA (also from playlists). '
+      'The folder and its songs are removed from NEXARYVE (also from playlists). '
       'The files on your disk are not touched.';
   static const String unlike = 'Remove from favorites';
   static const String removeFromPlaylist = 'Remove from playlist';
@@ -255,10 +256,10 @@ abstract final class S {
   static const String outputDeviceMissing =
       'The chosen device is not connected - choose another';
   static const String outputDeviceBody =
-      'Where NEXA plays sound. "System default" follows the Windows setting.';
+      'Where NEXARYVE plays sound. "System default" follows the Windows setting.';
   static const String mediaKeysTitle = 'Media keys';
   static const String mediaKeysBody =
-      'Media keys and the Windows media overlay control NEXA, also in the '
+      'Media keys and the Windows media overlay control NEXARYVE, also in the '
       'background. Windows sends the keys to the app that is playing, so '
       'other players keep their media keys.';
   static const String keyboardTitle = 'Keyboard shortcuts';
@@ -269,28 +270,28 @@ abstract final class S {
       'moves between controls; Enter or Space activates the focused '
       'control.';
 
-  // NEXA DNA and NEXA Wave (Phase 5)
+  // NEXARYVE DNA and NEXARYVE Wave (Phase 5)
   static const String dislike = 'Dislike';
   static const String undislike = 'Remove dislike';
   static const String dislikeInfo =
-      'NEXA Wave will never suggest this song. The file stays in your library.';
-  static const String waveOverlineFull = 'NEXA WAVE';
+      'NEXARYVE Wave will never suggest this song. The file stays in your library.';
+  static const String waveOverlineFull = 'NEXARYVE WAVE';
   static const String waveSubtitleLive =
       'A continuous queue from your own playable songs - shaped by your '
-      'NEXA DNA, likes and dislikes and, if you allow it, your listening.';
+      'NEXARYVE DNA, likes and dislikes and, if you allow it, your listening.';
   static const String startWave = 'Start Wave';
   static const String refreshWave = 'New picks';
   static const String waveNextUp = 'Coming up in your Wave';
   static const String waveEmptyLibrary =
-      'Add music to your Library first - NEXA Wave only uses songs you can '
+      'Add music to your Library first - NEXARYVE Wave only uses songs you can '
       'play.';
   static const String waveNothingLeft =
       'Nothing to suggest: every song is disliked, excluded or unavailable. '
-      'Change your NEXA DNA or remove a dislike.';
+      'Change your NEXARYVE DNA or remove a dislike.';
   static const String wavePlaying = 'Wave is playing';
   static const String familiar = 'Familiar';
   // Wave's slider is about what you know, not about the Discover page
-  // (owner 2026-11-16: do not mix up Discover and NEXA Wave).
+  // (owner 2026-11-16: do not mix up Discover and NEXARYVE Wave).
   static const String discovery = 'New to you';
   static const String familiarDiscovery = 'Familiar - New to you';
   static const String familiarDiscoveryInfo =
@@ -312,11 +313,11 @@ abstract final class S {
   static const String privateSession = 'Private session';
   static const String privateSessionInfo =
       'Nothing from this session is added to your listening history. Ends '
-      'when NEXA closes.';
+      'when NEXARYVE closes.';
   static const String privateSessionOn = 'Private session - not recorded';
-  static const String editDna = 'Edit NEXA DNA';
-  static const String setUpDna = 'Set up NEXA DNA';
-  static const String dnaTitle = 'Your NEXA DNA';
+  static const String editDna = 'Edit NEXARYVE DNA';
+  static const String setUpDna = 'Set up NEXARYVE DNA';
+  static const String dnaTitle = 'Your NEXARYVE DNA';
   static const String dnaIntro =
       'Pick a few genres and artists you like. Click again to exclude one '
       '(never suggested), a third time to clear. You can skip this.';
@@ -334,7 +335,7 @@ abstract final class S {
       'the Wave can learn. Nothing is sent anywhere. You can pause or delete '
       'it at any time in Settings.';
   static const String myTasteEmpty =
-      'No NEXA DNA yet. Pick genres and artists you like to shape your Wave.';
+      'No NEXARYVE DNA yet. Pick genres and artists you like to shape your Wave.';
   static const String myTasteLiked = 'You like';
   static const String myTasteExcluded = 'Never suggest';
   static const String whyThisTrack = 'Why this song';
@@ -350,7 +351,7 @@ abstract final class S {
   static const String reasonRepeat =
       'Played recently - your library has no other match right now';
 
-  // NEXA Wave across catalogs (E1)
+  // NEXARYVE Wave across catalogs (E1)
   static const String waveOnline = 'Online picks from Audius and Jamendo';
   static const String waveOnlineInfo =
       'Mixes streamed catalog songs into the new songs of your Wave. Your '
@@ -391,7 +392,7 @@ abstract final class S {
       'By $artist, whom you like, on $source';
   static const String hideOnline = 'Not for me';
   static const String hideOnlineInfo =
-      'Hidden from your Wave until NEXA closes (online songs are not saved).';
+      'Hidden from your Wave until NEXARYVE closes (online songs are not saved).';
   static String skippedStream(String title) =>
       'Skipped "$title": the stream is not available';
   static const String noPlayableStream = 'No playable song in the queue';
@@ -402,7 +403,7 @@ abstract final class S {
   static const String discoverCatalogs = 'Music catalogs';
   static const String ytLinkHint = 'Paste a YouTube link';
   static const String ytWatch = 'Watch';
-  static const String ytWatchInNexa = 'Watch in NEXA';
+  static const String ytWatchInNexa = 'Watch in NEXARYVE';
   static const String ytBadLink =
       'This is not a link to one YouTube video (watch, youtu.be, Shorts or '
       'an 11-character video id).';
@@ -413,7 +414,7 @@ abstract final class S {
       'No YouTube video. Paste a link below or search in Discover -> YouTube.';
   static const String ytDockExpand = 'Open the YouTube page';
   static const String ytMiniWindow = 'Mini window on top of other apps';
-  static const String ytMiniRestore = 'Back to the full NEXA window';
+  static const String ytMiniRestore = 'Back to the full NEXARYVE window';
   static const String ytLive = 'Live';
   static const String ytStarting = 'Starting the YouTube player...';
   static String ytUnavailable(String why) =>
@@ -432,23 +433,23 @@ abstract final class S {
       'This video cannot be played in other apps: its owner does not allow '
       'it, or it is no longer available.';
   static const String ytError153 =
-      'YouTube did not accept NEXA\'s app identification (error 153).';
+      'YouTube did not accept NEXARYVE\'s app identification (error 153).';
   static String ytErrorOther(int code) => 'YouTube player error $code.';
   static const String ytOverlayTitle = 'YouTube video';
   static const String ytOverlayArtist = 'YouTube';
   static const String ytLimits =
-      'YouTube\'s own player with its controls and ads. It pauses when NEXA '
-      'is minimised; in other sections of NEXA it stays in the compact '
-      'player until you close it, and it never plays together with NEXA. '
-      'Nothing you watch is saved: not in the history, NEXA Wave, NEXA DNA '
+      'YouTube\'s own player with its controls and ads. It pauses when NEXARYVE '
+      'is minimised; in other sections of NEXARYVE it stays in the compact '
+      'player until you close it, and it never plays together with NEXARYVE. '
+      'Nothing you watch is saved: not in the history, NEXARYVE Wave, NEXARYVE DNA '
       'or playlists. YouTube Terms of Service apply.';
   static const String ytTerms = 'YouTube Terms of Service';
   static const String ytGooglePrivacy = 'Google Privacy Policy';
   static const String ytDiscoverOff =
       'YouTube is off. Turn it on in Settings to watch YouTube videos in '
-      'NEXA in YouTube\'s own player.';
+      'NEXARYVE in YouTube\'s own player.';
   static const String ytDiscoverInfo =
-      'Videos play in YouTube\'s own player inside NEXA. Pasting a link '
+      'Videos play in YouTube\'s own player inside NEXARYVE. Pasting a link '
       'needs no key; searching uses your own YouTube Data API key.';
   static const String ytNoKey =
       'To search YouTube, add your own YouTube Data API key in Settings. '
@@ -456,7 +457,7 @@ abstract final class S {
   static const String ytSearchHint = 'Search YouTube videos';
   static const String ytQuotaNote =
       'Each search uses 100 of your key\'s 10,000 daily quota units (about '
-      '99 searches a day). NEXA searches only when you press Search.';
+      '99 searches a day). NEXARYVE searches only when you press Search.';
   static const String ytApiBadKey =
       'YouTube did not accept the API key. Check it in Settings.';
   static const String ytApiDisabled =
@@ -472,7 +473,7 @@ abstract final class S {
   static const String ytApiProvider = 'YouTube could not answer the search.';
   static const String ytSettingsTitle = 'YouTube';
   static const String ytSettingsBody =
-      'Watch YouTube videos inside NEXA in YouTube\'s official player. Off '
+      'Watch YouTube videos inside NEXARYVE in YouTube\'s official player. Off '
       'until you turn it on.';
   static const String ytUse = 'Use YouTube';
   static const String ytUseInfo =
@@ -481,7 +482,7 @@ abstract final class S {
   static const String ytApiKey = 'YouTube Data API key (optional)';
   static const String ytApiKeyInfo =
       'Only for searching. Create it in your own Google Cloud project and '
-      'restrict it to "YouTube Data API v3". Stored only in NEXA\'s database '
+      'restrict it to "YouTube Data API v3". Stored only in NEXARYVE\'s database '
       'on this PC - like any key in a desktop app it cannot be perfectly '
       'protected, so do not reuse it elsewhere.';
   static const String ytKeyCheck = 'Check key';
@@ -493,19 +494,19 @@ abstract final class S {
   static const String ytKeyHelp = 'How to get a key';
   static const String ytConsentTitle = 'Turn on YouTube?';
   static const List<String> ytConsentPoints = [
-    'Videos play in YouTube\'s own player inside NEXA, with YouTube\'s '
+    'Videos play in YouTube\'s own player inside NEXARYVE, with YouTube\'s '
         'controls, branding and ads. The YouTube Terms of Service apply.',
     'YouTube (Google) receives what any YouTube player receives: the videos '
-        'you open, your IP address and its own cookies in NEXA\'s built-in '
+        'you open, your IP address and its own cookies in NEXARYVE\'s built-in '
         'web view. The Google Privacy Policy applies.',
     'Searching sends your search words to Google with your own YouTube Data '
-        'API key. The key stays in NEXA\'s database on this PC; you can '
+        'API key. The key stays in NEXARYVE\'s database on this PC; you can '
         'change or delete it at any time.',
-    'NEXA records nothing about what you watch: YouTube is never in your '
-        'history, NEXA Wave, NEXA DNA or playlists, and NEXA has no viewing '
+    'NEXARYVE records nothing about what you watch: YouTube is never in your '
+        'history, NEXARYVE Wave, NEXARYVE DNA or playlists, and NEXARYVE has no viewing '
         'statistics or tracking - also for videos made for kids.',
-    'No background play: a video pauses when NEXA is minimised and stops '
-        'when you leave the YouTube page. It never plays together with NEXA.',
+    'No background play: a video pauses when NEXARYVE is minimised and stops '
+        'when you leave the YouTube page. It never plays together with NEXARYVE.',
   ];
   static const String ytConsentAgree = 'I agree, turn on YouTube';
 
@@ -513,7 +514,7 @@ abstract final class S {
   static const String historyConsent = 'Keep listening history';
   static const String historyConsentInfo =
       'Song, time and whether it was finished or skipped - used only by '
-      'NEXA Wave on this PC.';
+      'NEXARYVE Wave on this PC.';
   static const String pauseLearning = 'Pause learning';
   static const String pauseLearningInfo =
       'Stop adding to the history until you switch this off again.';
@@ -522,8 +523,8 @@ abstract final class S {
   static const String clearHistory = 'Delete history';
   static const String clearHistoryBody =
       'All saved listenings are deleted from this PC. Likes, dislikes and '
-      'NEXA DNA stay.';
-  static const String resetDna = 'Reset NEXA DNA';
+      'NEXARYVE DNA stay.';
+  static const String resetDna = 'Reset NEXARYVE DNA';
   static const String resetDnaBody =
       'Removes your genre and artist choices, all dislikes and the '
       'Familiar - Discovery setting. Favorites and history stay.';
@@ -543,7 +544,7 @@ abstract final class S {
   static const String discoverEmpty = 'Search to see results from the catalogs.';
   static const String noCatalogResults = 'No results';
   static const String searching = 'Searching...';
-  static const String streamHere = 'Stream in NEXA';
+  static const String streamHere = 'Stream in NEXARYVE';
   static const String notPlayableHere = 'Not playable here';
   static const String openPage = 'Open page';
   static String onSource(String source) => 'on $source';
@@ -590,7 +591,7 @@ abstract final class S {
   static const String dbBackupsTitle = 'Library backups';
   static const String dbBackupsBody =
       'Copies of your playlists, favourites, saved videos and history. A '
-      'copy is made automatically before NEXA updates the database; the 10 '
+      'copy is made automatically before NEXARYVE updates the database; the 10 '
       'newest are kept on this PC.';
   static const String dbBackupNow = 'Back up now';
   static const String dbBackupBusy = 'Backing up...';
@@ -600,13 +601,13 @@ abstract final class S {
   static const String dbRestoreAction = 'Restore at next start';
   static const String dbRestoreTitle = 'Restore this backup?';
   static String dbRestoreBody(String copy) =>
-      'When NEXA starts next time, the library is replaced by the backup of '
+      'When NEXARYVE starts next time, the library is replaced by the backup of '
       '$copy. The current library is kept as another backup first.';
   static String dbRestorePending(String copy) =>
       'Will be restored at next start: $copy';
   static const String dbFailedTitle = 'The library could not be opened';
   static const String dbFailedNoCopy =
-      'Nothing was changed. Close NEXA and try again; if it happens again, '
+      'Nothing was changed. Close NEXARYVE and try again; if it happens again, '
       'restore a copy from the backups folder.';
   static String dbFailedRestored(String copy) =>
       'The update of the library failed, so the copy made just before it was '
@@ -637,12 +638,12 @@ abstract final class S {
 
   static const String ytHistory = 'Local YouTube history';
   static const String ytHistoryInfo =
-      'Off by default. Keeps videos you watch in NEXA in Recently Played and '
+      'Off by default. Keeps videos you watch in NEXARYVE in Recently Played and '
       'Continue listening, on this PC only. Videos made for kids are never '
-      'kept: NEXA asks YouTube for this (1 unit of your API quota per '
+      'kept: NEXARYVE asks YouTube for this (1 unit of your API quota per '
       'video).';
   static const String ytHistoryNoKey =
-      'Without a YouTube API key (Settings - YouTube) NEXA cannot check '
+      'Without a YouTube API key (Settings - YouTube) NEXARYVE cannot check '
       'this, so no video is kept.';
   static const String ytHistoryClear = 'Delete YouTube history';
   static const String ytHistoryClearBody =
@@ -674,7 +675,7 @@ abstract final class S {
       "SoundCloud's player could not be loaded (offline?)";
   static const String scIntro =
       'Paste a link to a SoundCloud track, playlist or profile. It plays in '
-      'SoundCloud\'s own player in NEXA - with the uploader, SoundCloud\'s '
+      'SoundCloud\'s own player in NEXARYVE - with the uploader, SoundCloud\'s '
       'branding and its controls; a playlist or profile plays through as one '
       'entry. Like it or add it to a playlist or the queue like any other '
       'song.';
@@ -690,7 +691,7 @@ abstract final class S {
       'Ad blocking in the YouTube and SoundCloud players';
   static const String adBlockInfo =
       'Optional, off by default: a local uBlock Origin Lite (unpacked '
-      'Chromium build, chosen by you - NEXA does not bundle or download it) '
+      'Chromium build, chosen by you - NEXARYVE does not bundle or download it) '
       'in the web players only. Your library, Audius and Jamendo never use '
       'it. Blocking YouTube ads breaks the YouTube API rules (Developer '
       'Policies III.I.05-06); not every ad is blocked, and YouTube may '
@@ -700,7 +701,7 @@ abstract final class S {
       'This is not an officially permitted use of the YouTube player: '
       'blocking ads breaks the YouTube API Services Developer Policies '
       '(III.I.05-06). Your API key or access can be revoked, YouTube may '
-      'detect the blocker, and videos may stop playing. NEXA does not '
+      'detect the blocker, and videos may stop playing. NEXARYVE does not '
       'promise that any ad is blocked. Use it only for yourself and switch '
       'it off if YouTube misbehaves.';
   static const String adBlockSwitchOn = 'Switch on';
@@ -713,7 +714,7 @@ abstract final class S {
       'uBlock Origin Lite for Chromium (.zip)';
   static const String adBlockSteps =
       'How: 1. Get uBlock Origin Lite opens its official release page - '
-      'download the Chromium .zip. 2. Switch on and choose that .zip: NEXA '
+      'download the Chromium .zip. 2. Switch on and choose that .zip: NEXARYVE '
       'unpacks it into its own data folder. 3. Open a YouTube or SoundCloud '
       'player.';
   static const String adBlockUnpacking = 'Unpacking...';
@@ -722,7 +723,7 @@ abstract final class S {
       'Chromium .zip of uBlock Origin Lite.';
   static String adBlockUnpackFailed(String why) =>
       'Could not unpack the .zip: $why';
-  static const String adBlockRestartNow = 'Restart NEXA now';
+  static const String adBlockRestartNow = 'Restart NEXARYVE now';
   static const String adBlockRemove = 'Remove from the players';
   static const String adBlockNoFolder = 'No extension folder chosen.';
   static String adBlockFolder(String path) => 'Extension folder: $path';
@@ -733,7 +734,7 @@ abstract final class S {
   static const String adBlockRemoveNext =
       'Removed from the players when one opens next time.';
   static const String adBlockRestart =
-      'Restart NEXA to apply: the web players of this run were started '
+      'Restart NEXARYVE to apply: the web players of this run were started '
       'without extension support.';
   static String adBlockRefused(String why) => 'WebView2 refused: $why';
   static const String adBlockRemoved =
@@ -747,11 +748,11 @@ abstract final class S {
       'soundcloud.com address.';
   static const String scNotALink = 'This is not a SoundCloud link.';
   static const String scLimits =
-      'No SoundCloud search inside NEXA: SoundCloud gives API keys only with '
+      'No SoundCloud search inside NEXARYVE: SoundCloud gives API keys only with '
       'a paid Artist Pro plan, and its API terms forbid keeping or mixing '
       'its results with other services. Search on soundcloud.com and paste '
-      'the link here. NEXA never downloads, caches or mixes SoundCloud '
-      'audio - no crossfade, not in NEXA Wave.';
+      'the link here. NEXARYVE never downloads, caches or mixes SoundCloud '
+      'audio - no crossfade, not in NEXARYVE Wave.';
   static const String scSearchOnSite = 'Search on soundcloud.com';
   static const String scOpenOnSoundCloud = 'Open on SoundCloud';
   static const String scClose = 'Close SoundCloud player';
@@ -766,17 +767,17 @@ abstract final class S {
   static const String sourcesTitle = 'Sources';
   static const String sourcesBody =
       'Where your music comes from besides your own files.';
-  static const String discoverYouTubeTitle = 'YouTube in NEXA';
-  static const String discoverSoundCloudTitle = 'SoundCloud in NEXA';
+  static const String discoverYouTubeTitle = 'YouTube in NEXARYVE';
+  static const String discoverSoundCloudTitle = 'SoundCloud in NEXARYVE';
 
-  // D-030: NEXA Update Center
+  // D-030: NEXARYVE Update Center
   static const String updTitle = 'Updates';
   static const String updCheck = 'Check for updates';
   static const String updChecking = 'Checking for updates...';
   static const String updAuto = 'Check automatically (at most once a day)';
   static String updLastCheck(String when) => 'Last check: $when';
-  static String updUpToDate(String v) => 'NEXA Music $v is the newest version.';
-  static String updAvailableTitle(String v) => 'NEXA Music $v is available';
+  static String updUpToDate(String v) => 'NEXARYVE $v is the newest version.';
+  static String updAvailableTitle(String v) => 'NEXARYVE $v is available';
   static String updAvailableBody(String current, String size, String date) =>
       'You have $current. Download: $size$date. Your library, playlists, '
       'history and settings stay as they are.';
@@ -791,29 +792,29 @@ abstract final class S {
   static const String updDownloading = 'Downloading';
   static const String updUnpacking = 'Checking and unpacking';
   static String updReadyBody(String v) =>
-      'NEXA Music $v is downloaded and checked (SHA-256). NEXA closes, the '
+      'NEXARYVE $v is downloaded and checked (SHA-256). NEXARYVE closes, the '
       'updater replaces the program and starts the new version. The '
       'current version is kept for a rollback.';
   static const String updRestartNow = 'Restart and install';
-  static const String updOnExit = 'Install when I close NEXA';
+  static const String updOnExit = 'Install when I close NEXARYVE';
   static const String updOnExitSet =
-      'The update is installed when you close NEXA.';
-  static const String updInstalling = 'Closing NEXA to install the update...';
-  static String updDone(String v) => 'Updated to NEXA Music $v.';
+      'The update is installed when you close NEXARYVE.';
+  static const String updInstalling = 'Closing NEXARYVE to install the update...';
+  static String updDone(String v) => 'Updated to NEXARYVE $v.';
   static String updRolledBack(String v) =>
-      'The new version did not start, so NEXA Music $v was put back.';
-  static String updRollbackDone(String v) => 'Rolled back to NEXA Music $v.';
+      'The new version did not start, so NEXARYVE $v was put back.';
+  static String updRollbackDone(String v) => 'Rolled back to NEXARYVE $v.';
   static String updFailedResult(String detail) =>
       'The update could not be finished: $detail';
   static const String updNotClosed =
-      'NEXA did not close in time, so nothing was changed.';
+      'NEXARYVE did not close in time, so nothing was changed.';
   static String updRollback(String v) => 'Roll back to $v';
-  static String updRollbackTitle(String v) => 'Roll back to NEXA Music $v?';
+  static String updRollbackTitle(String v) => 'Roll back to NEXARYVE $v?';
   static String updRollbackBody(String v) =>
-      'NEXA closes, NEXA Music $v is put back and started. Your library, '
+      'NEXARYVE closes, NEXARYVE $v is put back and started. Your library, '
       'playlists, history and settings stay.';
   static String updRollbackDbBody(String v, String copy) =>
-      'This version has upgraded your library, and $v cannot read it. NEXA '
+      'This version has upgraded your library, and $v cannot read it. NEXARYVE '
       'puts back the copy made before the upgrade ($copy). The current '
       'library is saved first as a backup that is never removed '
       'automatically - after updating again you can restore it in '
@@ -824,7 +825,7 @@ abstract final class S {
   static const String updRollbackConfirm = 'Roll back';
   static const String updCancel = 'Cancel';
   static const String updPortableOnly =
-      'This copy of NEXA cannot replace its own folder (no write access). '
+      'This copy of NEXARYVE cannot replace its own folder (no write access). '
       'Download the new version from GitHub instead.';
   static const String updOpenRelease = 'Open the release page';
 
@@ -833,7 +834,7 @@ abstract final class S {
       'offline' => 'No connection to GitHub. Check the internet connection.',
       'noGitHubCli' =>
         'The repository is private: install GitHub CLI and sign in with '
-            '"gh auth login" - NEXA never stores a token itself.',
+            '"gh auth login" - NEXARYVE never stores a token itself.',
       'notLoggedIn' =>
         'GitHub CLI is not signed in. Run "gh auth login" once.',
       'accessDenied' =>
@@ -855,10 +856,10 @@ abstract final class S {
     return detail.isEmpty ? text : '$text ($detail)';
   }
 
-  // D-030: a library saved by a newer NEXA
-  static const String dbNewerTitle = 'This library is from a newer NEXA';
+  // D-030: a library saved by a newer NEXARYVE
+  static const String dbNewerTitle = 'This library is from a newer NEXARYVE';
   static String dbNewerBody(int found, int mine) =>
-      'Your library was upgraded by a newer NEXA Music (schema $found), and '
+      'Your library was upgraded by a newer NEXARYVE (schema $found), and '
       'this version reads schema $mine. It was not opened, so nothing was '
       'changed. Start the newer version, or put back the copy made before '
       'the upgrade - the current library is kept as a backup first.';
@@ -866,5 +867,5 @@ abstract final class S {
   static const String dbNewerNoCopy =
       'No copy that this version can open was found.';
   static const String dbNewerRestored =
-      'The copy was put back. Close this window and start NEXA again.';
+      'The copy was put back. Close this window and start NEXARYVE again.';
 }

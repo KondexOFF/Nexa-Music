@@ -222,7 +222,7 @@ Future<AppDatabase> openDatabaseSafely({
   final found = DatabaseSafety.schemaOf(safety.database);
   if (found != null && found > AppDatabase.currentSchemaVersion) {
     throw DatabaseOpenFailed(
-      'The library was saved by a newer NEXA Music (schema $found; this '
+      'The library was saved by a newer NEXARYVE (schema $found; this '
       'version reads ${AppDatabase.currentSchemaVersion}).',
       newerSchema: found,
       safety: safety,

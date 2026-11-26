@@ -1,17 +1,17 @@
 <p align="center">
-  <img src="docs/readme/banner.webp" alt="NEXA Music — Your sound, in motion." width="100%">
+  <img src="docs/readme/banner.webp" alt="NEXARYVE — Your sound, in motion." width="100%">
 </p>
 
 <p align="center">
   <a href="https://github.com/KondexOFF/Nexa-Music/releases/tag/v1.1.0"><img src="https://img.shields.io/badge/release-v1.1.0-ad9aff?style=for-the-badge&labelColor=161922" alt="Release v1.1.0"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-86a8ff?style=for-the-badge&logo=windows&logoColor=white&labelColor=161922" alt="Windows 10 / 11 x64">
   <img src="https://img.shields.io/badge/Flutter-3.47-ff7e6e?style=for-the-badge&logo=flutter&logoColor=white&labelColor=161922" alt="Flutter 3.47">
-  <img src="https://img.shields.io/badge/AutoTest-66%2F66%20passed-ffa15c?style=for-the-badge&labelColor=161922" alt="NEXA AutoTest 66 of 66 passed">
+  <img src="https://img.shields.io/badge/AutoTest-66%2F66%20passed-ffa15c?style=for-the-badge&labelColor=161922" alt="NEXARYVE AutoTest 66 of 66 passed">
   <img src="https://img.shields.io/badge/license-all%20rights%20reserved-6f7282?style=for-the-badge&labelColor=161922" alt="All rights reserved">
 </p>
 
 <p align="center">
-  <b>A private, beautiful music player for Windows.</b><br>
+  <b>A private, beautiful music player for Windows.</b> <sub>(formerly NEXA Music)</sub><br>
   Your own library, mixed like a DJ set — plus Audius, Jamendo, YouTube and SoundCloud in one queue.
 </p>
 
@@ -28,7 +28,7 @@
 <br>
 
 <p align="center">
-  <img src="docs/readme/home.webp" alt="NEXA Music — Home" width="100%">
+  <img src="docs/readme/home.webp" alt="NEXARYVE — Home" width="100%">
 </p>
 
 ## ✦ Highlights
@@ -36,15 +36,15 @@
 <table>
   <tr>
     <td width="33%" valign="top">
-      <h3>🎚️ NEXA Mix Engine</h3>
+      <h3>🎚️ NEXARYVE Mix Engine</h3>
       Gapless playback and equal-power crossfades from 0 to 12 seconds. <b>Smart Mix</b> measures every song of your library once, in the background, and mixes past silent tails and faded outros.
     </td>
     <td width="33%" valign="top">
-      <h3>🌊 NEXA Wave</h3>
+      <h3>🌊 NEXARYVE Wave</h3>
       An endless queue shaped by your taste — from <i>Familiar</i> to <i>Online only</i>. Every pick tells you why it is there; a disliked song leaves your Wave.
     </td>
     <td width="33%" valign="top">
-      <h3>🧬 NEXA DNA</h3>
+      <h3>🧬 NEXARYVE DNA</h3>
       Pick genres and artists you love, like and dislike songs. Your taste profile is explicit, editable and stays on your PC.
     </td>
   </tr>
@@ -68,12 +68,12 @@
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/readme/now_playing.webp" alt="Now Playing with the NEXA Mix Engine panel"></td>
-    <td width="50%"><img src="docs/readme/wave.webp" alt="NEXA Wave"></td>
+    <td width="50%"><img src="docs/readme/now_playing.webp" alt="Now Playing with the NEXARYVE Mix Engine panel"></td>
+    <td width="50%"><img src="docs/readme/wave.webp" alt="NEXARYVE Wave"></td>
   </tr>
   <tr>
     <td align="center"><b>Now Playing</b> · the Mix Engine explains every transition</td>
-    <td align="center"><b>NEXA Wave</b> · from familiar to brand-new, with “why this song”</td>
+    <td align="center"><b>NEXARYVE Wave</b> · from familiar to brand-new, with “why this song”</td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/readme/library.webp" alt="Library"></td>
@@ -91,7 +91,7 @@
 
 Every source is used the way its owner allows — through official APIs and official players.
 
-| Source | Plays in NEXA | Search | Crossfade | NEXA Wave | Likes & playlists |
+| Source | Plays in NEXARYVE | Search | Crossfade | NEXARYVE Wave | Likes & playlists |
 |---|:---:|:---:|:---:|:---:|:---:|
 | **Your files** (MP3 · FLAC · WAV) | ✅ | ✅ | ✅ Smart Mix | ✅ | ✅ |
 | **Audius** | ✅ stream | ✅ | ✅ | ✅ | ✅ |
@@ -99,7 +99,7 @@ Every source is used the way its owner allows — through official APIs and offi
 | **YouTube** — official player | ✅ visible player | 🔑 own API key | — | — | ✅ |
 | **SoundCloud** — official widget | ✅ tracks, sets, profiles | ↗ soundcloud.com | — | — | ✅ |
 
-Spotify is not an audio source. YouTube and SoundCloud audio stays inside their own players: no downloads, no background tricks, no mixing — that is their rule, and NEXA keeps it. Details and every known limit: [RELEASE_NOTES.md](RELEASE_NOTES.md) and [reports/FEATURE_COMPLETE_REPORT.md](reports/FEATURE_COMPLETE_REPORT.md).
+Spotify is not an audio source. YouTube and SoundCloud audio stays inside their own players: no downloads, no background tricks, no mixing — that is their rule, and NEXARYVE keeps it. Details and every known limit: [RELEASE_NOTES.md](RELEASE_NOTES.md) and [reports/FEATURE_COMPLETE_REPORT.md](reports/FEATURE_COMPLETE_REPORT.md).
 
 ## ✦ Download
 
@@ -109,7 +109,7 @@ Spotify is not an audio source. YouTube and SoundCloud audio stays inside their 
 
 > [!NOTE]
 > The exe is not code-signed, so Windows SmartScreen may ask once: *More info → Run anyway*.
-> Your library, playlists and settings live in `%APPDATA%\com.kondexoff\nexa_music`, not in the program folder — updating NEXA keeps them, and the database is backed up before every upgrade.
+> Your library, playlists and settings live in `%APPDATA%\com.kondexoff\nexa_music`, not in the program folder — updating NEXARYVE keeps them, and the database is backed up before every upgrade.
 
 <details>
 <summary><b>Keyboard shortcuts</b></summary>
@@ -175,7 +175,7 @@ lib/
 |---|---|
 | **Unit & widget tests** | 293 passing (`flutter test`) |
 | **Integration tests** | real media_kit / libmpv, SQLite, WebView2, YouTube and SoundCloud players |
-| **NEXA AutoTest** | 30 / 30 scenarios, 66 / 66 checks on the 1.1.0 release build — sound measured through WASAPI loopback, the Release exe driven through UI Automation, media keys, migration, crash log |
+| **NEXARYVE AutoTest** | 30 / 30 scenarios, 66 / 66 checks on the 1.1.0 release build — sound measured through WASAPI loopback, the Release exe driven through UI Automation, media keys, migration, crash log |
 | **Release check** | the published ZIP was downloaded again and compared file by file with the tested build |
 
 Run it yourself: double-click `NEXA_AutoTest.cmd` (test tones are played; your own library is never touched). Reports: [RELEASE_1.1.0_READINESS.md](reports/RELEASE_1.1.0_READINESS.md) · [FINAL_AUTOTEST_REPORT.md](reports/FINAL_AUTOTEST_REPORT.md).
@@ -190,7 +190,7 @@ Run it yourself: double-click `NEXA_AutoTest.cmd` (test tones are played; your o
 | Who | Role |
 |---|---|
 | **KondexOFF** | Project owner: idea, plan, decisions, acceptance and releases |
-| **Claude** (AI by Anthropic) | Implementer and tester: code, tests, NEXA AutoTest and the Windows checks; assistant to the owner |
+| **Claude** (AI by Anthropic) | Implementer and tester: code, tests, NEXARYVE AutoTest and the Windows checks; assistant to the owner |
 | **ChatGPT** (AI by OpenAI) | Design and technical reviewer of the phase reports |
 
 Claude works only on the owner's instructions; every phase, push and release is the owner's decision ([CLAUDE.md](CLAUDE.md)).
@@ -210,4 +210,4 @@ Claude works only on the owner's instructions; every phase, push and release is 
 **Copyright © 2026 KondexOFF. All rights reserved.**
 No licence is granted — copying, distributing or reusing this code needs the owner's written permission. Third-party components keep their own licences (listed in the app under *Settings → Open-source licences*). See [LICENSE](LICENSE).
 
-<p align="center"><sub>NEXA Music · made for listening, not for scrolling.</sub></p>
+<p align="center"><sub>NEXARYVE · made for listening, not for scrolling.</sub></p>
