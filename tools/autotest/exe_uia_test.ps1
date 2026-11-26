@@ -397,7 +397,7 @@ if (-not $started) {
     $title = $script:proc.MainWindowTitle
     $all = @(All-Elements | Where-Object { $_.label })
     Check 'EX-01-start' 'FT-01' 'Portable exe starts with an isolated test profile; its accessibility tree is visible' `
-        ($title -eq 'NEXA Music' -and $all.Count -gt 10) "window '$title', $($all.Count) named elements via $(if ($script:usedMsaa) { 'MSAA' } else { 'UI Automation' }); $($script:diag -join '; ')"
+        (($title -eq 'NEXARYVE' -or $title -eq 'NEXA Music') -and $all.Count -gt 10) "window '$title', $($all.Count) named elements via $(if ($script:usedMsaa) { 'MSAA' } else { 'UI Automation' }); $($script:diag -join '; ')"
     Shot '01_home'
     # What the accessibility tree contains (for diagnosing failed look-ups).
     $treeLines = @($script:diag) + @(All-Elements | ForEach-Object { "$($_.kind) [$([int]$_.x),$([int]$_.y) $([int]$_.w)x$([int]$_.h)] $($_.label)" })

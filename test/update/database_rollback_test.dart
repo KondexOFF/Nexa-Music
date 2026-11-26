@@ -105,7 +105,7 @@ void main() {
       }
     });
     await tester.pumpWidget(DatabaseErrorApp(error: error));
-    expect(find.textContaining('newer NEXA'), findsWidgets);
+    expect(find.textContaining('newer NEXARYVE'), findsWidgets);
     await tester.tap(find.byKey(const ValueKey('db-newer-restore')));
     await tester.pump();
     expect(find.byKey(const ValueKey('db-newer-restored')), findsOneWidget);

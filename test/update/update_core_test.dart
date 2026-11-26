@@ -113,6 +113,18 @@ void main() {
       expect(r, isNull);
     });
 
+    test('NEXARYVE package name, and the name 1.1.1 looks for', () {
+      final json = releaseJson('v1.2.0');
+      final legacy = ReleaseInfo.fromJson(json)!.package!;
+      expect(legacy.name, 'NEXA_Music_1.2.0_Windows_x64.zip');
+      final assets = [
+        ...(json['assets']! as List),
+        {'id': 102, 'name': 'NEXARYVE_1.2.0_Windows_x64.zip', 'size': 1},
+      ];
+      final both = ReleaseInfo.fromJson({...json, 'assets': assets})!;
+      expect(both.package!.id, 102);
+    });
+
     test('a digest that is not SHA-256 counts as none', () {
       final r = list([releaseJson('v1.2.0', digest: 'md5:abc')]).single;
       expect(r.package!.sha256, isNull);

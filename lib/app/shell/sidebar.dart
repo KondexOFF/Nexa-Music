@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/library/library_dialogs.dart';
 import '../../features/library/library_providers.dart';
 import '../../features/library/track_art.dart';
+import '../../ui/brand_mark.dart';
 import '../../ui/nexa_widgets.dart';
 import '../navigation.dart';
 import '../strings.dart';
@@ -121,59 +122,21 @@ class _Logo extends StatelessWidget {
   const _Logo();
 
   @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(left: 30),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            S.brandNexa,
-            style: TextStyle(
-              fontFamily: NexaText.family,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 7,
-              color: NexaColors.textPrimary,
-            ),
-          ),
-          SizedBox(width: 4),
-          Padding(
-            padding: EdgeInsets.only(top: 3),
-            child: Text(
-              S.brandMusic,
-              style: TextStyle(
-                fontFamily: NexaText.family,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 4,
-                color: NexaColors.textSecondary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.only(left: 26),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: NexaryveWordmark(markSize: 30, fontSize: 17),
+    ),
+  );
 }
 
 class _LogoMark extends StatelessWidget {
   const _LogoMark();
 
   @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'N',
-        style: TextStyle(
-          fontFamily: NexaText.family,
-          fontSize: 26,
-          fontWeight: FontWeight.w800,
-          color: NexaColors.textPrimary,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      const Center(child: NexaryveMark(size: 34));
 }
 
 class _NavItem extends StatelessWidget {

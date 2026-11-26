@@ -34,6 +34,7 @@ Full manual testing, visual polish and non-critical defects are handled in the *
 Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITECTURE.md`.
 
 | D-030 — Update Center (owner 2026-11-25) | **Functionally complete (Development, D-031)**: update chain on Windows **32 / 32 PASS** (Release builds of `dece3e8`); **1.1.1 Portable internal Development Candidate built and checked** (`2ae87cf`, 38 files, exe `266200ff…d469`, package `NEXA_Music_1.1.1_Windows_x64.zip` SHA-256 `138fa857…368e` passes NEXA's own update checks; real exe started on a test profile, 0 crashes). **Not published** (no tag, release or merge); installed 1.1.0 not replaced. Full regression of other features: Full Debugging stage (D-031). Report `reports/D030_UPDATE_CENTER_REPORT.md` | `feature/d030-update-center` |
+| D-034 — Rebranding to NEXARYVE (D-035) | **Complete** (`b459d0f`): name, mark, app icon, wordmark, README banner and texts; identifiers kept (`docs/brand/README.md`); checked: analyze 0, all tests, the real app rendered with the demo library (sidebar wordmark, NEXARYVE Wave / DNA texts). Merged into `develop` | `feature/d034-rebranding` -> `develop` |
 
 ## Technical debt / known problems
 
@@ -63,6 +64,8 @@ Plan extension D-017 (2026-10-19): sources, platforms and order in `docs/ARCHITE
 | TD-12 | Phase 5 | Low | The NEXA DNA picker only offers genres and artists that exist in the library tags; a library without genre tags offers artists only. | Open |
 
 ## Log
+
+- 2026-11-26 — **D-035** recorded (roles, `develop` + `feature/*` workflow, Visual Evolution order). `develop` on GitHub = `ef44e91` (D-030 complete). **D-034** started on `feature/d034-rebranding` from `develop`: NEXARYVE mark (`docs/brand/nexaryve_mark.svg`, painted in the app by `NexaryveMark`), Windows icon 16-256 px, sidebar wordmark, window title and file description, all user texts, README and banner; data folders, exe name, update source and release package name unchanged; Update Center also accepts `NEXARYVE_<v>_Windows_x64.zip`.
 
 - 2026-11-26 — **D-030 functionally complete**: 1.1.1 Portable internal Development Candidate built from `2ae87cf` (analyze 0, 354 tests, Release build, smoke start, 0 crashes) and packed into `_dev_candidate_v1.1.1` on the PC; the package passes NEXA's own update checks. Not published. Next under D-031: NEXA Nocturne.
 

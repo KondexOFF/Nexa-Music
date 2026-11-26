@@ -78,14 +78,26 @@ class ReleaseInfo {
   final DateTime? publishedAt;
   final String pageUrl;
 
-  /// The Windows Portable archive of this release.
+  /// The Windows Portable archive of this release: `NEXARYVE_<v>_Windows_x64.zip`
+  /// (D-034), or the name installed 1.1.1 copies look for,
+  /// `NEXA_Music_<v>_Windows_x64.zip` - releases keep publishing that name.
   ReleaseAsset? get package {
     final v = version;
     if (v == null) {
       return null;
     }
-    final wanted = 'NEXA_Music_${v}_Windows_x64.zip'.toLowerCase();
-    return assets.where((a) => a.name.toLowerCase() == wanted).firstOrNull;
+    for (final wanted in [
+      'NEXARYVE_${v}_Windows_x64.zip',
+      'NEXA_Music_${v}_Windows_x64.zip',
+    ]) {
+      final found = assets
+          .where((a) => a.name.toLowerCase() == wanted.toLowerCase())
+          .firstOrNull;
+      if (found != null) {
+        return found;
+      }
+    }
+    return null;
   }
 
   ReleaseAsset? get checksums => assets
