@@ -71,9 +71,11 @@ function Start-Checked([string]$dir, [string]$version) {
     $end = (Get-Date).AddSeconds([int]$p.startTimeoutSeconds)
     while ((Get-Date) -lt $end) {
         if (Test-Path -LiteralPath $p.healthFile) {
-            $v = ([System.IO.File]::ReadAllText($p.healthFile)).Trim()
+            # NEXA may still be writing it: read again a moment later.
+            $v = $null
+            try { $v = ([System.IO.File]::ReadAllText($p.healthFile)).Trim() } catch { }
             if ($v -eq $version) { return @($true, $proc, "started $version") }
-            return @($false, $proc, "started version '$v', expected $version")
+            if ($v) { return @($false, $proc, "started version '$v', expected $version") }
         }
         if ($proc.HasExited) { return @($false, $proc, "exited with code $($proc.ExitCode)") }
         Start-Sleep -Milliseconds 400

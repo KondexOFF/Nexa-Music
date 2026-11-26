@@ -43,7 +43,11 @@ function Sha([string]$f) { return (Get-FileHash -LiteralPath $f -Algorithm SHA25
 function Folder-Hash([string]$dir) {
     if (-not (Test-Path -LiteralPath $dir)) { return 'missing' }
     $root = (Resolve-Path -LiteralPath $dir).Path.TrimEnd('\')
-    $lines = foreach ($f in (Get-ChildItem -LiteralPath $root -Recurse -File -Force | Sort-Object FullName)) {
+    # The package's own list (SHA256SUMS.txt in the top folder) is not part of
+    # the build it was made from.
+    $files = Get-ChildItem -LiteralPath $root -Recurse -File -Force | Sort-Object FullName |
+        Where-Object { $_.FullName -ne (Join-Path $root 'SHA256SUMS.txt') }
+    $lines = foreach ($f in $files) {
         '{0} {1}' -f $f.FullName.Substring($root.Length + 1).ToLower(), (Sha $f.FullName)
     }
     $bytes = $utf8.GetBytes(($lines -join "`n"))
