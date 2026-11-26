@@ -472,6 +472,9 @@ Future<void> startUpdater(UpdaterPlan plan, String script) async {
       '-Plan',
       paths.plan.path,
     ],
+    // Not the program folder: a process whose current folder is inside it
+    // would keep Windows from renaming it.
+    workingDirectory: paths.run.path,
     mode: ProcessStartMode.detached,
   );
 }
