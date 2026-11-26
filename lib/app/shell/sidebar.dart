@@ -192,7 +192,8 @@ class _NavItem extends StatelessWidget {
                   ),
                 ),
               ),
-              Row(
+              Positioned.fill(
+                child: Row(
                 mainAxisAlignment: compact
                     ? MainAxisAlignment.center
                     : MainAxisAlignment.start,
@@ -220,6 +221,7 @@ class _NavItem extends StatelessWidget {
                     ),
                   ],
                 ],
+              ),
               ),
             ],
           ),

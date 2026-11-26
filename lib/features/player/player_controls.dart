@@ -5,6 +5,7 @@ import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models/track.dart';
+import '../../ui/ribbon_track_shape.dart';
 import '../../ui/time_format.dart' show formatClock;
 import '../../ui/isolated_slider.dart';
 import '../../ui/nexa_widgets.dart';
@@ -138,6 +139,7 @@ class _SeekBarState extends ConsumerState<SeekBar> {
         child: SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4,
+            trackShape: const RibbonTrackShape(),
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
           ),
