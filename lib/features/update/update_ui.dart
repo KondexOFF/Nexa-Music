@@ -63,8 +63,10 @@ Future<void> showWhatsNew(BuildContext context, UpdateState s) {
       content: SizedBox(
         width: 560,
         height: 360,
+        // Plain text: screen readers and UI Automation read it (neither
+        // SelectableText nor a SelectionArea exposes it as a text label).
         child: SingleChildScrollView(
-          child: SelectableText(
+          child: Text(
             r.notes.trim().isEmpty ? r.tag : r.notes.trim(),
             key: const ValueKey('update-notes'),
             style: NexaText.body,

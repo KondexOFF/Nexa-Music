@@ -200,6 +200,17 @@ function Wait-Result([string]$prof, [int]$seconds = 300) {
     }
     return $null
 }
+# After "Restart and install": NEXA must close within 30 s; otherwise the
+# visible reason is kept for the report.
+function Wait-Closed {
+    $deadline = (Get-Date).AddSeconds(30)
+    while ((Get-Date) -lt $deadline) {
+        if (-not $script:proc -or $script:proc.HasExited) { return 'closed' }
+        Start-Sleep -Milliseconds 500
+    }
+    $why = Find-El 'update' -Contains -TimeoutSec 2
+    return "still open after 30 s: $(Label $why)"
+}
 function Close-Dialog { [void](Click-El (Find-El 'Close' -TimeoutSec 4)) }
 
 # ---------------------------------------------------------------- setup
@@ -312,6 +323,8 @@ try {
     $restart = Find-El 'Restart and install' -TimeoutSec 120
     Clear-Result $pErr
     [void](Click-El $restart)
+    $closed = Wait-Closed
+    Say "after Restart and install: $closed"
     $r = Wait-Result $pErr 300
     $back = Attach-App 60
     $health = Get-Content -LiteralPath (Join-Path $pErr 'updates\run\health.txt') -Raw -ErrorAction SilentlyContinue
@@ -329,6 +342,8 @@ try {
     Check 'D30-16' 'Update now: download with progress, SHA-256 checked, ready to install' ([bool]$restart) "progress seen: $(Label $pct)"
     Clear-Result $pMain
     [void](Click-El $restart)
+    $closed = Wait-Closed
+    Say "after Restart and install: $closed"
     $r = Wait-Result $pMain 300
     $up = Attach-App 60
     $db = Join-Path $pMain 'nexa_library.sqlite'
@@ -365,19 +380,23 @@ try {
     Stop-App
 
     # ------------------------------------------------ newer library in 1.1.1
-    $pNew = Join-Path $profiles 'newer'
-    New-Item -ItemType Directory -Force -Path (Join-Path $pNew 'backups') | Out-Null
-    Copy-Item -LiteralPath $kept[0].FullName -Destination (Join-Path $pNew 'nexa_library.sqlite')
-    Copy-Item -LiteralPath $v4[0].FullName -Destination (Join-Path $pNew 'backups')
-    $h0 = Sha (Join-Path $pNew 'nexa_library.sqlite')
-    $ok = Start-App $pNew
-    $msg = Find-El 'This library is from a newer NEXA' -TimeoutSec 20
-    Check 'D30-27' '1.1.1 never opens a newer library; file unchanged' ($ok -and $msg -and (Sha (Join-Path $pNew 'nexa_library.sqlite')) -eq $h0) ''
-    [void](Click-El (Find-El 'Put back' -Contains -TimeoutSec 5))
-    $done = Find-El 'The copy was put back' -Contains -TimeoutSec 10
-    $protected = @(Get-ChildItem -LiteralPath (Join-Path $pNew 'backups') -Filter '*_before_restore_*.sqlite').Count
-    Check 'D30-28' 'it can put back the older copy, keeping the newer file' ($done -and (Schema (Join-Path $pNew 'nexa_library.sqlite')) -eq 4 -and $protected -eq 1) ''
-    Stop-App
+    if ($kept.Count -ge 1 -and $v4.Count -ge 1) {
+        $pNew = Join-Path $profiles 'newer'
+        New-Item -ItemType Directory -Force -Path (Join-Path $pNew 'backups') | Out-Null
+        Copy-Item -LiteralPath $kept[0].FullName -Destination (Join-Path $pNew 'nexa_library.sqlite')
+        Copy-Item -LiteralPath $v4[0].FullName -Destination (Join-Path $pNew 'backups')
+        $h0 = Sha (Join-Path $pNew 'nexa_library.sqlite')
+        $ok = Start-App $pNew
+        $msg = Find-El 'This library is from a newer NEXA' -TimeoutSec 20
+        Check 'D30-27' '1.1.1 never opens a newer library; file unchanged' ($ok -and $msg -and (Sha (Join-Path $pNew 'nexa_library.sqlite')) -eq $h0) ''
+        [void](Click-El (Find-El 'Put back' -Contains -TimeoutSec 5))
+        $done = Find-El 'The copy was put back' -Contains -TimeoutSec 10
+        $protected = @(Get-ChildItem -LiteralPath (Join-Path $pNew 'backups') -Filter '*_before_restore_*.sqlite').Count
+        Check 'D30-28' 'it can put back the older copy, keeping the newer file' ($done -and (Schema (Join-Path $pNew 'nexa_library.sqlite')) -eq 4 -and $protected -eq 1) ''
+        Stop-App
+    } else {
+        Check 'D30-27' '1.1.1 never opens a newer library; file unchanged' $false 'no newer library to test with (earlier steps failed)'
+    }
 
     # ------------------------------------------------ the real private-capable account
     $pGh = Join-Path $profiles 'gh'

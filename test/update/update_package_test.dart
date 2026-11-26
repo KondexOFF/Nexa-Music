@@ -320,6 +320,18 @@ void main() {
     });
   });
 
+  test('the updater launcher is passed as -EncodedCommand (UTF-16LE)', () {
+    expect(encodePowerShell('ab'), base64.encode([97, 0, 98, 0]));
+    final text = 'Start-Process "x y"';
+    final bytes = base64.decode(encodePowerShell(text));
+    expect(
+      String.fromCharCodes([
+        for (var i = 0; i < bytes.length; i += 2) bytes[i] | (bytes[i + 1] << 8),
+      ]),
+      text,
+    );
+  });
+
   group('updater files', () {
     test('kept versions, results and the plan', () {
       final paths = UpdatePaths(Directory(p.join(temp.path, 'updates')));

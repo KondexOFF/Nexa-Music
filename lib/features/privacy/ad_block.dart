@@ -489,13 +489,13 @@ Future<void> restartNexa() async {
     const [
       '-NoProfile',
       '-NonInteractive',
-      '-WindowStyle',
-      'Hidden',
       '-Command',
       r'Start-Sleep -Seconds 2; Start-Process -FilePath $env:NEXA_EXE',
     ],
     environment: {'NEXA_EXE': Platform.resolvedExecutable},
-    mode: ProcessStartMode.detached,
+    // Not detached: a detached PowerShell ends at once without running
+    // anything (D-030 Windows test); a normal child keeps running after NEXA
+    // has closed.
   );
   await ServicesBinding.instance.exitApplication(AppExitType.cancelable);
 }

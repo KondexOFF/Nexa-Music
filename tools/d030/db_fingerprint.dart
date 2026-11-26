@@ -4,7 +4,7 @@
 //   dart run tools/d030/db_fingerprint.dart <nexa_library.sqlite>
 //
 // Prints one JSON line: schema, tables, playlists with their songs,
-// favourites, listening history, taste profile and the settings the test
+// favourites (songs by their file, as tags may be read again), listening history, taste profile and the settings the test
 // profile set. Never used on the owner's library.
 import 'dart:convert';
 import 'dart:io';
@@ -27,8 +27,8 @@ void main(List<String> args) {
       'tracks': rows('SELECT COUNT(*) AS n FROM tracks').single['n'],
       'playlists': [
         for (final r in rows(
-          'SELECT p.name AS name, GROUP_CONCAT(t.title, \'|\') AS songs '
-          'FROM playlists p LEFT JOIN (SELECT e.playlist_id, t.title FROM '
+          'SELECT p.name AS name, GROUP_CONCAT(t.song, \'|\') AS songs '
+          'FROM playlists p LEFT JOIN (SELECT e.playlist_id, t.path_key AS song FROM '
           'playlist_entries e JOIN tracks t ON t.id = e.track_id ORDER BY '
           'e.playlist_id, e.position) t ON t.playlist_id = p.id '
           'GROUP BY p.id ORDER BY p.name',
@@ -37,9 +37,9 @@ void main(List<String> args) {
       ],
       'favorites': [
         for (final r in rows(
-          'SELECT title FROM tracks WHERE favorite = 1 ORDER BY title',
+          'SELECT path_key FROM tracks WHERE favorite = 1 ORDER BY path_key',
         ))
-          r['title'],
+          r['path_key'],
       ],
       'history': rows('SELECT COUNT(*) AS n FROM listening_events').single['n'],
       'taste': [

@@ -444,7 +444,28 @@ class UpdaterPlan {
   };
 }
 
-/// Writes the plan and starts the updater, detached; NEXA then closes and
+/// Starts the updater script with its own hidden window; the paths come in
+/// as environment variables, never inside the command text.
+const String _launcher = r'''
+$ErrorActionPreference = 'Stop'
+$a = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+  '-File', ('"' + $env:NEXA_UPD_SCRIPT + '"'), '-Plan', ('"' + $env:NEXA_UPD_PLAN + '"'))
+Start-Process -FilePath powershell -WindowStyle Hidden -WorkingDirectory $env:NEXA_UPD_RUN -ArgumentList $a
+exit 0
+''';
+
+/// PowerShell's -EncodedCommand: Base64 of UTF-16LE.
+String encodePowerShell(String command) {
+  final bytes = <int>[];
+  for (final unit in command.codeUnits) {
+    bytes
+      ..add(unit & 0xFF)
+      ..add(unit >> 8);
+  }
+  return base64.encode(bytes);
+}
+
+/// Writes the plan and starts the updater; NEXA then closes and
 /// the updater waits for it. [script] is the updater's text (an asset).
 Future<void> startUpdater(UpdaterPlan plan, String script) async {
   final paths = plan.paths..run.createSync(recursive: true);
@@ -458,25 +479,36 @@ Future<void> startUpdater(UpdaterPlan plan, String script) async {
   paths.plan.writeAsStringSync(
     const JsonEncoder.withIndent('  ').convert(plan.toJson()),
   );
-  await Process.start(
+  // A short PowerShell starts the updater with Start-Process (its own hidden
+  // window, independent of NEXA) and ends; its exit code says the updater
+  // started. A PowerShell started directly as a detached process ends at
+  // once without running anything (found in the Windows update-chain test).
+  final r = await Process.run(
     'powershell',
     [
       '-NoProfile',
       '-NonInteractive',
       '-ExecutionPolicy',
       'Bypass',
-      '-WindowStyle',
-      'Hidden',
-      '-File',
-      paths.script.path,
-      '-Plan',
-      paths.plan.path,
+      // Encoded: no quoting rules of the Windows command line in between.
+      '-EncodedCommand',
+      encodePowerShell(_launcher),
     ],
+    environment: {
+      'NEXA_UPD_RUN': paths.run.path,
+      'NEXA_UPD_SCRIPT': paths.script.path,
+      'NEXA_UPD_PLAN': paths.plan.path,
+    },
     // Not the program folder: a process whose current folder is inside it
     // would keep Windows from renaming it.
     workingDirectory: paths.run.path,
-    mode: ProcessStartMode.detached,
-  );
+  ).timeout(const Duration(seconds: 30));
+  if (r.exitCode != 0) {
+    throw UpdateException(
+      UpdateProblem.installFailed,
+      'the updater did not start (${'${r.stderr}'.trim()})',
+    );
+  }
 }
 
 /// Whether NEXA can replace its own folder (Portable): the folder must be
