@@ -109,9 +109,13 @@ class _PlaylistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette =
+        CoverPalette.values[data.seed.abs() % CoverPalette.values.length];
     return AspectRatio(
       aspectRatio: 1.56,
-      child: ClipRRect(
+      child: HoverLift(
+        glow: data.liked ? NexaColors.accent : coverLight(palette),
+        child: ClipRRect(
         borderRadius: BorderRadius.circular(NexaRadius.md),
         child: NexaTappable(
           onTap: data.open,
@@ -125,7 +129,7 @@ class _PlaylistCard extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFFC4B4FF), Color(0xFF5B3FD9)],
+                      colors: [Color(0xFFC4B5FF), Color(0xFF6E58E8)],
                     ),
                   ),
                   child: Align(
@@ -151,7 +155,7 @@ class _PlaylistCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0x00000000), Color(0xCC0B0C12)],
+                    colors: [Color(0x00000000), Color(0xD90B0C0F)],
                     stops: [0.4, 1],
                   ),
                 ),
@@ -192,6 +196,7 @@ class _PlaylistCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

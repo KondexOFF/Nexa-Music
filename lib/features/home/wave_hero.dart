@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
+import '../../ui/ambient_light.dart';
 import '../../ui/nexa_widgets.dart';
 import '../library/library_providers.dart';
 import '../nexa_wave/wave_controller.dart';
@@ -13,17 +14,17 @@ import '../player/player_controller.dart';
 
 /// NEXA Wave hero: a code-drawn, slowly moving ribbon landscape with the
 /// Wave call to action (starts NEXA Wave or shuffles the library).
-class WaveHero extends StatefulWidget {
+class WaveHero extends ConsumerStatefulWidget {
   const WaveHero({super.key, this.animate = true});
 
   /// False freezes the ribbons (tests, reduced-motion setting).
   final bool animate;
 
   @override
-  State<WaveHero> createState() => _WaveHeroState();
+  ConsumerState<WaveHero> createState() => _WaveHeroState();
 }
 
-class _WaveHeroState extends State<WaveHero>
+class _WaveHeroState extends ConsumerState<WaveHero>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -74,9 +75,19 @@ class _WaveHeroState extends State<WaveHero>
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: RepaintBoundary(
-                    child: CustomPaint(
-                      painter: WaveRibbonPainter(animation: _controller),
+                  // NEXARYVE 1.2: the ribbon and the glow take the light of
+                  // the playing song's artwork.
+                  child: TweenAnimationBuilder<Color?>(
+                    tween: ColorTween(end: ref.watch(ambientLightProvider)),
+                    duration: NexaMotion.ambient,
+                    curve: Curves.easeInOut,
+                    builder: (context, light, _) => RepaintBoundary(
+                      child: CustomPaint(
+                        painter: WaveRibbonPainter(
+                          animation: _controller,
+                          light: light ?? NexaColors.accent,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -123,7 +134,7 @@ class _HeroContent extends ConsumerWidget {
             S.waveSubtitle,
             style: NexaText.bodySecondary.copyWith(
               fontSize: 16.5,
-              color: const Color(0xFFDCD9E6),
+              color: const Color(0xFFD9D8DE),
             ),
           ),
         ),
@@ -164,12 +175,12 @@ class _HeroTags extends StatelessWidget {
       fontSize: 10.5,
       fontWeight: FontWeight.w700,
       letterSpacing: 3,
-      color: Color(0xCCF0EFEB),
+      color: Color(0xB3F2F1EE),
     );
     return Container(
       padding: const EdgeInsets.only(left: 22),
       decoration: const BoxDecoration(
-        border: Border(left: BorderSide(color: Color(0x55FFFFFF))),
+        border: Border(left: BorderSide(color: Color(0x33FFFFFF))),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,18 +196,14 @@ class _HeroTags extends StatelessWidget {
   }
 }
 
-/// Paints the hero background. [animation] runs 0..1 and loops.
+/// Paints the hero background. [animation] runs 0..1 and loops; [light] is
+/// the playing song's artwork light (lavender when nothing plays).
 class WaveRibbonPainter extends CustomPainter {
-  WaveRibbonPainter({required this.animation}) : super(repaint: animation);
+  WaveRibbonPainter({required this.animation, this.light = NexaColors.accent})
+    : super(repaint: animation);
 
   final Animation<double> animation;
-
-  static const List<Color> _ribbon = [
-    Color(0xFFFF8F6B),
-    Color(0xFFFF5F9E),
-    Color(0xFFC59BFF),
-    Color(0xFF8E7BFF),
-  ];
+  final Color light;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -204,64 +211,73 @@ class WaveRibbonPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final w = size.width;
     final h = size.height;
+    final ribbon = [light, NexaColors.accent, NexaColors.live];
 
-    // Sky.
+    // Graphite, lit from the right by the song.
     canvas.drawRect(
       rect,
       Paint()
         ..shader = const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: [Color(0xFF121318), Color(0xFF17181E)],
+        ).createShader(rect),
+    );
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(0.55, -0.2),
+          radius: 1.1,
           colors: [
-            Color(0xFF15122E),
-            Color(0xFF2A1F57),
-            Color(0xFF5A2B6E),
-            Color(0xFFB0506E),
+            light.withValues(alpha: 0.42),
+            light.withValues(alpha: 0.12),
+            light.withValues(alpha: 0),
           ],
-          stops: [0, 0.42, 0.74, 1],
+          stops: const [0, 0.45, 1],
         ).createShader(rect),
     );
 
-    // Stars (fixed positions, gentle twinkle).
+    // A few quiet stars.
     final rnd = math.Random(42);
     final star = Paint();
-    for (var i = 0; i < 46; i++) {
-      final x = rnd.nextDouble() * w;
-      final y = rnd.nextDouble() * h * 0.55;
-      final twinkle = 0.35 + 0.35 * math.sin(t * 3 + i);
-      star.color = Colors.white.withValues(alpha: twinkle * 0.6);
-      canvas.drawCircle(Offset(x, y), 0.6 + rnd.nextDouble() * 0.9, star);
+    for (var i = 0; i < 18; i++) {
+      final x = w * 0.35 + rnd.nextDouble() * w * 0.65;
+      final y = rnd.nextDouble() * h * 0.5;
+      final twinkle = 0.3 + 0.3 * math.sin(t * 3 + i);
+      star.color = Colors.white.withValues(alpha: twinkle * 0.45);
+      canvas.drawCircle(Offset(x, y), 0.6 + rnd.nextDouble() * 0.7, star);
     }
 
-    // Sun.
-    final sun = Offset(w * 0.79, h * 0.47);
-    final sunR = h * 0.1;
+    // The glow: a soft orb in the song's light.
+    final orb = Offset(w * 0.8, h * 0.44);
+    final orbR = h * 0.11;
     canvas.drawCircle(
-      sun,
-      sunR * 3.2,
+      orb,
+      orbR * 3.4,
       Paint()
         ..shader = RadialGradient(
           colors: [
-            const Color(0xFFFFB37A).withValues(alpha: 0.45),
-            const Color(0xFFFFB37A).withValues(alpha: 0),
+            Color.lerp(light, Colors.white, 0.25)!.withValues(alpha: 0.38),
+            light.withValues(alpha: 0),
           ],
-        ).createShader(Rect.fromCircle(center: sun, radius: sunR * 3.2)),
+        ).createShader(Rect.fromCircle(center: orb, radius: orbR * 3.4)),
     );
     canvas.drawCircle(
-      sun,
-      sunR,
+      orb,
+      orbR,
       Paint()
-        ..shader = const LinearGradient(
+        ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFFFE0A6), Color(0xFFFF8E6E)],
-        ).createShader(Rect.fromCircle(center: sun, radius: sunR)),
+          colors: [Color.lerp(light, Colors.white, 0.55)!, NexaColors.live],
+        ).createShader(Rect.fromCircle(center: orb, radius: orbR)),
     );
 
-    // Silk ribbon: a translucent body plus many thin strands that twist
-    // slowly along a sweep from bottom-left to the upper middle.
+    // Silk ribbon: a translucent body plus thin strands that twist slowly
+    // along a sweep from bottom-left to the upper middle.
     const samples = 80;
-    const strands = 30;
+    const strands = 26;
     double sweep(double xn) => math.exp(-math.pow((xn - 0.55) / 0.3, 2));
     double centre(double xn) =>
         h * (0.95 - 0.62 * sweep(xn)) +
@@ -281,7 +297,7 @@ class WaveRibbonPainter extends CustomPainter {
       Path()..addPolygon([...body, ...bodyBottom.reversed], true),
       Paint()
         ..shader = LinearGradient(
-          colors: [for (final c in _ribbon) c.withValues(alpha: 0.32)],
+          colors: [for (final c in ribbon) c.withValues(alpha: 0.24)],
         ).createShader(rect),
     );
 
@@ -296,19 +312,19 @@ class WaveRibbonPainter extends CustomPainter {
         );
       }
       final edge = (f - 0.5).abs() * 2;
-      final alpha = 0.22 + 0.5 * (1 - edge);
+      final alpha = 0.18 + 0.48 * (1 - edge);
       canvas.drawPath(
         Path()..addPolygon(points, false),
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.3
+          ..strokeWidth = 1.2
           ..shader = LinearGradient(
-            colors: [for (final c in _ribbon) c.withValues(alpha: alpha)],
+            colors: [for (final c in ribbon) c.withValues(alpha: alpha)],
           ).createShader(rect),
       );
     }
 
-    // Hills and water.
+    // Graphite hills.
     final hills = Path()
       ..moveTo(0, h)
       ..lineTo(0, h * 0.86)
@@ -321,7 +337,7 @@ class WaveRibbonPainter extends CustomPainter {
       ..lineTo(w, h * 0.82)
       ..lineTo(w, h)
       ..close();
-    canvas.drawPath(hills, Paint()..color = const Color(0xFF120F26));
+    canvas.drawPath(hills, Paint()..color = const Color(0xFF0C0D11));
 
     // Readability scrim behind the text column.
     canvas.drawRect(
@@ -329,9 +345,9 @@ class WaveRibbonPainter extends CustomPainter {
       Paint()
         ..shader = const LinearGradient(
           colors: [
-            Color(0xE6111319),
-            Color(0x99111319),
-            Color(0x00111319),
+            Color(0xEB0F1013),
+            Color(0x990F1013),
+            Color(0x000F1013),
           ],
           stops: [0, 0.38, 0.66],
         ).createShader(rect),
@@ -340,5 +356,5 @@ class WaveRibbonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(WaveRibbonPainter oldDelegate) =>
-      oldDelegate.animation != animation;
+      oldDelegate.animation != animation || oldDelegate.light != light;
 }

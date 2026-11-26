@@ -1,29 +1,33 @@
 import 'package:flutter/animation.dart';
 
-/// NEXA Design 04 tokens (Master Plan v1.0 §1, docs/DESIGN.md).
+/// NEXARYVE 1.2 tokens (Visual Evolution, docs/design/VISUAL_EVOLUTION_1.2.md):
+/// graphite surfaces, lavender accent, coral for "live" moments.
 abstract final class NexaColors {
-  static const Color background = Color(0xFF111319);
-  static const Color sidebar = Color(0xFF0F1117);
-  static const Color playerBar = Color(0xFF0D0F14);
-  static const Color panel = Color(0xFF161922);
-  static const Color panelRaised = Color(0xFF1D2130);
-  static const Color panelHover = Color(0xFF242A3B);
-  static const Color navSelected = Color(0xFF2E2950);
-  static const Color border = Color(0x14FFFFFF);
-  static const Color divider = Color(0x10FFFFFF);
-  static const Color textPrimary = Color(0xFFF0EFEB);
-  static const Color textSecondary = Color(0xFFA6A8B6);
-  static const Color textTertiary = Color(0xFF6F7282);
-  static const Color textDisabled = Color(0x52F0EFEB);
+  static const Color background = Color(0xFF0F1013);
+  static const Color sidebar = Color(0xFF0B0C0F);
+  static const Color playerBar = Color(0xFF0B0C0F);
+  static const Color panel = Color(0xFF15161B);
+  static const Color panelRaised = Color(0xFF1B1D23);
+  static const Color panelHover = Color(0xFF23252D);
+  static const Color navSelected = Color(0x24AD9AFF);
+  static const Color border = Color(0x0FFFFFFF);
+  static const Color divider = Color(0x0CFFFFFF);
+  static const Color textPrimary = Color(0xFFF2F1EE);
+  static const Color textSecondary = Color(0xFFA3A5B0);
+  static const Color textTertiary = Color(0xFF6B6D78);
+  static const Color textDisabled = Color(0x52F2F1EE);
   static const Color accent = Color(0xFFAD9AFF);
   static const Color accentStrong = Color(0xFF9883FF);
   static const Color accentSoft = Color(0x29AD9AFF);
   static const Color accentFaint = Color(0x14AD9AFF);
-  static const Color coral = Color(0xFFFF7E6E);
+  static const Color coral = Color(0xFFFF8A74);
+
+  /// "Live" moments next to lavender: playing indicator, progress.
+  static const Color live = Color(0xFFFF8A74);
   static const Color sky = Color(0xFF86A8FF);
   static const Color orange = Color(0xFFFFA15C);
   static const Color demo = Color(0xFFE6C36E);
-  static const Color tooltip = Color(0xFF2A2F40);
+  static const Color tooltip = Color(0xFF26282F);
 }
 
 /// 8 px rhythm.
@@ -38,10 +42,10 @@ abstract final class NexaSpace {
 }
 
 abstract final class NexaRadius {
-  static const double sm = 8;
-  static const double md = 12;
-  static const double lg = 16;
-  static const double xl = 20;
+  static const double sm = 10;
+  static const double md = 14;
+  static const double lg = 18;
+  static const double xl = 24;
 }
 
 /// Layout sizes from Master Plan v1.0 §1 (sidebar ~220, player 80-88,
@@ -65,8 +69,11 @@ abstract final class NexaBreakpoints {
 }
 
 abstract final class NexaMotion {
-  static const Duration fast = Duration(milliseconds: 140);
-  static const Duration normal = Duration(milliseconds: 240);
+  static const Duration fast = Duration(milliseconds: 160);
+  static const Duration normal = Duration(milliseconds: 260);
   static const Duration slow = Duration(milliseconds: 420);
+
+  /// Artwork light following the playing song.
+  static const Duration ambient = Duration(milliseconds: 600);
   static const Curve curve = Curves.easeOutCubic;
 }

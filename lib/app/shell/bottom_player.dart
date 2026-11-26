@@ -5,6 +5,7 @@ import '../../features/mix_engine/mix_settings.dart';
 import '../../features/library/track_art.dart';
 import '../../features/player/player_controller.dart';
 import '../../features/player/player_controls.dart';
+import '../../ui/ambient_light.dart';
 import '../../ui/nexa_widgets.dart';
 import '../navigation.dart';
 import '../strings.dart';
@@ -40,11 +41,17 @@ class BottomPlayer extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < NexaBreakpoints.compactPlayerBar;
-        return Container(
+        // NEXARYVE 1.2: graphite bar lit from the left by the artwork.
+        return ColoredBox(
+          color: NexaColors.playerBar,
+          child: AmbientBackdrop(
+          strength: 0.12,
+          alignment: const Alignment(-1.05, 0.2),
+          radius: 2.4,
+          child: Container(
           height: NexaSizes.bottomPlayer,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: const BoxDecoration(
-            color: NexaColors.playerBar,
             border: Border(top: BorderSide(color: NexaColors.divider)),
           ),
           child: Row(
@@ -83,6 +90,8 @@ class BottomPlayer extends ConsumerWidget {
                 onPressed: toggleNowPlaying,
               ),
             ],
+          ),
+          ),
           ),
         );
       },

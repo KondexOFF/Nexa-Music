@@ -161,11 +161,11 @@ class _SeekBarState extends ConsumerState<SeekBar> {
     );
     final elapsed = Text(
       formatClock(Duration(milliseconds: positionMs.round())),
-      style: NexaText.caption,
+      style: NexaText.caption.copyWith(fontFeatures: NexaText.numbers),
     );
     final total = Text(
       hasTrack ? formatClock(duration) : '--:--',
-      style: NexaText.caption,
+      style: NexaText.caption.copyWith(fontFeatures: NexaText.numbers),
     );
     if (widget.compact) {
       return Row(
