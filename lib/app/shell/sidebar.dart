@@ -155,49 +155,74 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = selected ? NexaColors.textPrimary : NexaColors.textSecondary;
+    // NEXARYVE 1.2: a soft lavender pill with a thin ribbon-coloured
+    // indicator for the selected item; quiet text for the others.
     final item = AnimatedContainer(
       duration: NexaMotion.normal,
       curve: NexaMotion.curve,
-      margin: const EdgeInsets.only(bottom: 6),
+      margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(NexaRadius.md),
-        gradient: selected
-            ? const LinearGradient(
-                colors: [Color(0xFF3A3170), NexaColors.navSelected],
-              )
-            : null,
+        color: selected ? NexaColors.navSelected : Colors.transparent,
       ),
       child: NexaTappable(
         onTap: onTap,
         semanticLabel: entry.label,
         child: SizedBox(
-          height: 48,
-          child: Row(
-            mainAxisAlignment: compact
-                ? MainAxisAlignment.center
-                : MainAxisAlignment.start,
+          height: 46,
+          child: Stack(
             children: [
-              if (!compact) const SizedBox(width: 16),
-              Icon(
-                entry.icon,
-                size: 22,
-                color: selected ? NexaColors.accent : color,
-              ),
-              if (!compact) ...[
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    entry.label,
-                    style: NexaText.body.copyWith(
-                      fontSize: 15.5,
-                      color: color,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              Positioned(
+                left: 0,
+                top: 12,
+                bottom: 12,
+                child: AnimatedOpacity(
+                  duration: NexaMotion.normal,
+                  opacity: selected ? 1 : 0,
+                  child: Container(
+                    width: 3,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(2),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [NexaColors.accent, NexaColors.live],
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ],
+              ),
+              Positioned.fill(
+                child: Row(
+                mainAxisAlignment: compact
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.start,
+                children: [
+                  if (!compact) const SizedBox(width: 18),
+                  Icon(
+                    entry.icon,
+                    size: 21,
+                    color: selected ? NexaColors.accent : color,
+                  ),
+                  if (!compact) ...[
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: Text(
+                        entry.label,
+                        style: NexaText.body.copyWith(
+                          fontSize: 15,
+                          color: color,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              ),
             ],
           ),
         ),

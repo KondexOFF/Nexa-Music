@@ -22,6 +22,13 @@ class CoverArtSpec {
   int get hashCode => Object.hash(seed, palette);
 }
 
+/// The light a generated cover gives off (NEXARYVE 1.2 artwork light).
+Color coverLight(CoverPalette palette) => _palettes[palette]!.skyMid;
+
+/// The palette [TrackArt] uses for a track without artwork.
+CoverPalette coverPaletteForSeed(int seed) =>
+    CoverPalette.values[seed.abs() % CoverPalette.values.length];
+
 class _Palette {
   const _Palette({
     required this.skyTop,

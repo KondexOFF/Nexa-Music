@@ -11,6 +11,7 @@ import '../library/library_providers.dart';
 import '../library/track_art.dart';
 import '../discover/catalog_providers.dart' show linkOpenerProvider;
 import '../library/track_list.dart';
+import '../../ui/ambient_light.dart';
 import '../../ui/nexa_widgets.dart';
 import '../mix_engine/mix_engine_panel.dart';
 import '../discover/source_attribution.dart';
@@ -31,7 +32,13 @@ class NowPlayingPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final track = ref.watch(playerProvider.select((p) => p.current));
-    return LayoutBuilder(
+    final light = ref.watch(ambientLightProvider);
+    // NEXARYVE 1.2: the artwork lights the page around it.
+    return AmbientBackdrop(
+      strength: 0.24,
+      alignment: const Alignment(-0.55, -0.45),
+      radius: 1.1,
+      child: LayoutBuilder(
       builder: (context, constraints) {
         final contentWidth = constraints.maxWidth - 48;
         // Narrow (e.g. while the window shrinks): cover above the details.
@@ -39,15 +46,24 @@ class NowPlayingPage extends ConsumerWidget {
         final coverSize = stacked
             ? contentWidth.clamp(0.0, 320.0).toDouble()
             : (contentWidth * 0.42).clamp(240.0, 440.0).toDouble();
-        final cover = Container(
+        final cover = AnimatedContainer(
+          duration: NexaMotion.ambient,
+          curve: Curves.easeInOut,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(NexaRadius.lg),
-            boxShadow: const [
+            boxShadow: [
+              // The artwork's own light under it.
               BoxShadow(
-                color: Color(0x40AD9AFF),
-                blurRadius: 48,
-                spreadRadius: -8,
-                offset: Offset(0, 18),
+                color: light.withValues(alpha: 0.42),
+                blurRadius: 70,
+                spreadRadius: -10,
+                offset: const Offset(0, 24),
+              ),
+              const BoxShadow(
+                color: Color(0x66000000),
+                blurRadius: 24,
+                spreadRadius: -12,
+                offset: Offset(0, 14),
               ),
             ],
           ),
@@ -111,6 +127,7 @@ class NowPlayingPage extends ConsumerWidget {
           ),
         );
       },
+      ),
     );
   }
 }
@@ -164,7 +181,7 @@ class _TrackDetails extends ConsumerWidget {
         : [
             t.fileExtension,
             if (duration != null) formatClock(duration),
-          ].join(' - ');
+          ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -177,7 +194,7 @@ class _TrackDetails extends ConsumerWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          t == null ? S.nothingToPlay : '${t.artist} - ${t.album}',
+          t == null ? S.nothingToPlay : '${t.artist} · ${t.album}',
           style: NexaText.h2.copyWith(
             fontSize: 22,
             fontWeight: FontWeight.w500,

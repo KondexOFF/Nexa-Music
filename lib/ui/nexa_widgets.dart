@@ -333,11 +333,16 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleText = Text(
-      title,
-      style: style,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+    // NEXARYVE 1.2 (less noise): the explanation is a tooltip on the title,
+    // not a line of small text beside it.
+    final titleText = NexaTooltip(
+      message: subtitle,
+      child: Text(
+        title,
+        style: style,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -345,20 +350,7 @@ class SectionHeader extends StatelessWidget {
         Expanded(
           child: Row(
             children: [
-              // With a subtitle the subtitle shrinks first; otherwise the
-              // title itself may ellipsize in narrow panels.
-              if (subtitle == null) Flexible(child: titleText) else titleText,
-              if (subtitle != null) ...[
-                const SizedBox(width: NexaSpace.md),
-                Flexible(
-                  child: Text(
-                    subtitle!,
-                    style: NexaText.caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+              Flexible(child: titleText),
               for (final badge in badges) ...[
                 const SizedBox(width: NexaSpace.sm),
                 badge,
@@ -373,4 +365,101 @@ class SectionHeader extends StatelessWidget {
       ],
     );
   }
+}
+
+/// NEXARYVE 1.2 hover for artwork cards: a soft light in [glow] under the
+/// card and a 1.5 % lift; press scales to 98 %. Purely visual.
+class HoverLift extends StatefulWidget {
+  const HoverLift({
+    super.key,
+    required this.child,
+    this.glow = NexaColors.accent,
+    this.radius = NexaRadius.md,
+  });
+
+  final Widget child;
+  final Color glow;
+  final double radius;
+
+  @override
+  State<HoverLift> createState() => _HoverLiftState();
+}
+
+class _HoverLiftState extends State<HoverLift> {
+  bool _hover = false;
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final scale = _down ? 0.98 : (_hover ? 1.015 : 1.0);
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() {
+        _hover = false;
+        _down = false;
+      }),
+      child: Listener(
+        onPointerDown: (_) => setState(() => _down = true),
+        onPointerUp: (_) => setState(() => _down = false),
+        onPointerCancel: (_) => setState(() => _down = false),
+        child: AnimatedScale(
+          scale: scale,
+          duration: NexaMotion.fast,
+          curve: NexaMotion.curve,
+          child: AnimatedContainer(
+            duration: NexaMotion.normal,
+            curve: NexaMotion.curve,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.radius),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.glow.withValues(alpha: _hover ? 0.32 : 0),
+                  blurRadius: 30,
+                  spreadRadius: -6,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: widget.child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// NEXARYVE 1.2 (less noise): a title with a small info mark; the long
+/// explanation is its tooltip and its screen-reader hint instead of a
+/// paragraph under the title.
+class InfoTitle extends StatelessWidget {
+  const InfoTitle({
+    super.key,
+    required this.title,
+    required this.info,
+    this.style = NexaText.title,
+  });
+
+  final String title;
+  final String info;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    hint: info,
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(child: Text(title, style: style)),
+        const SizedBox(width: 6),
+        NexaTooltip(
+          message: info,
+          child: const Icon(
+            Icons.info_outline_rounded,
+            size: 16,
+            color: NexaColors.textTertiary,
+          ),
+        ),
+      ],
+    ),
+  );
 }

@@ -305,7 +305,7 @@ class TrackRow extends ConsumerWidget {
             width: 64,
             child: Text(
               duration == null ? '--:--' : formatClock(duration),
-              style: NexaText.caption,
+              style: NexaText.caption.copyWith(fontFeatures: NexaText.numbers),
             ),
           ),
           NexaIconButton(

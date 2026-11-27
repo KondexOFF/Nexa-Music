@@ -8,15 +8,25 @@ abstract final class NexaText {
 
   static const TextStyle display = TextStyle(
     fontFamily: family,
-    fontSize: 44,
-    height: 1.08,
+    fontSize: 46,
+    height: 1.06,
     fontWeight: FontWeight.w800,
-    letterSpacing: -0.9,
+    letterSpacing: -1.0,
+    color: NexaColors.textPrimary,
+  );
+
+  /// Page titles (NEXARYVE 1.2).
+  static const TextStyle h1 = TextStyle(
+    fontFamily: family,
+    fontSize: 30,
+    height: 1.15,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.4,
     color: NexaColors.textPrimary,
   );
   static const TextStyle h2 = TextStyle(
     fontFamily: family,
-    fontSize: 21,
+    fontSize: 20,
     height: 1.25,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.2,
@@ -59,12 +69,25 @@ abstract final class NexaText {
   );
   static const TextStyle overline = TextStyle(
     fontFamily: family,
-    fontSize: 13,
+    fontSize: 12,
     height: 1.2,
     fontWeight: FontWeight.w700,
-    letterSpacing: 5,
+    letterSpacing: 3.2,
     color: NexaColors.textPrimary,
   );
+
+  /// Small capitals above a title (calmer than [overline]).
+  static const TextStyle eyebrow = TextStyle(
+    fontFamily: family,
+    fontSize: 11.5,
+    height: 1.2,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 2.6,
+    color: NexaColors.textSecondary,
+  );
+
+  /// Times and counters: tabular figures, so they never jitter.
+  static const List<FontFeature> numbers = [FontFeature.tabularFigures()];
   static const TextStyle tableHeader = TextStyle(
     fontFamily: family,
     fontSize: 11,

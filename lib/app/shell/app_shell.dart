@@ -24,6 +24,7 @@ import '../../features/youtube/youtube_player_controller.dart';
 import '../../features/update/update_controller.dart';
 import '../../features/update/update_ui.dart';
 import '../../features/youtube/youtube_watch_page.dart';
+import '../../ui/ambient_light.dart';
 import '../navigation.dart';
 import '../theme/tokens.dart';
 import 'bottom_player.dart';
@@ -211,6 +212,9 @@ class _AppShellState extends ConsumerState<AppShell> {
                   children: [
                     NexaSidebar(compact: rail),
                     Expanded(
+                      // NEXARYVE 1.2: the playing song's artwork lights the
+                      // top of the page.
+                      child: AmbientBackdrop(
                       child: Column(
                         children: [
                           const TopBar(),
@@ -242,6 +246,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                             ),
                           ),
                         ],
+                      ),
                       ),
                     ),
                   ],
