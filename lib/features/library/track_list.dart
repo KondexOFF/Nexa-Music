@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/strings.dart';
@@ -7,6 +8,7 @@ import '../../app/theme/tokens.dart';
 import '../../core/models/track.dart';
 import '../../ui/time_format.dart' show formatClock;
 import '../../ui/nexa_widgets.dart';
+import 'library_actions.dart';
 import 'library_dialogs.dart';
 import '../nexa_dna/dna_providers.dart';
 import '../nexa_wave/wave_controller.dart';
@@ -68,6 +70,7 @@ class SliverTrackList extends ConsumerWidget {
     required this.showAlbum,
     this.playlistId,
     this.entryIds,
+    this.selectable = false,
   });
 
   final List<Track> tracks;
@@ -75,11 +78,16 @@ class SliverTrackList extends ConsumerWidget {
   final int? playlistId;
   final List<int>? entryIds;
 
+  /// Library songs can be picked for one action ([trackSelectionProvider]).
+  final bool selectable;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentId = ref.watch(
       playerProvider.select((p) => p.current?.id),
     );
+    final selection = selectable ? ref.watch(trackSelectionProvider) : null;
+    final order = selection == null ? const <int>[] : localIdsOf(tracks);
     return SliverFixedExtentList(
       itemExtent: kTrackRowHeight,
       delegate: SliverChildBuilderDelegate(
@@ -97,6 +105,16 @@ class SliverTrackList extends ConsumerWidget {
           entryId: entryIds?[i],
           isFirst: i == 0,
           isLast: i == tracks.length - 1,
+          selected: selection == null || tracks[i].source != TrackSource.local
+              ? null
+              : selection.contains(tracks[i].id),
+          onSelect: () => ref
+              .read(trackSelectionProvider.notifier)
+              .toggle(
+                tracks[i].id,
+                order: order,
+                range: HardwareKeyboard.instance.isShiftPressed,
+              ),
         ),
         childCount: tracks.length,
       ),
@@ -112,6 +130,8 @@ enum _RowAction {
   dislike,
   rename,
   deleteSaved,
+  showInFolder,
+  removeFromLibrary,
   remove,
   moveUp,
   moveDown,
@@ -129,6 +149,8 @@ class TrackRow extends ConsumerWidget {
     this.isLast = false,
     this.isCurrent = false,
     this.onPlay,
+    this.selected,
+    this.onSelect,
   });
 
   final int index;
@@ -140,6 +162,10 @@ class TrackRow extends ConsumerWidget {
   final bool isLast;
   final bool isCurrent;
   final VoidCallback? onPlay;
+
+  /// Picking songs: whether this one is picked (null: not picking).
+  final bool? selected;
+  final VoidCallback? onSelect;
 
   Future<void> _onAction(
     BuildContext context,
@@ -183,6 +209,24 @@ class TrackRow extends ConsumerWidget {
         if (ok) {
           await repo.deleteSaved(track);
         }
+      case _RowAction.showInFolder:
+        final result = await ref.read(fileRevealerProvider)(track.path);
+        if (result == RevealResult.notFound && context.mounted) {
+          showLibraryMessage(context, S.fileFolderMissing);
+        }
+      case _RowAction.removeFromLibrary:
+        final ok = await confirmAction(
+          context,
+          title: S.removeSongsTitle(1),
+          body: '"${track.title}"\n\n${S.removeFromLibraryBody}',
+          action: S.remove,
+        );
+        if (ok) {
+          final n = await removeTracksFromLibrary(ref, [track]);
+          if (context.mounted) {
+            showLibraryMessage(context, S.removedSongs(n));
+          }
+        }
       case _RowAction.remove:
         await repo.removeFromPlaylist(entryId!);
       case _RowAction.moveUp:
@@ -213,7 +257,16 @@ class TrackRow extends ConsumerWidget {
         children: [
           SizedBox(
             width: 36,
-            child: dim
+            child: selected != null
+                ? Checkbox(
+                    value: selected,
+                    onChanged: (_) => onSelect?.call(),
+                    semanticLabel: '${S.select} ${track.title}',
+                    visualDensity: VisualDensity.compact,
+                    activeColor: NexaColors.accent,
+                    side: const BorderSide(color: NexaColors.textTertiary),
+                  )
+                : dim
                 ? NexaTooltip(
                     message:
                         '${track.problem ?? S.unavailable}\n${track.path}',
@@ -233,8 +286,10 @@ class TrackRow extends ConsumerWidget {
           ),
           Expanded(
             child: NexaTappable(
-              onTap: onPlay,
-              semanticLabel: '${S.play} ${track.title}',
+              onTap: selected != null ? onSelect : onPlay,
+              semanticLabel: selected != null
+                  ? '${S.select} ${track.title}'
+                  : '${S.play} ${track.title}',
               borderRadius: BorderRadius.circular(NexaRadius.sm),
               child: Row(
                 children: [
@@ -365,6 +420,18 @@ class TrackRow extends ConsumerWidget {
                   child: Text(S.deleteSaved),
                 ),
               ],
+              if (track.source == TrackSource.local) ...[
+                const PopupMenuDivider(),
+                const PopupMenuItem(
+                  value: _RowAction.showInFolder,
+                  child: Text(S.showInFolder),
+                ),
+                if (entryId == null)
+                  const PopupMenuItem(
+                    value: _RowAction.removeFromLibrary,
+                    child: Text('${S.removeFromLibrary}...'),
+                  ),
+              ],
               if (entryId != null) ...[
                 const PopupMenuDivider(),
                 PopupMenuItem(
@@ -436,4 +503,18 @@ Future<void> addTracksToPlaylist(
     playlistId = await repo.createPlaylist(name);
   }
   await repo.addTracksToPlaylist(playlistId, tracks);
+}
+
+/// A short message at the bottom of the window (library actions).
+void showLibraryMessage(BuildContext context, String text) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  messenger
+    ?..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(text),
+        behavior: SnackBarBehavior.floating,
+        width: 420,
+      ),
+    );
 }

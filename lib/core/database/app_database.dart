@@ -149,6 +149,29 @@ class TasteItems extends Table {
   ];
 }
 
+/// A library song the user removed from the library (schema v5, D-042).
+/// The file itself is never touched; the scanner skips this path until the
+/// user restores it. Favourite and playlist places are remembered so a
+/// restore puts the song back where it was.
+@DataClassName('ExclusionRow')
+class LibraryExclusions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Normalised path (same as tracks.path_key).
+  TextColumn get pathKey => text().unique()();
+  TextColumn get path => text()();
+  TextColumn get title => text()();
+  TextColumn get artist => text()();
+  TextColumn get album => text()();
+  IntColumn get durationMs => integer().nullable()();
+  BoolColumn get wasFavorite => boolean().withDefault(const Constant(false))();
+
+  /// Playlist places before the removal: "playlistId:position" joined by
+  /// commas (playlists deleted meanwhile are skipped on restore).
+  TextColumn get playlistPlaces => text().withDefault(const Constant(''))();
+  DateTimeColumn get excludedAt => dateTime()();
+}
+
 /// Local SQLite database (Drift). Schema changes must add a migration step
 /// in [migration] and bump [schemaVersion].
 @DriftDatabase(
@@ -160,6 +183,7 @@ class TasteItems extends Table {
     AppSettings,
     ListeningEvents,
     TasteItems,
+    LibraryExclusions,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -179,7 +203,7 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => currentSchemaVersion;
 
   /// Schema of this build (database_safety.dart backs up older files).
-  static const int currentSchemaVersion = 4 + _testSchemaBump;
+  static const int currentSchemaVersion = 5 + _testSchemaBump;
 
   /// Only the second build of the D-030 update-chain test sets this
   /// (`--dart-define=NEXA_TEST_SCHEMA_BUMP=1`), to test a rollback after a
@@ -248,7 +272,19 @@ class AppDatabase extends _$AppDatabase {
           }
         });
       }
-      if (_testSchemaBump > 0 && from < 4 + _testSchemaBump) {
+      if (from < 5) {
+        // v5 (D-042): songs removed from the library. Only a new table;
+        // the kept counts must not change.
+        await transaction(() async {
+          final before = await _keptCounts();
+          await m.createTable(libraryExclusions);
+          final after = await _keptCounts();
+          if (before.toString() != after.toString()) {
+            throw StateError('Migration v5 changed saved data: $before -> $after');
+          }
+        });
+      }
+      if (_testSchemaBump > 0 && from < 5 + _testSchemaBump) {
         // Test builds only (see _testSchemaBump): a migration that the
         // released version cannot read.
         await customStatement(

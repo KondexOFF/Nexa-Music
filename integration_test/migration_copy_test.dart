@@ -51,6 +51,8 @@ Map<String, Object?> inspect(String path) {
       'integrity': db.select('PRAGMA integrity_check').first.values.first,
       'foreignKeyErrors': db.select('PRAGMA foreign_key_check').length,
       'counts': counts,
+      // Schema 5 (D-042): songs removed from the library.
+      'exclusionsTable': names.contains('library_exclusions'),
     };
   } finally {
     db.close();
@@ -116,6 +118,7 @@ void main() {
       expect(after['version'], AppDatabase.currentSchemaVersion);
       expect(after['integrity'], 'ok');
       expect(after['foreignKeyErrors'], 0);
+      expect(after['exclusionsTable'], isTrue);
       final countsBefore = before['counts']! as Map;
       final countsAfter = after['counts']! as Map;
       for (final t in countsBefore.keys) {

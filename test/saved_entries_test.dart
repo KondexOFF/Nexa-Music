@@ -86,6 +86,7 @@ void main() {
         'ALTER TABLE tracks DROP COLUMN license',
         'ALTER TABLE tracks DROP COLUMN license_url',
         'ALTER TABLE tracks DROP COLUMN meta_fetched_at',
+        'DROP TABLE library_exclusions',
         'PRAGMA user_version = 3',
       ]) {
         await db.customStatement(sql);
@@ -108,7 +109,10 @@ void main() {
       // New columns work.
       await repo2.renameSaved(video('dQw4w9WgXcQ'), 'My name');
       await upgraded.close();
-      expect(DatabaseSafety.schemaOf(safety.database), 4);
+      expect(
+        DatabaseSafety.schemaOf(safety.database),
+        AppDatabase.currentSchemaVersion,
+      );
       // Opening a current file makes no further copy.
       expect(safety.beforeOpen(), isNull);
     });
@@ -125,6 +129,7 @@ void main() {
         'ALTER TABLE tracks DROP COLUMN license',
         'ALTER TABLE tracks DROP COLUMN license_url',
         'ALTER TABLE tracks DROP COLUMN meta_fetched_at',
+        'DROP TABLE library_exclusions',
         'PRAGMA user_version = 3',
       ]) {
         await db.customStatement(sql);

@@ -7,6 +7,7 @@ import '../../core/app_paths.dart';
 
 import '../../core/database/app_database.dart';
 import '../../core/models/track.dart';
+import 'library_management.dart';
 import 'library_repository.dart';
 import 'library_scanner.dart';
 import 'tag_reader.dart';
@@ -73,7 +74,7 @@ final libraryQueryProvider = NotifierProvider<LibraryQuery, String>(
   LibraryQuery.new,
 );
 
-enum LibraryTab { songs, favorites, albums, artists, folders }
+enum LibraryTab { songs, favorites, albums, artists, folders, removed }
 
 class LibraryTabController extends Notifier<LibraryTab> {
   @override
@@ -268,6 +269,16 @@ class LibraryScanController extends Notifier<ScanState> {
     }
     return rescan();
   }
+
+  /// Brings removed songs back into the library (D-042), one job at a time
+  /// with imports and rescans.
+  Future<ScanReport?> restoreRemoved(List<int> exclusionIds) => _run(
+    'Restoring',
+    (s, progress) async => ScanReport()
+      ..returned = await LibraryManager(
+        ref.read(appDatabaseProvider),
+      ).restore(exclusionIds, s),
+  );
 
   Future<ScanReport?> rescan() =>
       _run('Rescanning', (s, progress) => s.rescanAll(onProgress: progress));

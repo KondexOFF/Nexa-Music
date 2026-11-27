@@ -200,10 +200,49 @@ abstract final class S {
   static const String favoritesEmpty =
       'No favorites yet. Click the heart next to a song.';
   static const String foldersEmpty = 'No folders added yet.';
-  static const String removeFolder = 'Remove from library';
+  static const String removeFolder = 'Remove folder from library';
   static const String removeFolderBody =
-      'The folder and its songs are removed from NEXARYVE (also from playlists). '
-      'The files on your disk are not touched.';
+      'The folder and its songs are removed from NEXARYVE (also from playlists '
+      'and the queue). A backup of the library is made first. The files on '
+      'your disk are not touched; adding the folder again brings the songs '
+      'back.';
+  // Library management (D-042): nothing here deletes a file.
+  static const String removeFromLibrary = 'Remove from library';
+  static const String removeFromLibraryBody =
+      'The song leaves NEXARYVE: the library, its playlists and the queue. '
+      'The file stays on your disk, and a rescan will not add it again. '
+      'You can bring it back from Library > Removed.';
+  static String removeSongsTitle(int n) =>
+      n == 1 ? 'Remove 1 song from the library?' : 'Remove $n songs from the library?';
+  static const String showInFolder = 'Show in folder';
+  static const String fileFolderMissing =
+      'The file and its folder are not on this computer (drive unplugged?)';
+  static const String tabRemoved = 'Removed';
+  static const String removedEmpty =
+      'No removed songs. Songs you remove from the library are listed here - '
+      'their files were never deleted.';
+  static const String removedIntro =
+      'Removed from the library, still on your disk. A rescan skips them '
+      'until you restore them.';
+  static const String restore = 'Restore';
+  static const String restoreAll = 'Restore all';
+  static const String select = 'Select';
+  static const String selectAll = 'Select all';
+  static const String clearSelection = 'Clear selection';
+  static String selectedCount(int n) => '$n selected';
+  static const String doneSelecting = 'Done';
+  static const String clearLibrary = 'Clear library';
+  static const String clearLibraryBody =
+      'Every folder and song leaves NEXARYVE (also from playlists and the '
+      'queue). A backup of the library is made first. Your music files are '
+      'not touched; playlists, saved catalog songs and YouTube bookmarks '
+      'stay.';
+  static const String backupFailed =
+      'No backup of the library could be made - nothing was changed';
+  static String removedSongs(int n) =>
+      n == 1 ? '1 song removed from the library' : '$n songs removed from the library';
+  static String restoredSongs(int n) =>
+      n == 1 ? '1 song is back in the library' : '$n songs are back in the library';
   static const String unlike = 'Remove from favorites';
   static const String removeFromPlaylist = 'Remove from playlist';
   static const String moveUp = 'Move up';

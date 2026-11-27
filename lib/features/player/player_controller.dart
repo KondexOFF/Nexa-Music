@@ -552,6 +552,61 @@ class PlayerController extends Notifier<PlayerState> {
     );
   }
 
+  /// Library songs removed from the library (D-042) leave the queue. If
+  /// the current song is one of them, it stops; playback goes on with the
+  /// next remaining entry when it was playing (paused stays paused). Its
+  /// listening is not recorded - the song is no longer in the library.
+  Future<void> forgetLibraryTracks(Set<int> trackIds) async {
+    bool gone(QueueEntry e) =>
+        e.track.source == TrackSource.local && trackIds.contains(e.track.id);
+    if (trackIds.isEmpty || !state.queue.any(gone)) {
+      return;
+    }
+    final current = state.currentEntry;
+    final queue = state.queue.where((e) => !gone(e)).toList();
+    _original = _original.where((e) => !gone(e)).toList();
+    final skipped = {
+      for (final e in state.skipped.entries)
+        if (queue.any((q) => q.uid == e.key)) e.key: e.value,
+    };
+    if (current == null || !gone(current)) {
+      state = state.copyWith(
+        queue: queue,
+        cursor: current == null ? -1 : queue.indexOf(current),
+        skipped: skipped,
+      );
+      await _prepareNext(); // What follows may have changed.
+      return;
+    }
+    final wasPlaying = state.playing;
+    QueueEntry? following;
+    for (var i = state.cursor + 1; i < state.queue.length; i++) {
+      if (!gone(state.queue[i])) {
+        following = state.queue[i];
+        break;
+      }
+    }
+    _listenTrack = null;
+    _listenStart = null;
+    await _engine.stop();
+    if (following == null) {
+      state = state.copyWith(
+        queue: queue,
+        cursor: -1,
+        playing: false,
+        skipped: skipped,
+      );
+      return;
+    }
+    state = state.copyWith(
+      queue: queue,
+      cursor: queue.indexOf(following),
+      playing: false,
+      skipped: skipped,
+    );
+    await _loadCurrent(play: wasPlaying);
+  }
+
   /// Plays the queue entry at [index].
   Future<void> jumpTo(int index) async {
     if (index < 0 || index >= state.queue.length) {

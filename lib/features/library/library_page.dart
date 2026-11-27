@@ -5,8 +5,10 @@ import '../../app/strings.dart';
 import '../../app/theme/nexa_theme.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/database/app_database.dart';
+import '../../core/models/track.dart';
 import '../../ui/nexa_widgets.dart';
 import '../player/player_controller.dart';
+import 'library_actions.dart';
 import 'library_dialogs.dart';
 import 'library_providers.dart';
 import 'library_repository.dart';
@@ -52,6 +54,7 @@ class LibraryPage extends ConsumerWidget {
               LibraryTab.albums => [const _GroupGrid(albums: true)],
               LibraryTab.artists => [const _GroupGrid(albums: false)],
               LibraryTab.folders => [const _FolderList()],
+              LibraryTab.removed => [const _RemovedList()],
             },
             const SliverToBoxAdapter(child: SizedBox(height: 28)),
           ],
@@ -70,6 +73,7 @@ class _LibraryHeader extends ConsumerWidget {
     final visible = ref.watch(libraryTracksProvider).value ?? const [];
     final scan = ref.watch(libraryScanProvider);
     final scanner = ref.read(libraryScanProvider.notifier);
+    final selecting = ref.watch(trackSelectionProvider);
     return Wrap(
       spacing: 12,
       runSpacing: 12,
@@ -124,6 +128,22 @@ class _LibraryHeader extends ConsumerWidget {
               onPressed: scan.running ? null : scanner.addFiles,
               disabledReason: S.scanning,
             ),
+            if (selecting != null ||
+                ref.watch(libraryTabProvider) == LibraryTab.songs ||
+                ref.watch(libraryTabProvider) == LibraryTab.favorites)
+              NexaIconButton(
+                key: const ValueKey('library-select'),
+                icon: Icons.checklist_rounded,
+                label: selecting == null ? S.select : S.doneSelecting,
+                boxSize: 42,
+                selected: selecting != null,
+                onPressed: visible.isEmpty && selecting == null
+                    ? null
+                    : () {
+                        final sel = ref.read(trackSelectionProvider.notifier);
+                        selecting == null ? sel.start() : sel.stop();
+                      },
+              ),
             // E5: an icon button keeps the actions on one line.
             NexaIconButton(
               key: const ValueKey('library-rescan'),
@@ -188,7 +208,13 @@ class _ReportLine extends StatelessWidget {
       if (report.restored > 0) '${report.restored} found again',
       if (report.missing > 0) '${report.missing} missing',
       if (report.skipped > 0) '${report.skipped} skipped',
+      if (report.excluded > 0) '${report.excluded} removed earlier (skipped)',
     ];
+    if (report.returned > 0 && report.total == 0) {
+      parts
+        ..clear()
+        ..add(S.restoredSongs(report.returned));
+    }
     final problems = report.problems;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -241,12 +267,14 @@ class _Tabs extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tab = ref.watch(libraryTabProvider);
     final favorites = ref.watch(favoriteCountProvider).value ?? 0;
+    final removed = ref.watch(exclusionsProvider).value?.length ?? 0;
     const labels = {
       LibraryTab.songs: S.tabSongs,
       LibraryTab.favorites: S.tabFavorites,
       LibraryTab.albums: S.tabAlbums,
       LibraryTab.artists: S.tabArtists,
       LibraryTab.folders: S.tabFolders,
+      LibraryTab.removed: S.tabRemoved,
     };
     return Wrap(
       spacing: 8,
@@ -257,6 +285,8 @@ class _Tabs extends ConsumerWidget {
             label: Text(
               entry.key == LibraryTab.favorites && favorites > 0
                   ? '${entry.value} ($favorites)'
+                  : entry.key == LibraryTab.removed && removed > 0
+                  ? '${entry.value} ($removed)'
                   : entry.value,
             ),
             selected: tab == entry.key,
@@ -271,6 +301,7 @@ class _Tabs extends ConsumerWidget {
                   : NexaColors.textSecondary,
             ),
             onSelected: (_) {
+              ref.read(trackSelectionProvider.notifier).stop();
               ref.read(libraryTabProvider.notifier).set(entry.key);
               if (entry.key != LibraryTab.songs) {
                 ref.read(groupFilterProvider.notifier).set(const GroupFilter());
@@ -362,8 +393,14 @@ class _TrackSlivers extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           sliver: SliverMainAxisGroup(
             slivers: [
+              if (ref.watch(trackSelectionProvider) != null)
+                PinnedHeaderSliver(child: _SelectionBar(visible: list)),
               SliverToBoxAdapter(child: TrackListHeader(showAlbum: showAlbum)),
-              SliverTrackList(tracks: list, showAlbum: showAlbum),
+              SliverTrackList(
+                tracks: list,
+                showAlbum: showAlbum,
+                selectable: true,
+              ),
             ],
           ),
         );
@@ -492,18 +529,29 @@ class _FolderList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final folders = ref.watch(foldersProvider).value ?? const <FolderRow>[];
     if (folders.isEmpty) {
-      return const SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(S.foldersEmpty, style: NexaText.bodySecondary),
+      // Single files can still be in the library: Clear library stays.
+      final songs = ref.watch(trackCountProvider).value ?? 0;
+      return SliverPadding(
+        padding: const EdgeInsets.all(24),
+        sliver: SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(S.foldersEmpty, style: NexaText.bodySecondary),
+              if (songs > 0) const _ClearLibrary(),
+            ],
+          ),
         ),
       );
     }
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList.builder(
-        itemCount: folders.length,
+        itemCount: folders.length + 1,
         itemBuilder: (context, i) {
+          if (i == folders.length) {
+            return const _ClearLibrary();
+          }
           final f = folders[i];
           final scanned = f.lastScanAt;
           return Container(
@@ -537,6 +585,17 @@ class _FolderList extends ConsumerWidget {
                   ),
                 ),
                 NexaIconButton(
+                  icon: Icons.folder_open_outlined,
+                  label: S.showInFolder,
+                  color: NexaColors.textSecondary,
+                  onPressed: () async {
+                    final r = await ref.read(fileRevealerProvider)(f.path);
+                    if (r == RevealResult.notFound && context.mounted) {
+                      showLibraryMessage(context, S.fileFolderMissing);
+                    }
+                  },
+                ),
+                NexaIconButton(
                   icon: Icons.remove_circle_outline_rounded,
                   label: S.removeFolder,
                   color: NexaColors.textSecondary,
@@ -547,10 +606,18 @@ class _FolderList extends ConsumerWidget {
                       body: '${f.path}\n\n${S.removeFolderBody}',
                       action: S.remove,
                     );
-                    if (ok) {
-                      await ref
-                          .read(libraryRepositoryProvider)
-                          .removeFolder(f.id);
+                    if (!ok) {
+                      return;
+                    }
+                    try {
+                      final n = await removeFolderFromLibrary(ref, f.id);
+                      if (context.mounted) {
+                        showLibraryMessage(context, S.removedSongs(n));
+                      }
+                    } on Object {
+                      if (context.mounted) {
+                        showLibraryMessage(context, S.backupFailed);
+                      }
                     }
                   },
                 ),
@@ -566,4 +633,261 @@ class _FolderList extends ConsumerWidget {
 String _formatDate(DateTime d) {
   String two(int v) => v.toString().padLeft(2, '0');
   return '${d.year}-${two(d.month)}-${two(d.day)} ${two(d.hour)}:${two(d.minute)}';
+}
+
+/// Picked songs: how many, select all, remove from the library, add to a
+/// playlist or the queue (D-042).
+class _SelectionBar extends ConsumerWidget {
+  const _SelectionBar({required this.visible});
+
+  final List<Track> visible;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selection = ref.watch(trackSelectionProvider) ?? const <int>{};
+    final ids = localIdsOf(visible);
+    // Only songs that are on screen count (a search may hide others).
+    final picked = [
+      for (final t in visible)
+        if (t.source == TrackSource.local && selection.contains(t.id)) t,
+    ];
+    final notifier = ref.read(trackSelectionProvider.notifier);
+    final allPicked = ids.isNotEmpty && picked.length == ids.length;
+    return Container(
+      key: const ValueKey('library-selection-bar'),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: NexaColors.panelRaised,
+        borderRadius: BorderRadius.circular(NexaRadius.md),
+        border: Border.all(color: NexaColors.border),
+      ),
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(S.selectedCount(picked.length), style: NexaText.title),
+          TextButton(
+            onPressed: () => allPicked ? notifier.setAll(const []) : notifier.setAll(ids),
+            child: Text(allPicked ? S.clearSelection : S.selectAll),
+          ),
+          NexaPillButton(
+            key: const ValueKey('selection-remove'),
+            label: S.removeFromLibrary,
+            icon: Icons.remove_circle_outline_rounded,
+            height: 38,
+            onPressed: picked.isEmpty
+                ? null
+                : () async {
+                    final ok = await confirmAction(
+                      context,
+                      title: S.removeSongsTitle(picked.length),
+                      body: S.removeFromLibraryBody,
+                      action: S.remove,
+                    );
+                    if (!ok) {
+                      return;
+                    }
+                    final n = await removeTracksFromLibrary(ref, picked);
+                    notifier.stop();
+                    if (context.mounted) {
+                      showLibraryMessage(context, S.removedSongs(n));
+                    }
+                  },
+            disabledReason: S.selectedCount(0),
+          ),
+          NexaPillButton(
+            label: '${S.addToPlaylist}...',
+            icon: Icons.playlist_add_rounded,
+            variant: PillVariant.secondary,
+            height: 38,
+            onPressed: picked.isEmpty
+                ? null
+                : () => addTracksToPlaylist(context, ref, picked),
+            disabledReason: S.selectedCount(0),
+          ),
+          NexaPillButton(
+            label: S.addToQueue,
+            icon: Icons.queue_music_rounded,
+            variant: PillVariant.secondary,
+            height: 38,
+            onPressed: picked.isEmpty
+                ? null
+                : () => ref.read(playerProvider.notifier).addToQueue(picked),
+            disabledReason: S.selectedCount(0),
+          ),
+          NexaIconButton(
+            icon: Icons.close_rounded,
+            label: S.doneSelecting,
+            onPressed: notifier.stop,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Songs removed from the library, with Restore (D-042).
+class _RemovedList extends ConsumerWidget {
+  const _RemovedList();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rows = ref.watch(exclusionsProvider).value ?? const <ExclusionRow>[];
+    final scan = ref.watch(libraryScanProvider);
+    final scanner = ref.read(libraryScanProvider.notifier);
+    if (rows.isEmpty) {
+      return const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Text(S.removedEmpty, style: NexaText.bodySecondary),
+        ),
+      );
+    }
+    Future<void> restore(List<int> ids) async {
+      final report = await scanner.restoreRemoved(ids);
+      if (report != null && context.mounted) {
+        showLibraryMessage(context, S.restoredSongs(report.returned));
+      }
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      sliver: SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(S.removedIntro, style: NexaText.bodySecondary),
+                  ),
+                  const SizedBox(width: 12),
+                  NexaPillButton(
+                    key: const ValueKey('restore-all'),
+                    label: S.restoreAll,
+                    icon: Icons.settings_backup_restore_rounded,
+                    variant: PillVariant.secondary,
+                    height: 38,
+                    onPressed: scan.running
+                        ? null
+                        : () => restore([for (final r in rows) r.id]),
+                    disabledReason: S.scanning,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverFixedExtentList(
+            itemExtent: kTrackRowHeight,
+            delegate: SliverChildBuilderDelegate((context, i) {
+              final r = rows[i];
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: NexaColors.divider)),
+                ),
+                child: Row(
+                  children: [
+                    TrackArt(artworkPath: null, seed: r.pathKey.hashCode, size: 40),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            r.title,
+                            style: NexaText.body.copyWith(fontWeight: FontWeight.w600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '${r.artist} - ${r.album}',
+                            style: NexaText.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      _formatDate(r.excludedAt),
+                      style: NexaText.caption.copyWith(fontFeatures: NexaText.numbers),
+                    ),
+                    const SizedBox(width: 8),
+                    NexaIconButton(
+                      icon: Icons.folder_open_outlined,
+                      label: S.showInFolder,
+                      color: NexaColors.textSecondary,
+                      onPressed: () async {
+                        final res = await ref.read(fileRevealerProvider)(r.path);
+                        if (res == RevealResult.notFound && context.mounted) {
+                          showLibraryMessage(context, S.fileFolderMissing);
+                        }
+                      },
+                    ),
+                    TextButton(
+                      key: ValueKey('restore-${r.id}'),
+                      onPressed: scan.running ? null : () => restore([r.id]),
+                      child: const Text(S.restore),
+                    ),
+                  ],
+                ),
+              );
+            }, childCount: rows.length),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Clear library" at the end of the Folders tab (backup first).
+class _ClearLibrary extends ConsumerWidget {
+  const _ClearLibrary();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scan = ref.watch(libraryScanProvider);
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: NexaPillButton(
+          key: const ValueKey('library-clear'),
+          label: '${S.clearLibrary}...',
+          icon: Icons.delete_sweep_outlined,
+          variant: PillVariant.secondary,
+          height: 40,
+          onPressed: scan.running
+              ? null
+              : () async {
+                  final ok = await confirmAction(
+                    context,
+                    title: '${S.clearLibrary}?',
+                    body: S.clearLibraryBody,
+                    action: S.clearLibrary,
+                  );
+                  if (!ok) {
+                    return;
+                  }
+                  try {
+                    final n = await clearWholeLibrary(ref);
+                    if (context.mounted) {
+                      showLibraryMessage(context, S.removedSongs(n));
+                    }
+                  } on Object {
+                    if (context.mounted) {
+                      showLibraryMessage(context, S.backupFailed);
+                    }
+                  }
+                },
+          disabledReason: S.scanning,
+        ),
+      ),
+    );
+  }
 }

@@ -201,6 +201,53 @@ void main() {
     expect(state().current!.title, 'Song 1');
   });
 
+  group('songs removed from the library leave the queue (D-042)', () {
+    test('a song after the current one: the queue shrinks, playback goes on',
+        () async {
+      final tracks = makeTracks(4);
+      await player().playTracks(tracks, start: 1);
+      await player().forgetLibraryTracks({1, 3});
+      expect(state().queue.map((e) => e.track.title), ['Song 2', 'Song 4']);
+      expect(state().current!.title, 'Song 2');
+      expect(state().playing, isTrue);
+      expect(engine.loads, [tracks[1].path]);
+      expect(engine.preparedPath, tracks[3].path, reason: 'next prepared again');
+    });
+
+    test('the playing song: it stops, the next remaining one plays', () async {
+      final tracks = makeTracks(4);
+      await player().playTracks(tracks);
+      await player().forgetLibraryTracks({1, 2});
+      expect(state().current!.title, 'Song 3');
+      expect(state().playing, isTrue);
+      expect(engine.loads, [tracks[0].path, tracks[2].path]);
+      expect(engine.activeFiles, 1);
+    });
+
+    test('paused stays paused; the last song removed stops the player',
+        () async {
+      final tracks = makeTracks(3);
+      await player().playTracks(tracks, start: 1);
+      await player().togglePlay();
+      await player().forgetLibraryTracks({2});
+      expect(state().current!.title, 'Song 3');
+      expect(state().playing, isFalse);
+      await player().forgetLibraryTracks({3});
+      expect(state().current, isNull);
+      expect(state().playing, isFalse);
+      expect(engine.state.path, isNull);
+      expect(state().queue.map((e) => e.track.title), ['Song 1']);
+    });
+
+    test('other sources and unknown ids are left alone', () async {
+      final tracks = makeTracks(2);
+      await player().playTracks(tracks);
+      await player().forgetLibraryTracks({99});
+      expect(state().queue.length, 2);
+      expect(engine.loads.length, 1);
+    });
+  });
+
   group('one queue for all sources (E2.8)', () {
     late _FakeExternal yt;
 

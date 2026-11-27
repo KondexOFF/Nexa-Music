@@ -15,6 +15,12 @@ class ScanReport {
   int missing = 0;
   int restored = 0;
   int skipped = 0;
+
+  /// Files the user removed from the library (D-042): not added again.
+  int excluded = 0;
+
+  /// Removed songs brought back by the user (restore).
+  int returned = 0;
   final List<String> problems = [];
 
   int get total => added + updated + unchanged;
@@ -81,7 +87,23 @@ class LibraryScanner {
         report.problems.add('${p.basename(path)}: format not supported');
       }
     }
+    // Files picked one by one are wanted: a removed one comes back.
+    final keys = [for (final f in files) pathKeyOf(f)];
+    for (var i = 0; i < keys.length; i += 500) {
+      final chunk = keys.sublist(i, i + 500 > keys.length ? keys.length : i + 500);
+      await (db.delete(
+        db.libraryExclusions,
+      )..where((e) => e.pathKey.isIn(chunk))).go();
+    }
     await _index(files, null, report, onProgress);
+    return report;
+  }
+
+  /// Reads [files] again into the library (restore of removed songs),
+  /// in the library folder [folderId] or as single files.
+  Future<ScanReport> indexFiles(List<String> files, int? folderId) async {
+    final report = ScanReport();
+    await _index(files, folderId, report, null);
     return report;
   }
 
@@ -98,6 +120,7 @@ class LibraryScanner {
         ..missing += r.missing
         ..restored += r.restored
         ..skipped += r.skipped
+        ..excluded += r.excluded
         ..problems.addAll(r.problems);
     }
     // Files added one by one (no folder).
@@ -197,6 +220,22 @@ class LibraryScanner {
     final unique = <String, String>{};
     for (final f in files) {
       unique.putIfAbsent(pathKeyOf(f), () => f);
+    }
+    // Songs the user removed from the library stay out (D-042).
+    final allKeys = unique.keys.toList();
+    for (var i = 0; i < allKeys.length; i += 500) {
+      final chunk = allKeys.sublist(
+        i,
+        i + 500 > allKeys.length ? allKeys.length : i + 500,
+      );
+      final removed = await (db.select(
+        db.libraryExclusions,
+      )..where((e) => e.pathKey.isIn(chunk))).get();
+      for (final r in removed) {
+        if (unique.remove(r.pathKey) != null) {
+          report.excluded++;
+        }
+      }
     }
     files = unique.values.toList();
     if (files.isEmpty) {
@@ -306,6 +345,14 @@ class LibraryScanner {
       problem: Value(tag.error),
     );
     if (row == null) {
+      // Removed from the library while this scan was running: stays out.
+      final removed = await (db.select(
+        db.libraryExclusions,
+      )..where((e) => e.pathKey.equals(key))).getSingleOrNull();
+      if (removed != null) {
+        report.excluded++;
+        return;
+      }
       await db
           .into(db.tracks)
           .insert(

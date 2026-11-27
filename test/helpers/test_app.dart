@@ -9,7 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexa_music/app/app.dart';
 import 'package:nexa_music/core/audio/audio_analyzer.dart';
 import 'package:nexa_music/core/database/app_database.dart';
+import 'package:nexa_music/core/database/database_safety.dart';
 import 'package:nexa_music/features/library/library_providers.dart';
+import 'package:nexa_music/features/pages/database_backup_controls.dart'
+    as backups;
 import 'package:nexa_music/features/player/player_controller.dart';
 import 'package:nexa_music/features/update/update_controller.dart';
 import 'package:nexa_music/features/update/update_installer.dart';
@@ -45,6 +48,19 @@ List<Override> testOverrides({AppDatabase? database, FakeEngine? engine}) {
       final e = engine ?? FakeEngine();
       ref.onDispose(e.dispose);
       return e;
+    }),
+    // Library backups (D-042: before folder removal / Clear library) go to
+    // a temporary folder, never the user's data folder.
+    backups.databaseSafetyProvider.overrideWith((ref) async {
+      final dir = Directory.systemTemp.createTempSync('nexa_backups_test');
+      ref.onDispose(() {
+        try {
+          dir.deleteSync(recursive: true);
+        } on FileSystemException {
+          // Left for the system to clean.
+        }
+      });
+      return DatabaseSafety(dir);
     }),
     // NEXA Update Center: no network, no real update folder.
     updateSourceProvider.overrideWithValue(const NoReleasesSource()),

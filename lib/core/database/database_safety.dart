@@ -103,7 +103,21 @@ class DatabaseSafety {
 
   void _prune() {
     final copies = list().where((f) => !isProtected(f)).toList();
+    // The newest copy of every older schema stays too: going back to an
+    // older NEXARYVE needs a library it can read (D-030 rollback), however
+    // many copies were made since (D-042 backups before library changes).
+    final schemas = <int>{};
+    final lastOfSchema = <File>{};
+    for (final f in copies) {
+      final v = schemaOf(f);
+      if (v != null && v < AppDatabase.currentSchemaVersion && schemas.add(v)) {
+        lastOfSchema.add(f);
+      }
+    }
     for (final old in copies.skip(keep)) {
+      if (lastOfSchema.contains(old)) {
+        continue;
+      }
       for (final suffix in const ['', '-wal', '-shm']) {
         final f = File('${old.path}$suffix');
         if (f.existsSync()) {

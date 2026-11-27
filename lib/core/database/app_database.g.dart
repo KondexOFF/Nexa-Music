@@ -3773,6 +3773,616 @@ class TasteItemsCompanion extends UpdateCompanion<TasteItemRow> {
   }
 }
 
+class $LibraryExclusionsTable extends LibraryExclusions
+    with TableInfo<$LibraryExclusionsTable, ExclusionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LibraryExclusionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _pathKeyMeta = const VerificationMeta(
+    'pathKey',
+  );
+  @override
+  late final GeneratedColumn<String> pathKey = GeneratedColumn<String>(
+    'path_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+    'path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _artistMeta = const VerificationMeta('artist');
+  @override
+  late final GeneratedColumn<String> artist = GeneratedColumn<String>(
+    'artist',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _albumMeta = const VerificationMeta('album');
+  @override
+  late final GeneratedColumn<String> album = GeneratedColumn<String>(
+    'album',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _durationMsMeta = const VerificationMeta(
+    'durationMs',
+  );
+  @override
+  late final GeneratedColumn<int> durationMs = GeneratedColumn<int>(
+    'duration_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _wasFavoriteMeta = const VerificationMeta(
+    'wasFavorite',
+  );
+  @override
+  late final GeneratedColumn<bool> wasFavorite = GeneratedColumn<bool>(
+    'was_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("was_favorite" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _playlistPlacesMeta = const VerificationMeta(
+    'playlistPlaces',
+  );
+  @override
+  late final GeneratedColumn<String> playlistPlaces = GeneratedColumn<String>(
+    'playlist_places',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _excludedAtMeta = const VerificationMeta(
+    'excludedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> excludedAt = GeneratedColumn<DateTime>(
+    'excluded_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    pathKey,
+    path,
+    title,
+    artist,
+    album,
+    durationMs,
+    wasFavorite,
+    playlistPlaces,
+    excludedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'library_exclusions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExclusionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('path_key')) {
+      context.handle(
+        _pathKeyMeta,
+        pathKey.isAcceptableOrUnknown(data['path_key']!, _pathKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathKeyMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+        _pathMeta,
+        path.isAcceptableOrUnknown(data['path']!, _pathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('artist')) {
+      context.handle(
+        _artistMeta,
+        artist.isAcceptableOrUnknown(data['artist']!, _artistMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_artistMeta);
+    }
+    if (data.containsKey('album')) {
+      context.handle(
+        _albumMeta,
+        album.isAcceptableOrUnknown(data['album']!, _albumMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_albumMeta);
+    }
+    if (data.containsKey('duration_ms')) {
+      context.handle(
+        _durationMsMeta,
+        durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
+      );
+    }
+    if (data.containsKey('was_favorite')) {
+      context.handle(
+        _wasFavoriteMeta,
+        wasFavorite.isAcceptableOrUnknown(
+          data['was_favorite']!,
+          _wasFavoriteMeta,
+        ),
+      );
+    }
+    if (data.containsKey('playlist_places')) {
+      context.handle(
+        _playlistPlacesMeta,
+        playlistPlaces.isAcceptableOrUnknown(
+          data['playlist_places']!,
+          _playlistPlacesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('excluded_at')) {
+      context.handle(
+        _excludedAtMeta,
+        excludedAt.isAcceptableOrUnknown(data['excluded_at']!, _excludedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_excludedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExclusionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExclusionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      pathKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path_key'],
+      )!,
+      path: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}path'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      artist: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}artist'],
+      )!,
+      album: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album'],
+      )!,
+      durationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_ms'],
+      ),
+      wasFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}was_favorite'],
+      )!,
+      playlistPlaces: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}playlist_places'],
+      )!,
+      excludedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}excluded_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LibraryExclusionsTable createAlias(String alias) {
+    return $LibraryExclusionsTable(attachedDatabase, alias);
+  }
+}
+
+class ExclusionRow extends DataClass implements Insertable<ExclusionRow> {
+  final int id;
+
+  /// Normalised path (same as tracks.path_key).
+  final String pathKey;
+  final String path;
+  final String title;
+  final String artist;
+  final String album;
+  final int? durationMs;
+  final bool wasFavorite;
+
+  /// Playlist places before the removal: "playlistId:position" joined by
+  /// commas (playlists deleted meanwhile are skipped on restore).
+  final String playlistPlaces;
+  final DateTime excludedAt;
+  const ExclusionRow({
+    required this.id,
+    required this.pathKey,
+    required this.path,
+    required this.title,
+    required this.artist,
+    required this.album,
+    this.durationMs,
+    required this.wasFavorite,
+    required this.playlistPlaces,
+    required this.excludedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['path_key'] = Variable<String>(pathKey);
+    map['path'] = Variable<String>(path);
+    map['title'] = Variable<String>(title);
+    map['artist'] = Variable<String>(artist);
+    map['album'] = Variable<String>(album);
+    if (!nullToAbsent || durationMs != null) {
+      map['duration_ms'] = Variable<int>(durationMs);
+    }
+    map['was_favorite'] = Variable<bool>(wasFavorite);
+    map['playlist_places'] = Variable<String>(playlistPlaces);
+    map['excluded_at'] = Variable<DateTime>(excludedAt);
+    return map;
+  }
+
+  LibraryExclusionsCompanion toCompanion(bool nullToAbsent) {
+    return LibraryExclusionsCompanion(
+      id: Value(id),
+      pathKey: Value(pathKey),
+      path: Value(path),
+      title: Value(title),
+      artist: Value(artist),
+      album: Value(album),
+      durationMs: durationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationMs),
+      wasFavorite: Value(wasFavorite),
+      playlistPlaces: Value(playlistPlaces),
+      excludedAt: Value(excludedAt),
+    );
+  }
+
+  factory ExclusionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExclusionRow(
+      id: serializer.fromJson<int>(json['id']),
+      pathKey: serializer.fromJson<String>(json['pathKey']),
+      path: serializer.fromJson<String>(json['path']),
+      title: serializer.fromJson<String>(json['title']),
+      artist: serializer.fromJson<String>(json['artist']),
+      album: serializer.fromJson<String>(json['album']),
+      durationMs: serializer.fromJson<int?>(json['durationMs']),
+      wasFavorite: serializer.fromJson<bool>(json['wasFavorite']),
+      playlistPlaces: serializer.fromJson<String>(json['playlistPlaces']),
+      excludedAt: serializer.fromJson<DateTime>(json['excludedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'pathKey': serializer.toJson<String>(pathKey),
+      'path': serializer.toJson<String>(path),
+      'title': serializer.toJson<String>(title),
+      'artist': serializer.toJson<String>(artist),
+      'album': serializer.toJson<String>(album),
+      'durationMs': serializer.toJson<int?>(durationMs),
+      'wasFavorite': serializer.toJson<bool>(wasFavorite),
+      'playlistPlaces': serializer.toJson<String>(playlistPlaces),
+      'excludedAt': serializer.toJson<DateTime>(excludedAt),
+    };
+  }
+
+  ExclusionRow copyWith({
+    int? id,
+    String? pathKey,
+    String? path,
+    String? title,
+    String? artist,
+    String? album,
+    Value<int?> durationMs = const Value.absent(),
+    bool? wasFavorite,
+    String? playlistPlaces,
+    DateTime? excludedAt,
+  }) => ExclusionRow(
+    id: id ?? this.id,
+    pathKey: pathKey ?? this.pathKey,
+    path: path ?? this.path,
+    title: title ?? this.title,
+    artist: artist ?? this.artist,
+    album: album ?? this.album,
+    durationMs: durationMs.present ? durationMs.value : this.durationMs,
+    wasFavorite: wasFavorite ?? this.wasFavorite,
+    playlistPlaces: playlistPlaces ?? this.playlistPlaces,
+    excludedAt: excludedAt ?? this.excludedAt,
+  );
+  ExclusionRow copyWithCompanion(LibraryExclusionsCompanion data) {
+    return ExclusionRow(
+      id: data.id.present ? data.id.value : this.id,
+      pathKey: data.pathKey.present ? data.pathKey.value : this.pathKey,
+      path: data.path.present ? data.path.value : this.path,
+      title: data.title.present ? data.title.value : this.title,
+      artist: data.artist.present ? data.artist.value : this.artist,
+      album: data.album.present ? data.album.value : this.album,
+      durationMs: data.durationMs.present
+          ? data.durationMs.value
+          : this.durationMs,
+      wasFavorite: data.wasFavorite.present
+          ? data.wasFavorite.value
+          : this.wasFavorite,
+      playlistPlaces: data.playlistPlaces.present
+          ? data.playlistPlaces.value
+          : this.playlistPlaces,
+      excludedAt: data.excludedAt.present
+          ? data.excludedAt.value
+          : this.excludedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExclusionRow(')
+          ..write('id: $id, ')
+          ..write('pathKey: $pathKey, ')
+          ..write('path: $path, ')
+          ..write('title: $title, ')
+          ..write('artist: $artist, ')
+          ..write('album: $album, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('wasFavorite: $wasFavorite, ')
+          ..write('playlistPlaces: $playlistPlaces, ')
+          ..write('excludedAt: $excludedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    pathKey,
+    path,
+    title,
+    artist,
+    album,
+    durationMs,
+    wasFavorite,
+    playlistPlaces,
+    excludedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExclusionRow &&
+          other.id == this.id &&
+          other.pathKey == this.pathKey &&
+          other.path == this.path &&
+          other.title == this.title &&
+          other.artist == this.artist &&
+          other.album == this.album &&
+          other.durationMs == this.durationMs &&
+          other.wasFavorite == this.wasFavorite &&
+          other.playlistPlaces == this.playlistPlaces &&
+          other.excludedAt == this.excludedAt);
+}
+
+class LibraryExclusionsCompanion extends UpdateCompanion<ExclusionRow> {
+  final Value<int> id;
+  final Value<String> pathKey;
+  final Value<String> path;
+  final Value<String> title;
+  final Value<String> artist;
+  final Value<String> album;
+  final Value<int?> durationMs;
+  final Value<bool> wasFavorite;
+  final Value<String> playlistPlaces;
+  final Value<DateTime> excludedAt;
+  const LibraryExclusionsCompanion({
+    this.id = const Value.absent(),
+    this.pathKey = const Value.absent(),
+    this.path = const Value.absent(),
+    this.title = const Value.absent(),
+    this.artist = const Value.absent(),
+    this.album = const Value.absent(),
+    this.durationMs = const Value.absent(),
+    this.wasFavorite = const Value.absent(),
+    this.playlistPlaces = const Value.absent(),
+    this.excludedAt = const Value.absent(),
+  });
+  LibraryExclusionsCompanion.insert({
+    this.id = const Value.absent(),
+    required String pathKey,
+    required String path,
+    required String title,
+    required String artist,
+    required String album,
+    this.durationMs = const Value.absent(),
+    this.wasFavorite = const Value.absent(),
+    this.playlistPlaces = const Value.absent(),
+    required DateTime excludedAt,
+  }) : pathKey = Value(pathKey),
+       path = Value(path),
+       title = Value(title),
+       artist = Value(artist),
+       album = Value(album),
+       excludedAt = Value(excludedAt);
+  static Insertable<ExclusionRow> custom({
+    Expression<int>? id,
+    Expression<String>? pathKey,
+    Expression<String>? path,
+    Expression<String>? title,
+    Expression<String>? artist,
+    Expression<String>? album,
+    Expression<int>? durationMs,
+    Expression<bool>? wasFavorite,
+    Expression<String>? playlistPlaces,
+    Expression<DateTime>? excludedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (pathKey != null) 'path_key': pathKey,
+      if (path != null) 'path': path,
+      if (title != null) 'title': title,
+      if (artist != null) 'artist': artist,
+      if (album != null) 'album': album,
+      if (durationMs != null) 'duration_ms': durationMs,
+      if (wasFavorite != null) 'was_favorite': wasFavorite,
+      if (playlistPlaces != null) 'playlist_places': playlistPlaces,
+      if (excludedAt != null) 'excluded_at': excludedAt,
+    });
+  }
+
+  LibraryExclusionsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? pathKey,
+    Value<String>? path,
+    Value<String>? title,
+    Value<String>? artist,
+    Value<String>? album,
+    Value<int?>? durationMs,
+    Value<bool>? wasFavorite,
+    Value<String>? playlistPlaces,
+    Value<DateTime>? excludedAt,
+  }) {
+    return LibraryExclusionsCompanion(
+      id: id ?? this.id,
+      pathKey: pathKey ?? this.pathKey,
+      path: path ?? this.path,
+      title: title ?? this.title,
+      artist: artist ?? this.artist,
+      album: album ?? this.album,
+      durationMs: durationMs ?? this.durationMs,
+      wasFavorite: wasFavorite ?? this.wasFavorite,
+      playlistPlaces: playlistPlaces ?? this.playlistPlaces,
+      excludedAt: excludedAt ?? this.excludedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (pathKey.present) {
+      map['path_key'] = Variable<String>(pathKey.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (artist.present) {
+      map['artist'] = Variable<String>(artist.value);
+    }
+    if (album.present) {
+      map['album'] = Variable<String>(album.value);
+    }
+    if (durationMs.present) {
+      map['duration_ms'] = Variable<int>(durationMs.value);
+    }
+    if (wasFavorite.present) {
+      map['was_favorite'] = Variable<bool>(wasFavorite.value);
+    }
+    if (playlistPlaces.present) {
+      map['playlist_places'] = Variable<String>(playlistPlaces.value);
+    }
+    if (excludedAt.present) {
+      map['excluded_at'] = Variable<DateTime>(excludedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LibraryExclusionsCompanion(')
+          ..write('id: $id, ')
+          ..write('pathKey: $pathKey, ')
+          ..write('path: $path, ')
+          ..write('title: $title, ')
+          ..write('artist: $artist, ')
+          ..write('album: $album, ')
+          ..write('durationMs: $durationMs, ')
+          ..write('wasFavorite: $wasFavorite, ')
+          ..write('playlistPlaces: $playlistPlaces, ')
+          ..write('excludedAt: $excludedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3787,6 +4397,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $TasteItemsTable tasteItems = $TasteItemsTable(this);
+  late final $LibraryExclusionsTable libraryExclusions =
+      $LibraryExclusionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3799,6 +4411,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appSettings,
     listeningEvents,
     tasteItems,
+    libraryExclusions,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -6566,6 +7179,321 @@ typedef $$TasteItemsTableProcessedTableManager =
       TasteItemRow,
       PrefetchHooks Function()
     >;
+typedef $$LibraryExclusionsTableCreateCompanionBuilder =
+    LibraryExclusionsCompanion Function({
+      Value<int> id,
+      required String pathKey,
+      required String path,
+      required String title,
+      required String artist,
+      required String album,
+      Value<int?> durationMs,
+      Value<bool> wasFavorite,
+      Value<String> playlistPlaces,
+      required DateTime excludedAt,
+    });
+typedef $$LibraryExclusionsTableUpdateCompanionBuilder =
+    LibraryExclusionsCompanion Function({
+      Value<int> id,
+      Value<String> pathKey,
+      Value<String> path,
+      Value<String> title,
+      Value<String> artist,
+      Value<String> album,
+      Value<int?> durationMs,
+      Value<bool> wasFavorite,
+      Value<String> playlistPlaces,
+      Value<DateTime> excludedAt,
+    });
+
+class $$LibraryExclusionsTableFilterComposer
+    extends Composer<_$AppDatabase, $LibraryExclusionsTable> {
+  $$LibraryExclusionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pathKey => $composableBuilder(
+    column: $table.pathKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get artist => $composableBuilder(
+    column: $table.artist,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get album => $composableBuilder(
+    column: $table.album,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wasFavorite => $composableBuilder(
+    column: $table.wasFavorite,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get playlistPlaces => $composableBuilder(
+    column: $table.playlistPlaces,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get excludedAt => $composableBuilder(
+    column: $table.excludedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LibraryExclusionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LibraryExclusionsTable> {
+  $$LibraryExclusionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pathKey => $composableBuilder(
+    column: $table.pathKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get path => $composableBuilder(
+    column: $table.path,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get artist => $composableBuilder(
+    column: $table.artist,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get album => $composableBuilder(
+    column: $table.album,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wasFavorite => $composableBuilder(
+    column: $table.wasFavorite,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get playlistPlaces => $composableBuilder(
+    column: $table.playlistPlaces,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get excludedAt => $composableBuilder(
+    column: $table.excludedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LibraryExclusionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LibraryExclusionsTable> {
+  $$LibraryExclusionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get pathKey =>
+      $composableBuilder(column: $table.pathKey, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get artist =>
+      $composableBuilder(column: $table.artist, builder: (column) => column);
+
+  GeneratedColumn<String> get album =>
+      $composableBuilder(column: $table.album, builder: (column) => column);
+
+  GeneratedColumn<int> get durationMs => $composableBuilder(
+    column: $table.durationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get wasFavorite => $composableBuilder(
+    column: $table.wasFavorite,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get playlistPlaces => $composableBuilder(
+    column: $table.playlistPlaces,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get excludedAt => $composableBuilder(
+    column: $table.excludedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$LibraryExclusionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LibraryExclusionsTable,
+          ExclusionRow,
+          $$LibraryExclusionsTableFilterComposer,
+          $$LibraryExclusionsTableOrderingComposer,
+          $$LibraryExclusionsTableAnnotationComposer,
+          $$LibraryExclusionsTableCreateCompanionBuilder,
+          $$LibraryExclusionsTableUpdateCompanionBuilder,
+          (
+            ExclusionRow,
+            BaseReferences<
+              _$AppDatabase,
+              $LibraryExclusionsTable,
+              ExclusionRow
+            >,
+          ),
+          ExclusionRow,
+          PrefetchHooks Function()
+        > {
+  $$LibraryExclusionsTableTableManager(
+    _$AppDatabase db,
+    $LibraryExclusionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LibraryExclusionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LibraryExclusionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LibraryExclusionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> pathKey = const Value.absent(),
+                Value<String> path = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> artist = const Value.absent(),
+                Value<String> album = const Value.absent(),
+                Value<int?> durationMs = const Value.absent(),
+                Value<bool> wasFavorite = const Value.absent(),
+                Value<String> playlistPlaces = const Value.absent(),
+                Value<DateTime> excludedAt = const Value.absent(),
+              }) => LibraryExclusionsCompanion(
+                id: id,
+                pathKey: pathKey,
+                path: path,
+                title: title,
+                artist: artist,
+                album: album,
+                durationMs: durationMs,
+                wasFavorite: wasFavorite,
+                playlistPlaces: playlistPlaces,
+                excludedAt: excludedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String pathKey,
+                required String path,
+                required String title,
+                required String artist,
+                required String album,
+                Value<int?> durationMs = const Value.absent(),
+                Value<bool> wasFavorite = const Value.absent(),
+                Value<String> playlistPlaces = const Value.absent(),
+                required DateTime excludedAt,
+              }) => LibraryExclusionsCompanion.insert(
+                id: id,
+                pathKey: pathKey,
+                path: path,
+                title: title,
+                artist: artist,
+                album: album,
+                durationMs: durationMs,
+                wasFavorite: wasFavorite,
+                playlistPlaces: playlistPlaces,
+                excludedAt: excludedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LibraryExclusionsTable, ExclusionRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LibraryExclusionsTable,
+                    ExclusionRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LibraryExclusionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LibraryExclusionsTable,
+      ExclusionRow,
+      $$LibraryExclusionsTableFilterComposer,
+      $$LibraryExclusionsTableOrderingComposer,
+      $$LibraryExclusionsTableAnnotationComposer,
+      $$LibraryExclusionsTableCreateCompanionBuilder,
+      $$LibraryExclusionsTableUpdateCompanionBuilder,
+      (
+        ExclusionRow,
+        BaseReferences<_$AppDatabase, $LibraryExclusionsTable, ExclusionRow>,
+      ),
+      ExclusionRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6584,4 +7512,6 @@ class $AppDatabaseManager {
       $$ListeningEventsTableTableManager(_db, _db.listeningEvents);
   $$TasteItemsTableTableManager get tasteItems =>
       $$TasteItemsTableTableManager(_db, _db.tasteItems);
+  $$LibraryExclusionsTableTableManager get libraryExclusions =>
+      $$LibraryExclusionsTableTableManager(_db, _db.libraryExclusions);
 }

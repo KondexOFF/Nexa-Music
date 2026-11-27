@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../core/database/app_database.dart';
 import '../../core/models/track.dart';
+import 'library_management.dart';
 
 /// tracks.source of the user's own files.
 const String localSource = 'local';
@@ -408,12 +409,8 @@ class LibraryRepository {
 
   /// Removes a folder and its tracks from the library (playlist entries of
   /// those tracks too). Files on disk are not touched.
-  Future<void> removeFolder(int folderId) => db.transaction(() async {
-    await (db.delete(db.tracks)..where((t) => t.folderId.equals(folderId))).go();
-    await (db.delete(
-      db.libraryFolders,
-    )..where((f) => f.id.equals(folderId))).go();
-  });
+  Future<void> removeFolder(int folderId) =>
+      LibraryManager(db).removeFolder(folderId);
 
   // ---- playlists ----
 
