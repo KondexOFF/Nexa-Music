@@ -427,3 +427,39 @@ class _HoverLiftState extends State<HoverLift> {
     );
   }
 }
+
+/// NEXARYVE 1.2 (less noise): a title with a small info mark; the long
+/// explanation is its tooltip and its screen-reader hint instead of a
+/// paragraph under the title.
+class InfoTitle extends StatelessWidget {
+  const InfoTitle({
+    super.key,
+    required this.title,
+    required this.info,
+    this.style = NexaText.title,
+  });
+
+  final String title;
+  final String info;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    hint: info,
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(child: Text(title, style: style)),
+        const SizedBox(width: 6),
+        NexaTooltip(
+          message: info,
+          child: const Icon(
+            Icons.info_outline_rounded,
+            size: 16,
+            color: NexaColors.textTertiary,
+          ),
+        ),
+      ],
+    ),
+  );
+}

@@ -189,7 +189,7 @@ class UpNextRow extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       duration == null ? '' : formatClock(duration),
-                      style: NexaText.caption,
+                      style: NexaText.caption.copyWith(fontFeatures: NexaText.numbers),
                     ),
                   ],
                 ),

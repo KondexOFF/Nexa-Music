@@ -237,9 +237,10 @@ class _TuningPanel extends ConsumerWidget {
     final slider = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(S.familiarDiscovery, style: NexaText.title),
-        const SizedBox(height: 4),
-        const Text(S.familiarDiscoveryInfo, style: NexaText.caption),
+        const InfoTitle(
+          title: S.familiarDiscovery,
+          info: S.familiarDiscoveryInfo,
+        ),
         IsolatedSlider(
           child: Slider(
             value: settings.discovery,
@@ -267,9 +268,7 @@ class _TuningPanel extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(S.privateSession, style: NexaText.title),
-              SizedBox(height: 4),
-              Text(S.privateSessionInfo, style: NexaText.caption),
+              InfoTitle(title: S.privateSession, info: S.privateSessionInfo),
             ],
           ),
         ),
@@ -288,9 +287,7 @@ class _TuningPanel extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(S.waveOnline, style: NexaText.title),
-              const SizedBox(height: 4),
-              const Text(S.waveOnlineInfo, style: NexaText.caption),
+              const InfoTitle(title: S.waveOnline, info: S.waveOnlineInfo),
               if (settings.waveOnline && note != null) ...[
                 const SizedBox(height: 6),
                 Text(
@@ -307,9 +304,10 @@ class _TuningPanel extends ConsumerWidget {
               ],
               if (settings.waveOnline) ...[
                 const SizedBox(height: 14),
-                const Text(S.waveOnlineShare, style: NexaText.title),
-                const SizedBox(height: 4),
-                const Text(S.waveOnlineShareInfo, style: NexaText.caption),
+                const InfoTitle(
+                  title: S.waveOnlineShare,
+                  info: S.waveOnlineShareInfo,
+                ),
                 IsolatedSlider(
                   child: Slider(
                     key: const ValueKey('wave-online-share'),

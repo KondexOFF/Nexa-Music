@@ -308,7 +308,7 @@ class _RecentRow extends ConsumerWidget {
                     width: 56,
                     child: Text(
                       duration == null ? '' : formatClock(duration),
-                      style: NexaText.caption,
+                      style: NexaText.caption.copyWith(fontFeatures: NexaText.numbers),
                     ),
                   ),
                 ],
