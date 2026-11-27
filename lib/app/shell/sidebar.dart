@@ -183,7 +183,7 @@ class _NavItem extends StatelessWidget {
                     width: 3,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(2),
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [NexaColors.accent, NexaColors.live],

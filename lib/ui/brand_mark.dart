@@ -27,9 +27,12 @@ class NexaryveMark extends StatelessWidget {
 }
 
 class _MarkPainter extends CustomPainter {
-  _MarkPainter({required this.tile});
+  _MarkPainter({required this.tile}) : glow = NexaColors.accent;
 
   final bool tile;
+
+  /// Accent behind the mark (repaints when the user changes it).
+  final Color glow;
 
   static const Color inkTop = Color(0xFFC4B5FF);
   static const Color inkMid = Color(0xFF9C8BFF);
@@ -61,8 +64,8 @@ class _MarkPainter extends CustomPainter {
             center: const Alignment(0.44, -0.56),
             radius: 0.75,
             colors: [
-              NexaColors.accent.withValues(alpha: 0.34),
-              NexaColors.accent.withValues(alpha: 0),
+              glow.withValues(alpha: 0.34),
+              glow.withValues(alpha: 0),
             ],
           ).createShader(rect.outerRect),
       );
@@ -94,7 +97,7 @@ class _MarkPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_MarkPainter old) => old.tile != tile;
+  bool shouldRepaint(_MarkPainter old) => old.tile != tile || old.glow != glow;
 }
 
 /// Mark and the NEXARYVE wordmark side by side.

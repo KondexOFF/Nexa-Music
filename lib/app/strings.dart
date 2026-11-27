@@ -40,6 +40,47 @@ abstract final class S {
   static const String greetingEvening = 'Good evening';
   static const String greetingNight = 'Good night';
   static const String greetingSubtitle = 'Personal library';
+  // Local Profile (D-042): stored on this computer only.
+  static const String navProfile = 'Profile';
+  static const String profileTitle = 'Profile';
+  static const String profileLocalNote =
+      'Your name, picture and look - stored only on this computer. '
+      'No account, no server.';
+  static const String profileOpen = 'Open your profile';
+  static const String profileNickname = 'Name';
+  static const String profileNicknameHint = 'How NEXARYVE greets you';
+  static const String profileAvatar = 'Picture';
+  static const String profileAvatarNote =
+      'Pick a picture or use your own (a copy is kept in NEXARYVE\'s data '
+      'folder; your file is only read).';
+  static const String profileStandardAvatar = 'Standard picture';
+  static const String profileOwnPicture = 'Use own picture';
+  static const String profileOwnPictureInUse = 'Your own picture is in use';
+  static const String profilePickPicture = 'Choose a picture';
+  static const String profileAccent = 'Accent colour';
+  static const String profileAccentNote =
+      'Buttons, highlights and the NEXARYVE Wave light.';
+  static const String profileAtmosphere = 'Atmosphere effects';
+  static const String profileAtmosphereNote =
+      'Light from cover art and the soft glow behind pages.';
+  static const String profileMotion = 'Animations';
+  static const String motionFull = 'Full';
+  static const String motionFullNote =
+      'Every transition and the slow movement of the Wave hero.';
+  static const String motionReduced = 'Reduced';
+  static const String motionReducedNote =
+      'Shorter transitions; nothing moves by itself.';
+  static const String motionOff = 'Off';
+  static const String motionOffNote = 'No animation at all.';
+  static const String profileDna = 'NEXARYVE DNA';
+  static const String profileDnaNote =
+      'The genres and artists that shape your Wave.';
+  static const String profileOpenDna = 'Edit NEXARYVE DNA';
+  static const String profileReset = 'Reset appearance';
+  static const String profileResetNote =
+      'Accent colour, atmosphere and animations go back to the defaults. '
+      'Your music, playlists, history, NEXARYVE DNA, name and picture stay.';
+  static const String profileResetAction = 'Reset';
 
   // Wave hero
   static const String waveOverline = 'NEXARYVE WAVE';

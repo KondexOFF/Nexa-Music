@@ -50,7 +50,7 @@ class RibbonTrackShape extends RoundedRectSliderTrackShape {
       Paint()
         ..shader = LinearGradient(
           colors: isEnabled
-              ? const [NexaColors.accent, NexaColors.live]
+              ? [NexaColors.accent, NexaColors.live]
               : [
                   sliderTheme.disabledActiveTrackColor ?? const Color(0x55AD9AFF),
                   sliderTheme.disabledActiveTrackColor ?? const Color(0x55AD9AFF),

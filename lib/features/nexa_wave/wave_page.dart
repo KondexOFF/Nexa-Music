@@ -379,7 +379,7 @@ class _DnaSetupCard extends ConsumerWidget {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          const Icon(Icons.auto_awesome_rounded, color: NexaColors.accent),
+          Icon(Icons.auto_awesome_rounded, color: NexaColors.accent),
           const SizedBox(width: 16),
           const Expanded(child: Text(S.dnaIntro, style: NexaText.bodySecondary)),
           const SizedBox(width: 16),
@@ -552,7 +552,7 @@ class _WaveRow extends ConsumerWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.auto_awesome_rounded,
                         size: 14,
                         color: NexaColors.accent,
@@ -603,7 +603,7 @@ class WaveReasonLine extends ConsumerWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.auto_awesome_rounded,
             size: 16,
             color: NexaColors.accent,

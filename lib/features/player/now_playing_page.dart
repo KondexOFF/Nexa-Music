@@ -33,6 +33,7 @@ class NowPlayingPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final track = ref.watch(playerProvider.select((p) => p.current));
     final light = ref.watch(ambientLightProvider);
+    final glow = ref.watch(atmosphereProvider);
     // NEXARYVE 1.2: the artwork lights the page around it.
     return AmbientBackdrop(
       strength: 0.24,
@@ -54,7 +55,7 @@ class NowPlayingPage extends ConsumerWidget {
             boxShadow: [
               // The artwork's own light under it.
               BoxShadow(
-                color: light.withValues(alpha: 0.42),
+                color: light.withValues(alpha: glow ? 0.42 : 0),
                 blurRadius: 70,
                 spreadRadius: -10,
                 offset: const Offset(0, 24),
@@ -149,7 +150,7 @@ class _WaveChip extends StatelessWidget {
         tooltip: S.waveChipTooltip,
         semanticLabel: S.waveChip,
         borderRadius: BorderRadius.circular(28),
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 18, vertical: 11),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -219,7 +220,7 @@ class _TrackDetails extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.graphic_eq_rounded,
                   size: 16,
                   color: NexaColors.accent,
@@ -368,12 +369,12 @@ class _NowPlayingTabs extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.fromLTRB(4, 8, 12, 10),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: NexaColors.accent, width: 2),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(
                     Icons.format_list_bulleted_rounded,

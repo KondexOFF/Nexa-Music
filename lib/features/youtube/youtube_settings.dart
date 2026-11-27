@@ -166,7 +166,7 @@ Future<bool> showYouTubeConsent(BuildContext context, WidgetRef ref) async {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(top: 7, right: 10),
                         child: Icon(
                           Icons.circle,

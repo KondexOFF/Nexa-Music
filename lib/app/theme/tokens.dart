@@ -9,17 +9,40 @@ abstract final class NexaColors {
   static const Color panel = Color(0xFF15161B);
   static const Color panelRaised = Color(0xFF1B1D23);
   static const Color panelHover = Color(0xFF23252D);
-  static const Color navSelected = Color(0x24AD9AFF);
+  /// Selected navigation item (accent at 14 %; see [applyAccent]).
+  static Color navSelected = const Color(0x248B5CF6);
   static const Color border = Color(0x0FFFFFFF);
   static const Color divider = Color(0x0CFFFFFF);
   static const Color textPrimary = Color(0xFFF2F1EE);
   static const Color textSecondary = Color(0xFFA3A5B0);
   static const Color textTertiary = Color(0xFF6B6D78);
   static const Color textDisabled = Color(0x52F2F1EE);
-  static const Color accent = Color(0xFFAD9AFF);
-  static const Color accentStrong = Color(0xFF9883FF);
-  static const Color accentSoft = Color(0x29AD9AFF);
-  static const Color accentFaint = Color(0x14AD9AFF);
+  // The accent family follows the user's choice (D-042 Local Profile):
+  // runtime values, set by [applyAccent] before the app is (re)built.
+
+  /// Text, icons and selected states.
+  static Color accent = const Color(0xFFB69CFF);
+
+  /// Filled buttons and the start of gradients.
+  static Color accentStrong = const Color(0xFF8B5CF6);
+  static Color accentSoft = const Color(0x29B69CFF);
+  static Color accentFaint = const Color(0x14B69CFF);
+
+  /// End of accent gradients (magenta in the default violet).
+  static Color accentGlow = const Color(0xFFE15FED);
+
+  static void applyAccent({
+    required Color color,
+    required Color deep,
+    required Color glow,
+  }) {
+    accent = color;
+    accentStrong = deep;
+    accentSoft = color.withAlpha(0x29);
+    accentFaint = color.withAlpha(0x14);
+    accentGlow = glow;
+    navSelected = deep.withAlpha(0x24);
+  }
   static const Color coral = Color(0xFFFF8A74);
 
   /// "Live" moments next to lavender: playing indicator, progress.
@@ -68,12 +91,22 @@ abstract final class NexaBreakpoints {
   static const double compactPlayerBar = 1260;
 }
 
+/// Durations follow the user's animation setting (D-042 Local Profile):
+/// [applyScale] 1 = full, 0.5 = reduced, 0 = off.
 abstract final class NexaMotion {
-  static const Duration fast = Duration(milliseconds: 160);
-  static const Duration normal = Duration(milliseconds: 260);
-  static const Duration slow = Duration(milliseconds: 420);
+  static Duration fast = const Duration(milliseconds: 160);
+  static Duration normal = const Duration(milliseconds: 260);
+  static Duration slow = const Duration(milliseconds: 420);
 
   /// Artwork light following the playing song.
-  static const Duration ambient = Duration(milliseconds: 600);
+  static Duration ambient = const Duration(milliseconds: 600);
   static const Curve curve = Curves.easeOutCubic;
+
+  static void applyScale(double scale) {
+    Duration d(int ms) => Duration(milliseconds: (ms * scale).round());
+    fast = d(160);
+    normal = d(260);
+    slow = d(420);
+    ambient = d(600);
+  }
 }

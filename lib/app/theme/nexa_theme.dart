@@ -145,7 +145,7 @@ ThemeData buildNexaTheme() {
         border: Border.all(color: NexaColors.border),
       ),
     ),
-    sliderTheme: const SliderThemeData(
+    sliderTheme: SliderThemeData(
       trackHeight: 4,
       activeTrackColor: NexaColors.accent,
       inactiveTrackColor: Color(0x24FFFFFF),

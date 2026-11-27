@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/theme/tokens.dart';
 import '../core/models/track.dart';
 import '../features/player/player_controller.dart';
+import '../features/profile/profile.dart';
 import 'cover_art.dart';
 
 /// NEXARYVE 1.2 "the song lights the room": one soft colour taken from the
@@ -104,7 +105,14 @@ class ArtworkLight {
   }
 }
 
-/// The light of the playing song (lavender when nothing plays).
+/// Atmosphere effects on (D-042 Local Profile): light from cover art and
+/// the glow behind pages.
+final atmosphereProvider = Provider<bool>(
+  (ref) => ref.watch(profileProvider.select((p) => p.atmosphere)),
+);
+
+/// The light of the playing song (the accent when nothing plays or the
+/// atmosphere is off).
 final ambientLightProvider = NotifierProvider<AmbientLightController, Color>(
   AmbientLightController.new,
 );
@@ -116,8 +124,10 @@ class AmbientLightController extends Notifier<Color> {
   @override
   Color build() {
     final track = ref.watch(playerProvider.select((p) => p.current));
+    final atmosphere = ref.watch(atmosphereProvider);
+    ref.watch(profileProvider.select((p) => p.accentId));
     final token = ++_token;
-    if (track == null) {
+    if (track == null || !atmosphere) {
       return _last = NexaColors.accent;
     }
     final quick = ArtworkLight.quick(track);
@@ -155,6 +165,9 @@ class AmbientBackdrop extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(atmosphereProvider)) {
+      return child; // D-042: atmosphere effects switched off.
+    }
     final light = ref.watch(ambientLightProvider);
     return TweenAnimationBuilder<Color?>(
       tween: ColorTween(end: light),

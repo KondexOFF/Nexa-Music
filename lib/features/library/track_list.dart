@@ -277,7 +277,7 @@ class TrackRow extends ConsumerWidget {
                     ),
                   )
                 : isCurrent
-                ? const Icon(
+                ? Icon(
                     Icons.graphic_eq_rounded,
                     size: 18,
                     color: NexaColors.accent,

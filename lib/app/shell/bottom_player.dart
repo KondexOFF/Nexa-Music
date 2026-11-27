@@ -189,7 +189,7 @@ class _MixChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.graphic_eq_rounded,
                 size: 20,
                 color: NexaColors.accent,

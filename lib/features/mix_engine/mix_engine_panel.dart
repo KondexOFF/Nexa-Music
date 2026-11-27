@@ -28,7 +28,7 @@ class MixEnginePanel extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: Text(
@@ -106,7 +106,7 @@ class MixEnginePanel extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Row(
+          Row(
             children: [
               _LegendDot(color: NexaColors.coral),
               SizedBox(width: 6),
@@ -163,7 +163,7 @@ class MixEnginePanel extends ConsumerWidget {
                   color: NexaColors.panelRaised,
                   border: Border.all(color: NexaColors.border),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.graphic_eq_rounded,
                   size: 22,
                   color: NexaColors.accent,
@@ -270,7 +270,7 @@ class _NextTransition extends ConsumerWidget {
     };
     return Row(
       children: [
-        const Icon(Icons.swap_horiz_rounded, size: 18, color: NexaColors.accent),
+        Icon(Icons.swap_horiz_rounded, size: 18, color: NexaColors.accent),
         const SizedBox(width: 8),
         Text('${S.nextTransition}: ', style: NexaText.caption),
         Expanded(
@@ -388,9 +388,12 @@ class _LegendDot extends StatelessWidget {
 /// equal-power overlap region of width [overlap] (0..0.5 of the width).
 /// A visual explanation only; no audio is analysed in Phase 1.
 class TransitionPreviewPainter extends CustomPainter {
-  TransitionPreviewPainter({required this.overlap});
+  TransitionPreviewPainter({required this.overlap}) : accent = NexaColors.accent;
 
   final double overlap;
+
+  /// Accent when made (repaints when the user changes it).
+  final Color accent;
 
   static const int _bars = 64;
 
@@ -412,7 +415,7 @@ class TransitionPreviewPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeWidth = barWidth;
     final inPaint = Paint()
-      ..color = NexaColors.accent
+      ..color = accent
       ..strokeCap = StrokeCap.round
       ..strokeWidth = barWidth;
 
@@ -477,5 +480,5 @@ class TransitionPreviewPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(TransitionPreviewPainter oldDelegate) =>
-      oldDelegate.overlap != overlap;
+      oldDelegate.overlap != overlap || oldDelegate.accent != accent;
 }

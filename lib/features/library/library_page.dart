@@ -421,7 +421,7 @@ class _EmptyLibrary extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
+            Icon(
               Icons.library_music_outlined,
               color: NexaColors.accent,
               size: 36,

@@ -15,6 +15,9 @@ enum NexaDestination {
 
   /// The YouTube section (E2.1 / E2.6).
   youtube,
+
+  /// Local profile (D-042).
+  profile,
 }
 
 /// A place in the app: a screen plus, for playlists, which one.

@@ -4,6 +4,7 @@ import 'dart:ui' show AppExitResponse;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/profile/profile_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/home/home_side_panel.dart';
 import '../../features/library/library_page.dart';
@@ -296,6 +297,7 @@ class _PageArea extends StatelessWidget {
     ),
     NexaDestination.settings => const SettingsPage(),
     NexaDestination.youtube => const YouTubePage(),
+    NexaDestination.profile => const ProfilePage(),
   };
 
   @override

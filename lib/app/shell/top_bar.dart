@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/library/library_providers.dart';
+import '../../features/profile/profile.dart';
+import '../../features/profile/profile_avatar.dart';
 import '../../ui/nexa_widgets.dart';
 import '../navigation.dart';
 import '../strings.dart';
@@ -59,17 +61,7 @@ class TopBar extends ConsumerWidget {
               onPressed: nav.canGoForward ? controller.goForward : null,
             ),
             const SizedBox(width: 24),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  greetingFor(DateTime.now()),
-                  style: NexaText.title.copyWith(fontSize: 14),
-                ),
-                const Text(S.greetingSubtitle, style: NexaText.caption),
-              ],
-            ),
+            const _ProfileChip(),
           ],
         ),
       ),
@@ -162,6 +154,62 @@ class _SearchFieldState extends ConsumerState<_SearchPlaceholder> {
               onPressed: () => _onChanged(''),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Avatar, greeting and name; opens the local profile (D-042).
+class _ProfileChip extends ConsumerWidget {
+  const _ProfileChip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nickname = ref.watch(profileProvider.select((p) => p.nickname));
+    final selected =
+        ref.watch(navigationProvider).current == NexaDestination.profile;
+    return NexaTappable(
+      key: const ValueKey('topbar-profile'),
+      onTap: () =>
+          ref.read(navigationProvider.notifier).go(NexaDestination.profile),
+      semanticLabel: S.profileOpen,
+      tooltip: S.profileOpen,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
+        decoration: BoxDecoration(
+          color: selected ? NexaColors.navSelected : Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ProfileAvatar(size: 34),
+            const SizedBox(width: 10),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nickname.isEmpty ? greetingFor(DateTime.now()) : '${greetingFor(DateTime.now())},',
+                  style: NexaText.caption,
+                ),
+                Text(
+                  nickname.isEmpty ? S.greetingSubtitle : nickname,
+                  style: NexaText.title.copyWith(fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            const SizedBox(width: 6),
+            const Icon(
+              Icons.expand_more_rounded,
+              size: 18,
+              color: NexaColors.textSecondary,
+            ),
+          ],
+        ),
       ),
     );
   }

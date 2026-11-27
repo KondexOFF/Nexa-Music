@@ -199,11 +199,16 @@ class _HeroTags extends StatelessWidget {
 /// Paints the hero background. [animation] runs 0..1 and loops; [light] is
 /// the playing song's artwork light (lavender when nothing plays).
 class WaveRibbonPainter extends CustomPainter {
-  WaveRibbonPainter({required this.animation, this.light = NexaColors.accent})
-    : super(repaint: animation);
+  WaveRibbonPainter({required this.animation, Color? light})
+    : light = light ?? NexaColors.accent,
+      accent = NexaColors.accent,
+      super(repaint: animation);
 
   final Animation<double> animation;
   final Color light;
+
+  /// The accent when the painter was made (repaints when it changes).
+  final Color accent;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -211,7 +216,7 @@ class WaveRibbonPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final w = size.width;
     final h = size.height;
-    final ribbon = [light, NexaColors.accent, NexaColors.live];
+    final ribbon = [light, accent, NexaColors.live];
 
     // Graphite, lit from the right by the song.
     canvas.drawRect(
@@ -356,5 +361,7 @@ class WaveRibbonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(WaveRibbonPainter oldDelegate) =>
-      oldDelegate.animation != animation || oldDelegate.light != light;
+      oldDelegate.animation != animation ||
+      oldDelegate.light != light ||
+      oldDelegate.accent != accent;
 }

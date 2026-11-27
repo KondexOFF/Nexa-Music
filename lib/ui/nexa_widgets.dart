@@ -47,7 +47,7 @@ class NexaTappable extends StatelessWidget {
     required this.child,
     this.onTap,
     this.borderRadius = const BorderRadius.all(Radius.circular(NexaRadius.md)),
-    this.hoverColor = NexaColors.accentFaint,
+    this.hoverColor,
     this.tooltip,
     this.semanticLabel,
   });
@@ -55,7 +55,8 @@ class NexaTappable extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final BorderRadius borderRadius;
-  final Color hoverColor;
+  /// Null: the accent (faint).
+  final Color? hoverColor;
   final String? tooltip;
   final String? semanticLabel;
 
@@ -66,7 +67,7 @@ class NexaTappable extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: borderRadius,
-        hoverColor: hoverColor,
+        hoverColor: hoverColor ?? NexaColors.accentFaint,
         focusColor: NexaColors.accentSoft,
         child: child,
       ),
@@ -220,20 +221,22 @@ class StatusBadge extends StatelessWidget {
   const StatusBadge({
     super.key,
     required this.label,
-    required this.color,
+    required Color this.color,
     this.tooltip,
   });
 
-  /// Marks a feature that belongs to a later phase.
-  const StatusBadge.phase(this.label, {super.key, this.tooltip})
-    : color = NexaColors.accent;
+  /// In the accent colour (e.g. "Playing").
+  const StatusBadge.phase(this.label, {super.key, this.tooltip}) : color = null;
 
   final String label;
-  final Color color;
+
+  /// Null: the accent.
+  final Color? color;
   final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? NexaColors.accent;
     final badge = Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
@@ -373,12 +376,13 @@ class HoverLift extends StatefulWidget {
   const HoverLift({
     super.key,
     required this.child,
-    this.glow = NexaColors.accent,
+    this.glow,
     this.radius = NexaRadius.md,
   });
 
   final Widget child;
-  final Color glow;
+  /// Null: the accent.
+  final Color? glow;
   final double radius;
 
   @override
@@ -413,7 +417,7 @@ class _HoverLiftState extends State<HoverLift> {
               borderRadius: BorderRadius.circular(widget.radius),
               boxShadow: [
                 BoxShadow(
-                  color: widget.glow.withValues(alpha: _hover ? 0.32 : 0),
+                  color: (widget.glow ?? NexaColors.accent).withValues(alpha: _hover ? 0.32 : 0),
                   blurRadius: 30,
                   spreadRadius: -6,
                   offset: const Offset(0, 10),

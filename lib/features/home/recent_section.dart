@@ -243,7 +243,7 @@ class _RecentRow extends ConsumerWidget {
           SizedBox(
             width: 32,
             child: isCurrent
-                ? const Icon(
+                ? Icon(
                     Icons.graphic_eq_rounded,
                     size: 18,
                     color: NexaColors.accent,
